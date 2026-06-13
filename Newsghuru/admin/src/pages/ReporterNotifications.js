@@ -73,6 +73,19 @@ function ReporterNotifications() {
   const handleNotificationClick = (notification) => {
     if (notification.type === "contact" && role === "admin") {
       navigate("/admin/contact-queries");
+    } else if (notification.type === "submitted") {
+      if (role === "admin") navigate("/admin/pending");
+      else if (role === "editor") navigate("/editor/pending");
+    } else if (notification.type === "approved") {
+      if (role === "admin") navigate("/admin/pending");
+      else if (role === "reporter") navigate("/reporter/submitted");
+    } else if (notification.type === "published") {
+      if (role === "admin") navigate("/admin/published");
+      else if (role === "editor") navigate("/editor/approved");
+      else if (role === "reporter") navigate("/reporter/published");
+    } else if (notification.type === "rejected" || notification.type === "changes") {
+      if (role === "editor") navigate("/editor/rejected");
+      else if (role === "reporter") navigate("/reporter/rejected");
     }
   };
 
@@ -100,7 +113,7 @@ function ReporterNotifications() {
               key={notification._id || notification.id} 
               className={`notification-card ${notification.read ? "read" : "unread"} ${getNotificationClass(notification.type)}`}
               onClick={() => handleNotificationClick(notification)}
-              style={{ cursor: notification.type === "contact" && role === "admin" ? "pointer" : "default" }}
+              style={{ cursor: "pointer" }}
             >
               <div className="notification-icon">{getNotificationIcon(notification.type)}</div>
               <div className="notification-content">
