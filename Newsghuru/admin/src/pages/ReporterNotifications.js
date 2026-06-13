@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { FaCheckCircle, FaExclamationCircle, FaTimesCircle, FaTrophy, FaUpload, FaEnvelope } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import API from "../config/api";
 import "../styles/ReporterNotifications.css";
 
 function ReporterNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const role = localStorage.getItem("role");
 
   const fetchNotifications = async () => {
     try {
@@ -67,6 +70,12 @@ function ReporterNotifications() {
     }
   };
 
+  const handleNotificationClick = (notification) => {
+    if (notification.type === "contact" && role === "admin") {
+      navigate("/admin/contact-queries");
+    }
+  };
+
   return (
     <div className="reporter-notifications">
       <div className="notifications-header">
@@ -87,7 +96,12 @@ function ReporterNotifications() {
           </div>
         ) : (
           notifications.map((notification) => (
-            <div key={notification._id || notification.id} className={`notification-card ${notification.read ? "read" : "unread"} ${getNotificationClass(notification.type)}`}>
+            <div 
+              key={notification._id || notification.id} 
+              className={`notification-card ${notification.read ? "read" : "unread"} ${getNotificationClass(notification.type)}`}
+              onClick={() => handleNotificationClick(notification)}
+              style={{ cursor: notification.type === "contact" && role === "admin" ? "pointer" : "default" }}
+            >
               <div className="notification-icon">{getNotificationIcon(notification.type)}</div>
               <div className="notification-content">
                 <p className="notification-text">{notification.text}</p>
