@@ -91,6 +91,16 @@ function ReporterCreateNews() {
     }
   };
 
+  const removeCoverImage = () => {
+    setCoverImage(null);
+    setCoverFile(null);
+  };
+
+  const removeGalleryImage = (indexToRemove) => {
+    setGalleryFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+    setGalleryImages(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
   const validateForm = () => {
     const newErrors = {};
     if (!formData.title.trim()) newErrors.title = "Title is required";
@@ -287,7 +297,23 @@ function ReporterCreateNews() {
             <label>Cover Image Upload <span className="required">*</span></label>
             <div className={`upload-box ${errors.coverImage ? "error-box" : ""}`}>
               <input type="file" accept="image/*" onChange={handleCoverChange} />
-              {coverImage && <img src={coverImage} alt="Cover Preview" className="img-preview" />}
+              {coverImage && (
+                <div style={{ position: 'relative', display: 'inline-block', marginTop: '10px' }}>
+                  <img src={coverImage} alt="Cover Preview" className="img-preview" />
+                  <button 
+                    type="button"
+                    onClick={removeCoverImage}
+                    style={{
+                      position: 'absolute', top: '-10px', right: '-10px', background: '#ef4444', color: 'white',
+                      border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '14px',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                    }}
+                  >
+                    &times;
+                  </button>
+                </div>
+              )}
             </div>
             {errors.coverImage && <span className="error-text mt-1">{errors.coverImage}</span>}
           </div>
@@ -298,7 +324,21 @@ function ReporterCreateNews() {
               <input type="file" accept="image/*" multiple onChange={handleGalleryChange} />
               <div className="gallery-preview">
                 {galleryImages.map((src, index) => (
-                  <img key={index} src={src} alt={`Gallery ${index}`} className="img-preview small" />
+                  <div key={index} style={{ position: 'relative', display: 'inline-block', margin: '5px' }}>
+                    <img src={src} alt={`Gallery ${index}`} className="img-preview small" />
+                    <button 
+                      type="button"
+                      onClick={() => removeGalleryImage(index)}
+                      style={{
+                        position: 'absolute', top: '-5px', right: '-5px', background: '#ef4444', color: 'white',
+                        border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      &times;
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
