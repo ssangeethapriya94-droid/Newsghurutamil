@@ -13,7 +13,12 @@ import {
   FaChartLine,
   FaRunning,
   FaMicrochip,
-  FaPlayCircle
+  FaPlayCircle,
+  FaFutbol,
+  FaBriefcase,
+  FaGraduationCap,
+  FaLandmark,
+  FaFilm
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
@@ -111,8 +116,6 @@ const Footer = () => {
             <a href="https://x.com/news_ghuruTamil" target="_blank" rel="noopener noreferrer" className="tw"><FaTwitter /></a>
             <a href="https://www.instagram.com/newsghuru_tamil/" target="_blank" rel="noopener noreferrer" className="ig"><FaInstagram /></a>
             <a href="https://youtube.com/@newsghurutamil?si=6FgN4CcfJbiD698y" target="_blank" rel="noopener noreferrer" className="yt"><FaYoutube /></a>
-            <a href="#" target="_blank" rel="noopener noreferrer" className="tg"><FaTelegramPlane /></a>
-            <a href="#" target="_blank" rel="noopener noreferrer" className="wa"><FaWhatsapp /></a>
           </div>
 
           <div className="footer-newsletter">
@@ -131,14 +134,10 @@ const Footer = () => {
           <h3>விரைவான இணைப்புகள்</h3>
           <ul>
             <li><Link to="/"><FaChevronRight className="chevron-link-icon" /> முகப்பு</Link></li>
-            <li><Link to="/latest-news"><FaChevronRight className="chevron-link-icon" /> தற்போதைய செய்திகள்</Link></li>
+            <li><Link to="/latest-news"><FaChevronRight className="chevron-link-icon" /> தற்போதைய செய்தி</Link></li>
+            <li><Link to="/tamilnadu"><FaChevronRight className="chevron-link-icon" /> தமிழகம்</Link></li>
             <li><Link to="/india"><FaChevronRight className="chevron-link-icon" /> இந்தியா</Link></li>
             <li><Link to="/world"><FaChevronRight className="chevron-link-icon" /> உலகம்</Link></li>
-            <li><Link to="/business"><FaChevronRight className="chevron-link-icon" /> வணிகம்</Link></li>
-            <li><Link to="/sports"><FaChevronRight className="chevron-link-icon" /> விளையாட்டு</Link></li>
-            <li><Link to="/tech"><FaChevronRight className="chevron-link-icon" /> தொழில்நுட்பம்</Link></li>
-            <li><Link to="/cinema"><FaChevronRight className="chevron-link-icon" /> சினிமா</Link></li>
-            <li><Link to="/more"><FaChevronRight className="chevron-link-icon" /> மேலும்</Link></li>
           </ul>
         </div>
 
@@ -146,12 +145,11 @@ const Footer = () => {
         <div className="footer-links-col">
           <h3>பிரபலமான பிரிவுகள்</h3>
           <ul className="category-links">
-            <li><Link to="/india"><FaMapMarkerAlt className="cat-icon" /> இந்தியா</Link></li>
-            <li><Link to="/world"><FaGlobeAmericas className="cat-icon" /> உலகம்</Link></li>
-            <li><Link to="/business"><FaChartLine className="cat-icon" /> வணிகம்</Link></li>
-            <li><Link to="/sports"><FaRunning className="cat-icon" /> விளையாட்டு</Link></li>
-            <li><Link to="/tech"><FaMicrochip className="cat-icon" /> தொழில்நுட்பம்</Link></li>
-            <li><Link to="/cinema"><FaPlayCircle className="cat-icon" /> சினிமா</Link></li>
+            <li><Link to="/sports"><FaFutbol className="cat-icon" /> விளையாட்டு</Link></li>
+            <li><Link to="/business"><FaBriefcase className="cat-icon" /> வணிகம்</Link></li>
+            <li><Link to="/education"><FaGraduationCap className="cat-icon" /> கல்வி</Link></li>
+            <li><Link to="/politics"><FaLandmark className="cat-icon" /> அரசியல்</Link></li>
+            <li><Link to="/cinema"><FaFilm className="cat-icon" /> சினிமா</Link></li>
           </ul>
         </div>
 
