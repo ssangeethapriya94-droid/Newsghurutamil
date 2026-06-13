@@ -20,6 +20,9 @@ const Header = ({ setSidebar, darkMode, setDarkMode, setAuthPopupVisible, onLogi
   }
 
   const handleLogout = () => {
+    const confirmLogout = window.confirm("Are you sure you want to logout?");
+    if (!confirmLogout) return;
+
     localStorage.removeItem("readerToken");
     localStorage.removeItem("readerData");
     if (onLogout) {
