@@ -1,0 +1,363 @@
+/* =========================================
+   TAMIL NADU PAGE
+========================================= */
+
+.tamil-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 25px 20px 50px;
+  transition: 0.3s ease;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.tamil-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 35px;
+  flex-wrap: wrap;
+}
+
+.tamil-header h1 {
+  font-size: 42px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.tamil-header p {
+  font-size: 17px;
+  opacity: 0.85;
+}
+
+/* =========================================
+   LIVE BUTTON
+========================================= */
+
+.state-live-btn {
+  border: none;
+  outline: none;
+  background: linear-gradient(90deg, #ea580c, #ef4444);
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  animation: pulse 1.5s infinite;
+}
+
+/* =========================================
+   ANIMATION
+========================================= */
+
+@keyframes pulse {
+
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* =========================================
+   FEATURED NEWS
+========================================= */
+
+.featured-tamil-news {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 30px;
+  border-radius: 24px;
+  overflow: hidden;
+  margin-bottom: 45px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.featured-tamil-news:hover {
+  transform: translateY(-6px);
+}
+
+.featured-tamil-image {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+}
+
+.featured-tamil-content {
+  padding: 25px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.featured-tamil-content h2 {
+  font-size: 38px;
+  line-height: 1.5;
+  margin: 20px 0;
+  font-weight: 800;
+}
+
+.featured-tamil-content p {
+  font-size: 18px;
+  line-height: 1.9;
+  margin-bottom: 25px;
+}
+
+/* =========================================
+   DISTRICT BUTTON
+========================================= */
+
+.district-btn {
+  width: fit-content;
+  border: none;
+  outline: none;
+  background: linear-gradient(90deg, #ea580c, #ef4444);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* =========================================
+   META
+========================================= */
+
+.featured-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.featured-meta span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+/* =========================================
+   NEWS GRID
+========================================= */
+
+.tamil-news-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.tamil-news-card {
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.tamil-news-card:hover {
+  transform: translateY(-6px);
+}
+
+.tamil-news-image {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  transition: 0.4s ease;
+}
+
+.tamil-news-card:hover .tamil-news-image {
+  transform: scale(1.05);
+}
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.tamil-news-content {
+  padding: 20px;
+}
+
+.tamil-news-content h3 {
+  font-size: 24px;
+  line-height: 1.5;
+  margin: 18px 0;
+  font-weight: 700;
+}
+
+.tamil-news-content p {
+  font-size: 16px;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.tamil-news-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.footer-left span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.read-more {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-orange);
+}
+
+/* =========================================
+   DARK THEME
+========================================= */
+
+.dark-theme .tamil-page {
+  background: var(--bg-primary);
+  color: #fff;
+}
+
+.dark-theme .featured-tamil-news,
+.dark-theme .tamil-news-card {
+  background: var(--bg-secondary);
+}
+
+.dark-theme .featured-tamil-content p,
+.dark-theme .tamil-news-content p,
+.dark-theme .featured-meta span,
+.dark-theme .footer-left span,
+.dark-theme .tamil-header p {
+  color: #cbd5e1;
+}
+
+/* =========================================
+   LIGHT THEME
+========================================= */
+
+.light-theme .tamil-page {
+  background: #f8fafc;
+  color: #111827;
+}
+
+.light-theme .featured-tamil-news,
+.light-theme .tamil-news-card {
+  background: #ffffff;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.light-theme .featured-tamil-content p,
+.light-theme .tamil-news-content p,
+.light-theme .featured-meta span,
+.light-theme .footer-left span,
+.light-theme .tamil-header p {
+  color: #4b5563;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1200px) {
+
+  .tamil-news-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .featured-tamil-content h2 {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 992px) {
+
+  .featured-tamil-news {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-tamil-image {
+    height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .tamil-page {
+    padding: 20px 15px 40px;
+  }
+
+  .tamil-header h1 {
+    font-size: 34px;
+  }
+
+  .tamil-news-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-tamil-content h2 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 576px) {
+
+  .featured-tamil-image {
+    height: 260px;
+  }
+
+  .featured-tamil-content h2 {
+    font-size: 22px;
+  }
+
+  .featured-tamil-content p,
+  .tamil-news-content p {
+    font-size: 15px;
+  }
+
+  .tamil-news-image {
+    height: 220px;
+  }
+
+  .tamil-news-content h3 {
+    font-size: 20px;
+  }
+
+  .tamil-news-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,233 @@
+import React, { useState, useEffect } from "react";
+import API from "../config/api";
+import "../styles/ReporterMyArticles.css";
+
+function Categories() {
+  const [categories, setCategories] = useState([]);
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editSlug, setEditSlug] = useState("");
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const res = await API.get("/api/categories");
+      setCategories(res.data || []);
+    } catch (error) {
+      console.error("Fetch categories error:", error);
+      alert("Failed to load categories");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!name.trim() || !slug.trim()) {
+      alert("Please fill in both name and slug");
+      return;
+    }
+
+    try {
+      await API.post("/api/categories", {
+        name: name.trim(),
+        slug: slug.trim().toLowerCase(),
+      });
+      setName("");
+      setSlug("");
+      alert("Category created successfully 🎉");
+      fetchCategories();
+    } catch (error) {
+      console.error("Create category error:", error);
+      alert(error.response?.data?.message || "Failed to create category");
+    }
+  };
+
+  const handleUpdate = async (id) => {
+    if (!editName.trim() || !editSlug.trim()) {
+      alert("Name and slug cannot be empty");
+      return;
+    }
+
+    try {
+      await API.put(`/api/categories/${id}`, {
+        name: editName.trim(),
+        slug: editSlug.trim().toLowerCase(),
+      });
+      setEditingId(null);
+      alert("Category updated successfully");
+      fetchCategories();
+    } catch (error) {
+      console.error("Update category error:", error);
+      alert(error.response?.data?.message || "Failed to update category");
+    }
+  };
+
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete the category "${name}"?`)) {
+      return;
+    }
+
+    try {
+      await API.delete(`/api/categories/${id}`);
+      alert("Category deleted successfully");
+      fetchCategories();
+    } catch (error) {
+      console.error("Delete category error:", error);
+      alert(error.response?.data?.message || "Failed to delete category");
+    }
+  };
+
+  const startEdit = (cat) => {
+    setEditingId(cat._id);
+    setEditName(cat.name);
+    setEditSlug(cat.slug);
+  };
+
+  // Helper auto-slug generation
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    setName(val);
+    // Simple transliteration for English; keep Tamil text as is
+    const generatedSlug = val
+      .toLowerCase()
+      .replace(/[^a-z0-9\u0B80-\u0BFF\s-]/g, "") // support tamil unicode block & normal text
+      .trim()
+      .replace(/\s+/g, "-");
+    setSlug(generatedSlug);
+  };
+
+  return (
+    <div className="reporter-my-articles">
+      <div className="header-actions">
+        <h2>🏷️ Categories CRUD</h2>
+        <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+          Manage news taxonomy and slugs.
+        </div>
+      </div>
+
+      {/* CREATE FORM */}
+      <form onSubmit={handleCreate} style={{ display: "flex", gap: "15px", marginBottom: "30px", background: "var(--bg-light)", padding: "20px", borderRadius: "8px", border: "1px solid var(--border-color)", flexWrap: "wrap", alignItems: "flex-end" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "5px", flex: 1, minWidth: "200px" }}>
+          <label style={{ fontWeight: 600, fontSize: "13px" }}>Category Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={handleNameChange}
+            placeholder="e.g. Sports"
+            style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid var(--border-color)", outline: "none" }}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "5px", flex: 1, minWidth: "200px" }}>
+          <label style={{ fontWeight: 600, fontSize: "13px" }}>Slug (Lowercase, e.g. sports)</label>
+          <input
+            type="text"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+            placeholder="e.g. sports"
+            style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid var(--border-color)", outline: "none" }}
+          />
+        </div>
+        <button
+          type="submit"
+          className="btn-primary"
+          style={{ height: "38px", background: "var(--primary-blue)", color: "white", border: "none", padding: "0 20px", borderRadius: "6px", fontWeight: 600, cursor: "pointer" }}
+        >
+          Add Category
+        </button>
+      </form>
+
+      {/* LIST TABLE */}
+      <div className="table-container">
+        {loading && categories.length === 0 ? (
+          <div style={{ padding: "20px", textAlign: "center" }}>Loading categories...</div>
+        ) : categories.length === 0 ? (
+          <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>No categories found.</div>
+        ) : (
+          <table className="articles-table">
+            <thead>
+              <tr>
+                <th>Category Name</th>
+                <th>Slug</th>
+                <th style={{ width: "220px" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((cat) => (
+                <tr key={cat._id}>
+                  <td>
+                    {editingId === cat._id ? (
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        style={{ padding: "4px 8px", borderRadius: "4px", border: "1px solid #ccc", width: "90%" }}
+                      />
+                    ) : (
+                      <span style={{ fontWeight: 600 }}>{cat.name}</span>
+                    )}
+                  </td>
+                  <td>
+                    {editingId === cat._id ? (
+                      <input
+                        type="text"
+                        value={editSlug}
+                        onChange={(e) => setEditSlug(e.target.value.toLowerCase())}
+                        style={{ padding: "4px 8px", borderRadius: "4px", border: "1px solid #ccc", width: "90%" }}
+                      />
+                    ) : (
+                      <span className="category-tag">{cat.slug}</span>
+                    )}
+                  </td>
+                  <td>
+                    {editingId === cat._id ? (
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        <button
+                          className="action-btn edit"
+                          onClick={() => handleUpdate(cat._id)}
+                          style={{ color: "#10b981" }}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="action-btn delete"
+                          onClick={() => setEditingId(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", gap: "15px" }}>
+                        <button
+                          className="action-btn edit"
+                          onClick={() => startEdit(cat)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="action-btn delete"
+                          onClick={() => handleDelete(cat._id, cat.name)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default Categories;

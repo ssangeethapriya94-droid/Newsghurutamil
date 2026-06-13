@@ -1,0 +1,71 @@
+:root {
+  --primary-blue: #ea580c;
+  --sidebar-dark: #0a0a0a;
+  --sidebar-hover: #1e1e1e;
+  --sidebar-text: #cbd5e1;
+  --sidebar-active-text: #f59e0b;
+  --bg-light: #0a0a0a;
+  --card-bg: rgba(18, 18, 18, 0.6);
+  --text-main: #ffffff;
+  --text-muted: #a1a1aa;
+  --border-color: rgba(255, 255, 255, 0.08);
+
+  /* Gradients & Accents */
+  --brand-gradient: linear-gradient(90deg, #f59e0b, #ea580c, #f59e0b);
+  --active-gradient: linear-gradient(90deg, rgba(245, 158, 11, 0.15), transparent);
+  --accent-orange: #ea580c;
+  --accent-gold: #f59e0b;
+  --accent-red: #dc2626;
+
+  /* Status Colors */
+  --status-published: #10b981;
+  --status-published-bg: rgba(16, 185, 129, 0.15);
+  --status-pending: #f59e0b;
+  --status-pending-bg: rgba(245, 158, 11, 0.15);
+  --status-rejected: #dc2626;
+  --status-rejected-bg: rgba(220, 38, 38, 0.15);
+  --status-draft: #94a3b8;
+  --status-draft-bg: rgba(148, 163, 184, 0.15);
+}
+
+body {
+  margin: 0;
+  font-family: 'Noto Sans Tamil', 'Latha', 'Tamil MN', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-light);
+  color: var(--text-main);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input, select, textarea {
+  background: var(--bg-light);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-orange);
+  outline: none;
+}
+/* Fix webkit autofill for dark theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px var(--bg-light) inset !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}

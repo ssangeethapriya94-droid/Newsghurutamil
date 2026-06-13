@@ -1,0 +1,219 @@
+/* =========================================
+   HEADER
+========================================= */
+
+.header {
+  height: 100px;
+  padding: 0 20px;
+  background: var(--bg-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* =========================================
+   HEADER ACTIONS
+========================================= */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* =========================================
+   ICONS
+========================================= */
+
+.menu-icon,
+.search-icon,
+.theme-toggle {
+  width: 45px;
+  height: 45px;
+  font-size: 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-icon:hover,
+.search-icon:hover,
+.theme-toggle:hover {
+  background: rgba(244, 180, 0, 0.12);
+  color: var(--accent-orange);
+  transform: scale(1.05);
+}
+
+/* =========================================
+   LOGO SECTION
+========================================= */
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* =========================================
+   LOGO IMAGE
+========================================= */
+
+.logo-image {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* =========================================
+   LOGO TITLE
+========================================= */
+
+.logo-title {
+  font-size: 28px;
+  font-weight: 800;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  font-family: "Noto Sans Tamil", sans-serif;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .header {
+    height: 85px;
+    padding: 0 15px;
+  }
+
+  .menu-icon,
+  .search-icon,
+  .theme-toggle {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .logo-section {
+    gap: 0;
+  }
+
+  .logo-image {
+    height: 55px;
+  }
+
+  .logo-title {
+    font-size: 20px;
+  }
+}
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+
+  .header {
+    padding: 0 10px;
+  }
+
+  .logo-title {
+    font-size: 18px;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+}
+.lang-switch {
+  display: flex;
+  gap: 6px;
+  margin-right: 10px;
+}
+
+.lang-switch button {
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  background: #eee;
+  font-weight: bold;
+}
+
+.lang-switch button.active-lang {
+  background: #ff4d4d;
+  color:white
+}
+
+/* =========================================
+   FULL WIDTH SEARCH FORM
+========================================= */
+
+.active-search-header {
+  padding: 0;
+}
+
+.full-width-search {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-header);
+  padding: 0 20px;
+  gap: 15px;
+}
+
+.full-width-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 18px;
+  color: var(--text-primary);
+  height: 100%;
+}
+
+.full-search-btn, .full-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+
+.full-search-btn:hover, .full-close-btn:hover {
+  color: var(--accent-orange);
+}
+
+@media (max-width: 768px) {
+  .full-width-search {
+    padding: 0 15px;
+    gap: 10px;
+  }
+  .full-width-search input {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .full-width-search {
+    padding: 0 10px;
+  }
+}

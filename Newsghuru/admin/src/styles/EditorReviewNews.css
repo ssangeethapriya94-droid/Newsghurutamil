@@ -1,0 +1,46 @@
+/* Editor Specific CSS Extensions */
+
+.checklist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-light);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.checklist-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-blue);
+  cursor: pointer;
+}
+
+.checklist-item span {
+  font-size: 15px;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.checklist-item:hover span {
+  color: var(--primary-blue);
+}
+
+.btn-danger:hover {
+  background: #dc2626 !important;
+}
+
+.reporter-name {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}

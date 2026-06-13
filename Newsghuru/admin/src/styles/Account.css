@@ -1,0 +1,166 @@
+/* =========================
+   ACCOUNT PAGE CONTAINER
+   ========================= */
+.account-page {
+  padding: 10px 5px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================
+   HEADER SECTION
+   ========================= */
+.account-header {
+  margin-bottom: 35px;
+}
+
+.account-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.account-subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+/* =========================
+   SECTIONS LAYOUT
+   ========================= */
+.account-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+/* =========================
+   CARD STYLING
+   ========================= */
+.account-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.account-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+.account-card h2 {
+  font-size: 20px;
+  color: var(--text-main);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.card-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+/* =========================
+   FORM ELEMENTS
+   ========================= */
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-grow: 1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #4b5563;
+  letter-spacing: 0.2px;
+}
+
+.form-group input {
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  transition: all 0.25s ease;
+}
+
+.form-group input:focus {
+  background: var(--card-bg);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+/* =========================
+   SAVE BUTTONS
+   ========================= */
+.save-btn {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  padding: 13px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: auto; /* Push to the bottom of the card */
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+}
+
+.save-btn:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.alt-btn {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.alt-btn:hover {
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.3);
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+   ========================= */
+@media (max-width: 640px) {
+  .account-card {
+    padding: 20px;
+  }
+  
+  .account-title {
+    font-size: 24px;
+  }
+}

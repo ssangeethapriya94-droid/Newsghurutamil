@@ -1,0 +1,58 @@
+/* =========================================
+   GOOGLE FONT
+========================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@300;400;500;600;700;800&display=swap");
+
+/* =========================================
+   ROOT VARIABLES
+========================================= */
+
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #121212;
+  --bg-card: rgba(18, 18, 18, 0.6);
+  --bg-header: rgba(10, 10, 10, 0.98);
+  --bg-nav: linear-gradient(90deg, #ea580c, #f59e0b, #ef4444);
+  --bg-sidebar: #121212;
+  --bg-hover: #1e1e1e;
+
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+
+  --border-color: rgba(255,255,255,0.08);
+
+  --accent-blue: #ea580c;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --brand-gradient: linear-gradient(90deg, #ea580c, #f59e0b, #ef4444);
+
+  --shadow-color: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* =========================================
+   LIGHT THEME
+========================================= */
+
+.light-theme {
+
+  --bg-primary: #f3f7fc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-header: rgba(255,255,255,0.96);
+  --bg-nav: linear-gradient(90deg, #ea580c, #f59e0b, #ef4444);
+  --bg-sidebar: #ffffff;
+  --bg-hover: #eef4ff;
+
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+
+  --border-color: rgba(0,0,0,0.08);
+
+  --accent-blue: #ea580c;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --brand-gradient: linear-gradient(90deg, #ea580c, #f59e0b, #ef4444);
+
+  --shadow-color: rgba(0,0,0,0.08);
+}

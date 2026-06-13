@@ -1,0 +1,165 @@
+/* =========================
+   PAGE WRAPPER
+   ========================= */
+.add-news-page {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================
+   FORM CONTAINER
+   ========================= */
+.add-news-container {
+  width: 100%;
+  max-width: 700px;
+  background: var(--card-bg);
+  border-radius: 18px;
+  padding: 35px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-color);
+  margin: 0 auto;
+}
+
+/* TITLE */
+.add-news-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: var(--text-main);
+  letter-spacing: 0.5px;
+}
+
+/* FORM */
+.add-news-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* INPUTS + TEXTAREA + SELECT */
+.add-news-form input[type="text"],
+.add-news-form textarea,
+.add-news-form select,
+.add-news-form input[type="date"] {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  transition: all 0.25s ease;
+}
+
+.add-news-form textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+/* FOCUS EFFECT */
+.add-news-form input[type="text"]:focus,
+.add-news-form textarea:focus,
+.add-news-form select:focus,
+.add-news-form input[type="date"]:focus {
+  background: var(--card-bg);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+/* =========================
+   IMAGE UPLOAD BOX
+   ========================= */
+.image-upload-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 2px dashed #cbd5e1;
+  padding: 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.image-upload-box:hover {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.02);
+}
+
+.image-upload-box input[type="file"] {
+  width: 100%;
+  font-size: 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+/* PREVIEW IMAGE */
+.preview-image {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-top: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* =========================
+   DATE PICKER
+   ========================= */
+.date-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.date-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #4b5563;
+  letter-spacing: 0.2px;
+}
+
+/* =========================
+   UPLOAD BUTTON
+   ========================= */
+.upload-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  margin-top: 10px;
+}
+
+.upload-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+}
+
+.upload-btn:active {
+  transform: scale(0.98);
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 600px) {
+  .add-news-container {
+    padding: 20px;
+  }
+
+  .add-news-title {
+    font-size: 22px;
+  }
+}

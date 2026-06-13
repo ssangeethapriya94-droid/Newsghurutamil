@@ -1,0 +1,181 @@
+/* =========================
+   SIDEBAR CONTAINER
+   ========================= */
+.sidebar {
+  width: 260px;
+  background: var(--sidebar-dark);
+  color: #ffffff;
+  height: 100vh;
+  padding: 20px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px rgba(15, 23, 42, 0.15);
+  z-index: 100;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+}
+.sidebar::-webkit-scrollbar {
+  display: none; /* Chrome */
+}
+
+/* =========================
+   TITLE / LOGO
+   ========================= */
+.sidebar-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 10px;
+}
+.sidebar-logo {
+  width: 32px;
+  height: 32px;
+  background: var(--card-bg);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e11d48;
+  font-size: 18px;
+}
+.sidebar-title-text {
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+.sidebar-subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* =========================
+   LINKS CONTAINER
+   ========================= */
+.sidebar-content {
+  flex: 1;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* =========================
+   SECTION HEADERS
+   ========================= */
+.sidebar-section {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 16px 0 8px 12px;
+}
+
+/* =========================
+   LINKS STYLING
+   ========================= */
+.sidebar-link {
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.link-icon {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+/* BADGES */
+.badge {
+  margin-left: auto;
+  background: var(--brand-gradient);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 12px;
+}
+.badge-red {
+  background: #ef4444;
+}
+.badge-orange {
+  background: #f59e0b;
+}
+
+/* HOVER EFFECT */
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+/* ACTIVE STATE */
+.sidebar-link.active {
+  background: linear-gradient(135deg, #ef4444, #f59e0b);
+  color: #ffffff;
+}
+.sidebar-link.active .link-icon {
+  opacity: 1;
+}
+
+/* =========================
+   LOGOUT BUTTON
+   ========================= */
+.logout-btn {
+  margin-top: 20px;
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  padding: 10px 12px;
+  width: 100%;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.logout-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+   ========================= */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+.logo-title {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}

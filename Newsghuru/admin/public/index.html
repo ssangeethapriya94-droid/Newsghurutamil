@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+
+    <!-- Responsive -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Theme -->
+    <meta name="theme-color" content="#14202b" />
+
+    <!-- SEO -->
+    <meta
+      name="description"
+      content="News Ghuru - Tamil News Website Clone inspired by Dinamalar"
+    />
+
+    <meta
+      name="keywords"
+      content="Tamil News, News Ghuru, Dinamalar Clone, React News Website, Tamil Breaking News"
+    />
+
+    <meta name="author" content="News Ghuru" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="News Ghuru" />
+    <meta
+      property="og:description"
+      content="Latest Tamil News Updates, Breaking News, Politics, Cinema, Sports and more."
+    />
+    <meta property="og:type" content="website" />
+
+    <!-- Apple -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+
+    <!-- Manifest -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Tamil Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+
+
+    <!-- Title -->
+    <title>News Ghuru | Tamil News Portal</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background-color: #14202b;
+        color: white;
+        font-family: "Noto Sans Tamil", sans-serif;
+        overflow-x: hidden;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      ul {
+        list-style: none;
+      }
+
+      img {
+        max-width: 100%;
+        display: block;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #1d2a36;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #4b5a69;
+        border-radius: 10px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #667788;
+      }
+
+      #root {
+        min-height: 100vh;
+      }
+
+      .loading-screen {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #14202b;
+        color: white;
+        font-size: 22px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <!-- React Root -->
+    <div id="root">
+      <div class="loading-screen">
+        Loading News Ghuru...
+      </div>
+    </div>
+  </body>
+</html>
