@@ -3,7 +3,7 @@ import "../styles/Header.css";
 import { FaBars, FaSun, FaMoon, FaSearch, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-const Header = ({ setSidebar, darkMode, setDarkMode, setAuthPopupVisible, onLoginSuccess }) => {
+const Header = ({ setSidebar, darkMode, setDarkMode, setAuthPopupVisible, onLoginSuccess, onLogout }) => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
@@ -22,7 +22,9 @@ const Header = ({ setSidebar, darkMode, setDarkMode, setAuthPopupVisible, onLogi
   const handleLogout = () => {
     localStorage.removeItem("readerToken");
     localStorage.removeItem("readerData");
-    onLoginSuccess(); // trigger re-render in App
+    if (onLogout) {
+      onLogout();
+    }
   };
 
   const handleSearch = (e) => {
