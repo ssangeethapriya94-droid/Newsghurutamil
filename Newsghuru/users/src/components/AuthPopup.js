@@ -97,7 +97,12 @@ const AuthPopup = ({ onClose, onLoginSuccess }) => {
       }
     } catch (err) {
       console.error("Auth error:", err);
-      setError(err.response?.data?.message || "An error occurred. Please try again.");
+      const errorMsg = err.response?.data?.message || "An error occurred. Please try again.";
+      if (activeTab === "login" && errorMsg === "Invalid credentials") {
+        setError("Invalid credentials. Account not found. Please register first.");
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       if (activeTab === "login" || error) {
         setLoading(false);
@@ -128,7 +133,21 @@ const AuthPopup = ({ onClose, onLoginSuccess }) => {
         <div className="auth-form-container">
           <h2>{activeTab === "login" ? "Welcome Back!" : "Create an Account"}</h2>
           
-          {error && <div className="auth-error">{error}</div>}
+          {error && (
+            <div className="auth-error" style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "center" }}>
+              <span>{error}</span>
+              {error.includes("Please register first") && (
+                <button 
+                  type="button"
+                  className="auth-btn" 
+                  onClick={() => { setActiveTab("register"); setError(""); }}
+                  style={{ width: "fit-content", padding: "6px 12px", fontSize: "0.85rem" }}
+                >
+                  Go to Register
+                </button>
+              )}
+            </div>
+          )}
           {success && <div className="auth-success">{success}</div>}
           
           <form className="auth-form" onSubmit={handleSubmit}>

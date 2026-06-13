@@ -151,7 +151,7 @@ function App() {
     if (!hasClosed && !token) {
       const timer = setTimeout(() => {
         setAuthPopupVisible(true);
-      }, 60000); // 1 minute
+      }, 1000); // 1 second
       return () => clearTimeout(timer);
     }
   }, [isLoggedIn]);
