@@ -1,55 +1,48 @@
 const express = require("express");
 const router = express.Router();
-const fs = require("fs");
-const path = require("path");
 const multer = require("multer");
+const fs = require('fs');
+const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 
-// Multer Config
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
 });
 
 const upload = multer({ storage });
 
-// GET /api/media - Get all uploaded files in the uploads/ directory
+// GET /api/media - Get all uploaded files in the local folder
 router.get("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
-    const dirPath = path.join(__dirname, "../uploads");
-    
-    // Ensure uploads directory exists
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
+    const uploadDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      return res.json([]);
     }
-
-    fs.readdir(dirPath, (err, files) => {
-      if (err) {
-        console.error("Read dir error:", err);
-        return res.status(500).json({ message: "Unable to scan uploads directory" });
-      }
-
-      const fileList = files.map((file) => {
-        const filePath = path.join(dirPath, file);
-        const stats = fs.statSync(filePath);
-        
-        return {
-          filename: file,
-          url: `${req.protocol}://${req.get("host")}/uploads/${file}`,
-          size: stats.size,
-          createdAt: stats.mtime
-        };
-      });
-
-      // Sort by creation date descending
-      fileList.sort((a, b) => b.createdAt - a.createdAt);
-
-      res.json(fileList);
+    
+    const files = fs.readdirSync(uploadDir);
+    const fileList = files.map(file => {
+      const stats = fs.statSync(path.join(uploadDir, file));
+      return {
+        filename: file,
+        url: `/uploads/${file}`,
+        size: stats.size,
+        createdAt: stats.birthtimeMs
+      };
     });
+
+    // Sort by creation date descending
+    fileList.sort((a, b) => b.createdAt - a.createdAt);
+
+    res.json(fileList);
   } catch (error) {
     console.error("Media fetch error:", error);
     res.status(500).json({ message: "Server error listing media" });
@@ -63,11 +56,10 @@ router.post("/upload", verifyToken, authorizeRoles("admin"), upload.single("imag
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
     res.status(201).json({
       message: "File uploaded successfully",
       filename: req.file.filename,
-      url: fileUrl,
+      url: `/uploads/${req.file.filename}`,
     });
   } catch (error) {
     console.error("Upload error:", error);
@@ -75,45 +67,41 @@ router.post("/upload", verifyToken, authorizeRoles("admin"), upload.single("imag
   }
 });
 
-// DELETE /api/media/:filename - Delete a file from disk (Admin only)
+// DELETE ALL /api/media - Delete all files from local folder (Admin only)
+router.delete("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const uploadDir = path.join(__dirname, '../uploads');
+    if (fs.existsSync(uploadDir)) {
+      const files = fs.readdirSync(uploadDir);
+      for (const file of files) {
+        fs.unlinkSync(path.join(uploadDir, file));
+      }
+    }
+    res.json({ message: "All files deleted successfully" });
+  } catch (error) {
+    console.error("Delete all media error:", error);
+    res.status(500).json({ message: "Server error deleting all files" });
+  }
+});
+
+// DELETE /api/media/:filename - Delete a file from local folder (Admin only)
 router.delete("/:filename", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
-    const filename = req.params.filename;
-    // Prevent directory traversal attacks
-    if (filename.includes("/") || filename.includes("\\") || filename.includes("..")) {
+    const publicId = req.params.filename; 
+    if (!publicId) {
       return res.status(400).json({ message: "Invalid filename" });
     }
 
-    const filePath = path.join(__dirname, "../uploads", filename);
-
+    const filePath = path.join(__dirname, '../uploads', publicId);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
       res.json({ message: "File deleted successfully" });
     } else {
-      res.status(404).json({ message: "File not found" });
+      res.status(404).json({ message: "File not found or already deleted" });
     }
   } catch (error) {
     console.error("Delete media error:", error);
     res.status(500).json({ message: "Server error deleting file" });
-  }
-});
-
-// DELETE ALL /api/media - Delete all files from disk (Admin only)
-router.delete("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
-  try {
-    const dirPath = path.join(__dirname, "../uploads");
-    if (fs.existsSync(dirPath)) {
-      const files = fs.readdirSync(dirPath);
-      for (const file of files) {
-        fs.unlinkSync(path.join(dirPath, file));
-      }
-      res.json({ message: "All files deleted successfully" });
-    } else {
-      res.status(404).json({ message: "Uploads directory not found" });
-    }
-  } catch (error) {
-    console.error("Delete all media error:", error);
-    res.status(500).json({ message: "Server error deleting all files" });
   }
 });
 

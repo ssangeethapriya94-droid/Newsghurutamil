@@ -7,15 +7,20 @@ const User = require("../models/User");
 const Notification = require("../models/Notification");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 
-// STORAGE
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
+const fs = require('fs');
+const path = require('path');
 
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
   },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
 });
 
 const upload = multer({ storage });
@@ -61,8 +66,8 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
       status,
     } = req.body;
 
+    const baseUrl = req.protocol + '://' + req.get('host');
     let coverImagePath = "";
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
     if (req.files && req.files["coverImage"] && req.files["coverImage"][0]) {
       coverImagePath = baseUrl + "/uploads/" + req.files["coverImage"][0].filename;
     }
@@ -142,7 +147,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       date: newsDate,
       createdAt: newsDate,
       keywords: req.body.keywords,
-      image: `${req.protocol}://${req.get("host")}/uploads/` + req.file.filename,
+      image: req.file ? req.protocol + '://' + req.get('host') + "/uploads/" + req.file.filename : "",
     });
 
     const savedNews = await news.save();
@@ -336,7 +341,7 @@ router.put("/:id", verifyToken, uploadFields, async (req, res) => {
 
     // Handle files if uploaded
     if (req.files) {
-      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      const baseUrl = req.protocol + '://' + req.get('host');
       if (req.files["coverImage"] && req.files["coverImage"][0]) {
         const coverPath = baseUrl + "/uploads/" + req.files["coverImage"][0].filename;
         news.image = coverPath;
@@ -433,7 +438,7 @@ router.put("/editor/save/:id", verifyToken, authorizeRoles("editor"), uploadFiel
     if (seoKeywords !== undefined) news.seoKeywords = seoKeywords;
 
     if (req.files) {
-      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      const baseUrl = req.protocol + '://' + req.get('host');
       if (req.files["coverImage"] && req.files["coverImage"][0]) {
         const coverPath = baseUrl + "/uploads/" + req.files["coverImage"][0].filename;
         news.image = coverPath;
