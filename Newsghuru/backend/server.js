@@ -64,6 +64,9 @@ const seedCategories = async () => {
 
 const app = express();
 
+// Trust proxy so req.protocol accurately reports https behind a load balancer (like Render)
+app.set("trust proxy", 1);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
