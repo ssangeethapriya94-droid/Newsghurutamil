@@ -165,7 +165,7 @@ function MediaLibrary() {
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = "https://via.placeholder.com/150?text=No+Image";
+                    e.target.src = "https://placehold.co/150x150?text=No+Image";
                   }}
                 />
               </div>

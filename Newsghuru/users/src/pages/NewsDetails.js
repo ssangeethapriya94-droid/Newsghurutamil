@@ -117,7 +117,7 @@ const NewsDetails = () => {
           className="details-image"
           onError={(e) => {
             e.target.src =
-              "https://via.placeholder.com/1200x700?text=News+Image";
+              "https://placehold.co/1200x700?text=News+Image";
           }}
         />
       </div>
