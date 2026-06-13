@@ -127,15 +127,28 @@
 @media (max-width: 480px) {
 
   .header {
-    padding: 0 10px;
+    padding: 0 5px;
+    height: 65px;
   }
 
   .logo-title {
-    font-size: 18px;
+    font-size: 15px;
+  }
+
+  .logo-image {
+    height: 40px;
   }
 
   .header-actions {
-    gap: 8px;
+    gap: 4px;
+  }
+
+  .menu-icon,
+  .search-icon,
+  .theme-toggle {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
   }
 }
 .lang-switch {
@@ -244,5 +257,7 @@
 .logout-btn:hover { background: #475569; }
 @media (max-width: 600px) { 
   .profile-name { display: none; }
-  .user-avatar { width: 30px; height: 30px; font-size: 0.9rem; }
+  .user-avatar { width: 28px; height: 28px; font-size: 0.85rem; }
+  .auth-buttons { gap: 6px; margin-left: 5px; }
+  .auth-btn { padding: 4px 8px; font-size: 0.8rem; }
 }
