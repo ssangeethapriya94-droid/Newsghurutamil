@@ -68,23 +68,21 @@ const AuthPopup = ({ onClose, onLoginSuccess }) => {
         
         await API.post("/api/register", payload);
         
-        setSuccess("Registration successful! Logging you in...");
+        setSuccess("Registration Successful! Please login to continue.");
         
-        // Auto login after registration
-        setTimeout(async () => {
-          try {
-            const loginRes = await API.post("/api/login", {
-              email: formData.email,
-              password: formData.password
-            });
-            localStorage.setItem("readerToken", loginRes.data.token);
-            localStorage.setItem("readerData", JSON.stringify(loginRes.data.user));
-            onLoginSuccess();
-          } catch (loginErr) {
-            setError("Auto-login failed. Please login manually.");
-            setActiveTab("login");
-          }
-        }, 1500);
+        // Switch to login tab after registration
+        setTimeout(() => {
+          setActiveTab("login");
+          setSuccess("");
+          // Clear registration fields but keep email
+          setFormData(prev => ({
+            ...prev,
+            name: "",
+            phone: "",
+            password: "",
+            confirmPassword: ""
+          }));
+        }, 2000);
         
       } else {
         // Login

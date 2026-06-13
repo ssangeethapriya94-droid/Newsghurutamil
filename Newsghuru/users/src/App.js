@@ -54,6 +54,7 @@ function Layout({
   authPopupVisible,
   setAuthPopupVisible,
   onLoginSuccess,
+  onLogout,
   children,
 }) {
   const location = useLocation();
@@ -81,6 +82,7 @@ function Layout({
         setDarkMode={setDarkMode}
         setAuthPopupVisible={setAuthPopupVisible}
         onLoginSuccess={onLoginSuccess}
+        onLogout={onLogout}
       />
 
       <DateBar />
@@ -129,6 +131,12 @@ function App() {
     setIsLoggedIn(true);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("readerToken");
+    localStorage.removeItem("readerData");
+    setIsLoggedIn(false);
+  };
+
   useEffect(() => {
     document.body.className = darkMode
       ? "dark-theme"
@@ -165,6 +173,7 @@ function App() {
               authPopupVisible={authPopupVisible}
               setAuthPopupVisible={setAuthPopupVisible}
               onLoginSuccess={handleLoginSuccess}
+              onLogout={handleLogout}
             >
               <Home />
             </Layout>
@@ -174,7 +183,7 @@ function App() {
         <Route
           path="/latest-news"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <LatestNews />
             </Layout>
           }
@@ -185,7 +194,7 @@ function App() {
         <Route
           path="/tamilnadu"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <TamilNadu />
             </Layout>
           }
@@ -194,7 +203,7 @@ function App() {
         <Route
           path="/india"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <India />
             </Layout>
           }
@@ -203,7 +212,7 @@ function App() {
         <Route
           path="/world"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <World />
             </Layout>
           }
@@ -212,7 +221,7 @@ function App() {
         <Route
           path="/business"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Business />
             </Layout>
           }
@@ -221,7 +230,7 @@ function App() {
         <Route
           path="/sports"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Sports />
             </Layout>
           }
@@ -230,7 +239,7 @@ function App() {
         <Route
           path="/education"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Education />
             </Layout>
           }
@@ -239,7 +248,7 @@ function App() {
         <Route
           path="/politics"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Politics />
             </Layout>
           }
@@ -248,7 +257,7 @@ function App() {
         <Route
           path="/cinema"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Cinema />
             </Layout>
           }
@@ -257,7 +266,7 @@ function App() {
         <Route
           path="/news/:id"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <NewsDetails />
             </Layout>
           }
@@ -266,7 +275,7 @@ function App() {
         <Route
           path="/privacy"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Privacy />
             </Layout>
           }
@@ -275,7 +284,7 @@ function App() {
         <Route
           path="/terms"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Terms />
             </Layout>
           }
@@ -284,7 +293,7 @@ function App() {
         <Route
           path="/contact"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Contact />
             </Layout>
           }
