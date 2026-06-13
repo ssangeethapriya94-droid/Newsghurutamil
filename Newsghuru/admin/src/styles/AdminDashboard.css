@@ -79,9 +79,7 @@
 
 /* Main Grid */
 .dashboard-main-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
+  display: block;
 }
 
 @media (max-width: 1024px) {
@@ -126,9 +124,15 @@
 }
 
 .dashboard-side-panels {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-side-panels {
+    grid-template-columns: 1fr;
+  }
 }
 
 .snippet-list {
