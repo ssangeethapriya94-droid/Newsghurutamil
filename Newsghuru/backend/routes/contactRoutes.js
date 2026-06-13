@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const ContactQuery = require("../models/ContactQuery");
-const Admin = require("../models/Admin");
+const User = require("../models/User");
 const Notification = require("../models/Notification");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 
@@ -25,7 +25,7 @@ router.post("/", async (req, res) => {
     await newQuery.save();
 
     // Notify all admins
-    const admins = await Admin.find({});
+    const admins = await User.find({ role: "admin" });
     const notifications = admins.map((admin) => ({
       recipientId: admin._id,
       type: "contact",
