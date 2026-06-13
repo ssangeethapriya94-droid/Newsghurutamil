@@ -11,6 +11,7 @@ const authRoutes = require("./routes/authRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const mediaRoutes = require("./routes/mediaRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 const Category = require("./models/Category");
 
 dotenv.config();
@@ -77,6 +78,7 @@ app.use("/api/information", infoRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/media", mediaRoutes);
+app.use("/api/contact", contactRoutes);
 
 // Auth Routes
 app.use("/api", authRoutes);

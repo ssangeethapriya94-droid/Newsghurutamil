@@ -1,15 +1,35 @@
-import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import "../styles/Sidebar.css";
 import { 
   FaHome, FaClock, FaListAlt, FaCheckCircle, 
   FaFire, FaTags, FaImages, FaUsers, 
   FaBell, FaChartBar, FaCog, FaUserCircle, 
-  FaSignOutAlt, FaShieldAlt, FaPlusSquare
+  FaSignOutAlt, FaShieldAlt, FaPlusSquare, FaEnvelopeOpenText
 } from "react-icons/fa";
+import API from "../config/api";
 
 function Sidebar({ isOpen }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnreadCount = async () => {
+    if (localStorage.getItem("role") === "admin") {
+      try {
+        const res = await API.get("/api/contact/unread-count");
+        if (res.data.success) {
+          setUnreadCount(res.data.count);
+        }
+      } catch (err) {
+        console.error("Error fetching unread count", err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadCount();
+  }, [location.pathname]); // Refetch when navigating (e.g. after reviewing a query)
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -80,6 +100,19 @@ function Sidebar({ isOpen }) {
         <NavLink className="sidebar-link" to="/admin/users">
           <span className="link-icon"><FaUsers /></span>
           Users
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/contact-queries" style={{ position: "relative" }}>
+          <span className="link-icon"><FaEnvelopeOpenText /></span>
+          Contact Queries
+          {unreadCount > 0 && (
+            <span style={{
+              background: "#ef4444", color: "white", fontSize: "10px", fontWeight: "bold",
+              padding: "2px 6px", borderRadius: "10px", marginLeft: "auto"
+            }}>
+              {unreadCount}
+            </span>
+          )}
         </NavLink>
 
         <NavLink className="sidebar-link" to="/admin/analytics">

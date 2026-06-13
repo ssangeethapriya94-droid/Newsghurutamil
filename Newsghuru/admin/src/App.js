@@ -35,6 +35,7 @@ import AdminReviewNews from "./pages/AdminReviewNews";
 import Categories from "./pages/Categories";
 import UsersManagement from "./pages/UsersManagement";
 import MediaLibrary from "./pages/MediaLibrary";
+import ContactQueries from "./pages/ContactQueries";
 
 const isLoggedIn = () => {
   return localStorage.getItem("token") && localStorage.getItem("role");
@@ -223,6 +224,7 @@ function App() {
         <Route path="/admin/categories" element={<ProtectedRoute requiredRole="admin"><Layout><Categories /></Layout></ProtectedRoute>} />
         <Route path="/admin/media" element={<ProtectedRoute requiredRole="admin"><Layout><MediaLibrary /></Layout></ProtectedRoute>} />
         <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><Layout><UsersManagement /></Layout></ProtectedRoute>} />
+        <Route path="/admin/contact-queries" element={<ProtectedRoute requiredRole="admin"><Layout><ContactQueries /></Layout></ProtectedRoute>} />
         <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
 
         {/* REPORTER ROUTES */}
