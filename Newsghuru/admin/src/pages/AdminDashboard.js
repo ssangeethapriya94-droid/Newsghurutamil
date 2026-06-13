@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { 
+   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area 
+} from "recharts";
+import { 
    FaNewspaper, FaClock, FaCheckCircle, FaUserTie, FaUserEdit, FaBolt 
 } from "react-icons/fa";
 import "../styles/AdminDashboard.css";
@@ -117,6 +120,34 @@ function AdminDashboard() {
       {/* Main Content Area */}
       <div className="dashboard-main-grid">
         
+        {/* Chart Section */}
+        <div className="dashboard-card chart-card">
+          <h3>News Statistics (This Week)</h3>
+          <div className="chart-container" style={{ width: '100%', height: 300, minHeight: 300 }}>
+            {isChartReady && (
+              <ResponsiveContainer width="99%" height="100%" initialDimension={{ width: 1, height: 1 }}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorSub" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorPub" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="submissions" stroke="#3b82f6" fillOpacity={1} fill="url(#colorSub)" name="Submissions" />
+                  <Area type="monotone" dataKey="published" stroke="#10b981" fillOpacity={1} fill="url(#colorPub)" name="Published" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
 
         {/* Side Panels */}
         <div className="dashboard-side-panels">

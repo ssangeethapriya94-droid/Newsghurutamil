@@ -79,7 +79,9 @@
 
 /* Main Grid */
 .dashboard-main-grid {
-  display: block;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
 }
 
 @media (max-width: 1024px) {
@@ -124,15 +126,9 @@
 }
 
 .dashboard-side-panels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
-}
-
-@media (max-width: 1024px) {
-  .dashboard-side-panels {
-    grid-template-columns: 1fr;
-  }
 }
 
 .snippet-list {

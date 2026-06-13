@@ -115,10 +115,7 @@ function Sidebar({ isOpen }) {
           )}
         </NavLink>
 
-        <NavLink className="sidebar-link" to="/admin/analytics">
-          <span className="link-icon"><FaChartBar /></span>
-          Analytics
-        </NavLink>
+
 
         <div className="sidebar-section">ACCOUNT</div>
 
