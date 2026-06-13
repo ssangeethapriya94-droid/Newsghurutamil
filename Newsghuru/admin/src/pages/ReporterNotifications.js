@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaCheckCircle, FaExclamationCircle, FaTimesCircle, FaTrophy, FaUpload } from "react-icons/fa";
+import { FaCheckCircle, FaExclamationCircle, FaTimesCircle, FaTrophy, FaUpload, FaEnvelope } from "react-icons/fa";
 import API from "../config/api";
 import "../styles/ReporterNotifications.css";
 
@@ -50,6 +50,7 @@ function ReporterNotifications() {
       case "rejected": return "notify-rejected";
       case "approved": return "notify-approved";
       case "published": return "notify-published";
+      case "contact": return "notify-contact";
       default: return "";
     }
   };
@@ -61,6 +62,7 @@ function ReporterNotifications() {
       case "rejected": return <FaTimesCircle color="#ef4444" />;
       case "approved": return <FaCheckCircle color="#3b82f6" />;
       case "published": return <FaTrophy color="#10b981" />;
+      case "contact": return <FaEnvelope color="#8b5cf6" />;
       default: return <FaCheckCircle />;
     }
   };

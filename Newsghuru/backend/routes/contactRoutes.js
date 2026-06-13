@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const ContactQuery = require("../models/ContactQuery");
+const Admin = require("../models/Admin");
+const Notification = require("../models/Notification");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 
 // PUBLIC: Submit a new contact query/subscription
@@ -21,6 +23,17 @@ router.post("/", async (req, res) => {
     });
 
     await newQuery.save();
+
+    // Notify all admins
+    const admins = await Admin.find({});
+    const notifications = admins.map((admin) => ({
+      recipientId: admin._id,
+      type: "contact",
+      text: `New contact query received from ${name}`,
+    }));
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
 
     res.status(201).json({
       success: true,

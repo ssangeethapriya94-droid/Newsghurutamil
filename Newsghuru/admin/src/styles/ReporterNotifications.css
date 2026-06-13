@@ -134,3 +134,6 @@
     margin-right: 10px;
   }
 }
+
+.notify-contact { border-left-color: #8b5cf6; }
+.notify-contact .notification-icon { background: rgba(139, 92, 246, 0.1); }
