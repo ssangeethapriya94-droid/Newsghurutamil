@@ -96,7 +96,6 @@ const AuthPopup = ({ onClose, onLoginSuccess }) => {
         onLoginSuccess();
       }
     } catch (err) {
-      console.error("Auth error:", err);
       const errorMsg = err.response?.data?.message || "An error occurred. Please try again.";
       if (activeTab === "login" && errorMsg === "Invalid credentials") {
         setError("Invalid credentials. Account not found. Please register first.");
