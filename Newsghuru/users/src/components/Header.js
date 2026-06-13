@@ -19,6 +19,9 @@ const Header = ({ setSidebar, darkMode, setDarkMode, setAuthPopupVisible, onLogi
     console.error("Error parsing readerData", e);
   }
 
+  const getInitial = (name) => {
+    return name ? name.charAt(0).toUpperCase() : "U";
+  };
   const handleLogout = () => {
     const confirmLogout = window.confirm("Are you sure you want to logout?");
     if (!confirmLogout) return;
@@ -122,7 +125,9 @@ const Header = ({ setSidebar, darkMode, setDarkMode, setAuthPopupVisible, onLogi
 
         {token ? (
           <div className="auth-buttons">
-            <span className="profile-name">👤 {readerData?.name || "User"}</span>
+            <div className="user-avatar" title={readerData?.name || "User"}>
+              {getInitial(readerData?.name)}
+            </div>
             <button className="auth-btn logout-btn" onClick={handleLogout}>Logout</button>
           </div>
         ) : (

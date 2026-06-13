@@ -220,8 +220,29 @@
 .auth-buttons { display: flex; align-items: center; gap: 15px; margin-left: 15px; }
 .profile-name { font-weight: 600; color: var(--text-color, #333); font-size: 0.95rem; }
 .dark-theme .profile-name { color: #f1f1f1; }
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+.dark-theme .user-avatar {
+  background-color: #60a5fa;
+}
+
 .auth-btn { background: #d32f2f; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; }
 .auth-btn:hover { background: #b71c1c; }
 .logout-btn { background: #64748b; }
 .logout-btn:hover { background: #475569; }
-@media (max-width: 600px) { .profile-name { display: none; } }
+@media (max-width: 600px) { 
+  .profile-name { display: none; }
+  .user-avatar { width: 30px; height: 30px; font-size: 0.9rem; }
+}
