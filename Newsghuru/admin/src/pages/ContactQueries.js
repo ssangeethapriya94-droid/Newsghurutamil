@@ -82,7 +82,6 @@ function ContactQueries() {
                 <th>Date</th>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Category</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -93,7 +92,6 @@ function ContactQueries() {
                   <td>{formatDate(q.createdAt)}</td>
                   <td style={{ fontWeight: 600 }}>{q.name}</td>
                   <td>{q.email}</td>
-                  <td>{q.category || "General"}</td>
                   <td>
                     <span className={`status-badge status-${q.status.toLowerCase()}`}>
                       {q.status}
@@ -129,14 +127,6 @@ function ContactQueries() {
             <div className="query-detail-item">
               <label>Email</label>
               <p>{selectedQuery.email}</p>
-            </div>
-            <div className="query-detail-item">
-              <label>Phone</label>
-              <p>{selectedQuery.phone || "N/A"}</p>
-            </div>
-            <div className="query-detail-item">
-              <label>Category</label>
-              <p>{selectedQuery.category || "General"}</p>
             </div>
             <div className="query-detail-item">
               <label>Message</label>
