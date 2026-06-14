@@ -18,6 +18,17 @@ const AuthPopup = ({ onClose, onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [highlight, setHighlight] = useState(false);
+
+  const handleCloseClick = () => {
+    const token = localStorage.getItem("readerToken");
+    if (!token) {
+      setHighlight(true);
+      setTimeout(() => setHighlight(false), 1000); // Remove highlight after 1 second
+    } else {
+      if (onClose) onClose();
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -112,7 +123,28 @@ const AuthPopup = ({ onClose, onLoginSuccess }) => {
   return (
     <div className="auth-popup-overlay">
       <div className="auth-popup-container">
-        <button className="auth-close-btn" onClick={onClose}><FaTimes /></button>
+        <div className="auth-popup-header" style={{
+          background: highlight ? '#991b1b' : '#d32f2f', 
+          color: highlight ? '#ffeb3b' : 'white', 
+          padding: '12px 15px', 
+          textAlign: 'center', fontWeight: '600', fontSize: '1rem', 
+          position: 'relative',
+          transition: 'all 0.3s ease',
+          transform: highlight ? 'scale(1.02)' : 'scale(1)'
+        }}>
+          <span>Login Required to Continue Reading</span>
+          <button 
+            className="auth-close-btn" 
+            onClick={handleCloseClick}
+            style={{
+              position: 'absolute', top: '50%', right: '15px', transform: 'translateY(-50%)',
+              background: 'transparent', border: 'none', color: 'white', fontSize: '1.2rem',
+              cursor: 'pointer'
+            }}
+          >
+            <FaTimes />
+          </button>
+        </div>
         
         <div className="auth-tabs">
           <button 

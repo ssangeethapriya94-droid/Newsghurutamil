@@ -68,8 +68,11 @@ function Layout({
       {authPopupVisible && (
         <AuthPopup 
           onClose={() => {
-            setAuthPopupVisible(false);
-            sessionStorage.setItem("authClosed", "true");
+            const token = localStorage.getItem("readerToken");
+            if (token) {
+              setAuthPopupVisible(false);
+              sessionStorage.setItem("authClosed", "true");
+            }
           }} 
           onLoginSuccess={onLoginSuccess}
         />
@@ -143,16 +146,12 @@ function App() {
       : "light-theme";
   }, [darkMode]);
 
-  // Automatic auth popup after 1 minute of browsing
+  // Require login to see the app
   useEffect(() => {
-    const hasClosed = sessionStorage.getItem("authClosed");
     const token = localStorage.getItem("readerToken");
     
-    if (!hasClosed && !token) {
-      const timer = setTimeout(() => {
-        setAuthPopupVisible(true);
-      }, 1000); // 1 second
-      return () => clearTimeout(timer);
+    if (!token) {
+      setAuthPopupVisible(true);
     }
   }, [isLoggedIn]);
 

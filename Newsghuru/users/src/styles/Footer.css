@@ -111,7 +111,7 @@
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
   gap: 40px;
-  padding: 80px 40px 60px;
+  padding: 40px 40px 30px;
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
@@ -406,7 +406,7 @@
 /* Bottom Copyright Bar */
 .footer-bottom {
   border-top: 1px solid var(--footer-border);
-  padding: 25px 40px;
+  padding: 15px 40px;
   background-color: var(--footer-bottom-bg);
   position: relative;
   z-index: 2;
@@ -459,7 +459,7 @@
   .footer-top {
     grid-template-columns: 1fr 1fr 1fr 1.2fr;
     gap: 25px;
-    padding: 60px 30px 45px;
+    padding: 30px 30px 20px;
   }
 
   .footer-logo {
@@ -471,7 +471,7 @@
   .footer-top {
     grid-template-columns: 1fr 1fr;
     gap: 45px;
-    padding: 60px 40px;
+    padding: 30px 40px;
   }
 
   .footer-brand-col {
@@ -491,11 +491,11 @@
   .footer-top {
     grid-template-columns: 1fr;
     gap: 30px;
-    padding: 50px 24px 70px;
+    padding: 25px 24px 35px;
   }
 
   .footer-bottom {
-    padding: 20px 15px;
+    padding: 10px 15px;
   }
 
   .footer-bottom-links {

@@ -87,13 +87,7 @@ function AdminReviewNews() {
     }
   };
 
-  const allChecked = Object.values(checklist).every(val => val === true);
-
   const handlePublish = async () => {
-    if (!allChecked) {
-      alert("You must verify all items before publishing.");
-      return;
-    }
     try {
       await API.put(`/api/news/admin/publish/${id}`, {
         comment: publishComment
@@ -207,34 +201,7 @@ function AdminReviewNews() {
         <div className="modal-overlay">
           <div className="modal-content" style={{maxWidth: '500px', textAlign: 'left'}}>
             <h3 style={{color: '#3b82f6', textAlign: 'center'}}>Final Verification</h3>
-            <p style={{textAlign: 'center', marginBottom: '20px'}}>Please complete the final checklist before publishing live.</p>
-            
-            <div className="checklist-container">
-              <label className="checklist-item">
-                <input type="checkbox" checked={checklist.headline} onChange={(e) => setChecklist({...checklist, headline: e.target.checked})} />
-                <span>Headline Verified</span>
-              </label>
-              <label className="checklist-item">
-                <input type="checkbox" checked={checklist.content} onChange={(e) => setChecklist({...checklist, content: e.target.checked})} />
-                <span>Content Verified</span>
-              </label>
-              <label className="checklist-item">
-                <input type="checkbox" checked={checklist.images} onChange={(e) => setChecklist({...checklist, images: e.target.checked})} />
-                <span>Images Verified</span>
-              </label>
-              <label className="checklist-item">
-                <input type="checkbox" checked={checklist.grammar} onChange={(e) => setChecklist({...checklist, grammar: e.target.checked})} />
-                <span>Grammar Checked</span>
-              </label>
-              <label className="checklist-item">
-                <input type="checkbox" checked={checklist.factCheck} onChange={(e) => setChecklist({...checklist, factCheck: e.target.checked})} />
-                <span>Fact Checked</span>
-              </label>
-              <label className="checklist-item">
-                <input type="checkbox" checked={checklist.seo} onChange={(e) => setChecklist({...checklist, seo: e.target.checked})} />
-                <span>SEO Verified</span>
-              </label>
-            </div>
+            <p style={{textAlign: 'center', marginBottom: '20px'}}>Are you sure you want to publish this article live?</p>
 
             <div style={{marginTop: '20px'}}>
               <label style={{fontWeight: 600, fontSize: '14px', color: 'var(--text-main)'}}>Comment (Optional)</label>
@@ -249,7 +216,7 @@ function AdminReviewNews() {
 
             <div className="modal-actions" style={{justifyContent: 'center', marginTop: '30px'}}>
               <button className="btn-secondary" onClick={() => setShowVerifyModal(false)}>Cancel</button>
-              <button className="btn-primary" onClick={handlePublish} disabled={!allChecked} style={{background: allChecked ? '#3b82f6' : '#94a3b8', cursor: allChecked ? 'pointer' : 'not-allowed'}}>
+              <button className="btn-primary" onClick={handlePublish} style={{background: '#3b82f6', cursor: 'pointer'}}>
                 Publish Article
               </button>
             </div>
