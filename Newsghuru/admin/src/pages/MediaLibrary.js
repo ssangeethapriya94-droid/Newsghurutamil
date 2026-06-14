@@ -160,7 +160,7 @@ function MediaLibrary() {
               {/* IMAGE THUMBNAIL */}
               <div style={{ width: "100%", height: "150px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 <img
-                  src={file.url}
+                  src={`${API.defaults.baseURL}${file.url}`}
                   alt={file.filename}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   onError={(e) => {
@@ -181,7 +181,7 @@ function MediaLibrary() {
                 </div>
                 <div style={{ display: "flex", gap: "8px", marginTop: "auto", paddingTop: "8px", borderTop: "1px solid var(--border-color)" }}>
                   <button
-                    onClick={() => copyToClipboard(file.url)}
+                    onClick={() => copyToClipboard(`${API.defaults.baseURL}${file.url}`)}
                     style={{ flex: 1, padding: "6px", background: "#eff6ff", color: "var(--primary-blue)", border: "none", borderRadius: "4px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}
                   >
                     Copy Link
