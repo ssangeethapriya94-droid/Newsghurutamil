@@ -109,7 +109,7 @@ const Footer = ({ openSubscribePopup }) => {
 
         {/* COLUMN 4: CONTACT SECTION */}
         <div className="footer-contact">
-          <h3>தொடர்பு கொள்ள</h3>
+          <h3><Link to="/contact">தொடர்பு கொள்ள</Link></h3>
           <p>
             மின்னஞ்சல்:{" "}
             <a href="mailto:info@newsghuru.in" className="footer-email">

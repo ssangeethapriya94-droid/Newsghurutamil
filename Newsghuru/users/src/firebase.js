@@ -11,29 +11,33 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID || process.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase only if credentials are provided
+let app = null;
+let messaging = null;
 
-// Initialize Firebase Cloud Messaging and get a reference to the service
-const messaging = getMessaging(app);
+if (firebaseConfig.projectId && firebaseConfig.apiKey) {
+  try {
+    app = initializeApp(firebaseConfig);
+    messaging = getMessaging(app);
+  } catch (err) {
+    console.error("Firebase initialization failed:", err);
+  }
+} else {
+  console.warn("⚠️ Firebase environment variables are missing. Push notifications are disabled.");
+}
 
 export const generateFCMToken = async () => {
+  if (!messaging) {
+    console.warn("Firebase messaging not initialized. Skipping token generation.");
+    return null;
+  }
   try {
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
       let swRegistration = null;
       try {
         if ('serviceWorker' in navigator) {
-          const queryParams = new URLSearchParams({
-            apiKey: firebaseConfig.apiKey || "",
-            authDomain: firebaseConfig.authDomain || "",
-            projectId: firebaseConfig.projectId || "",
-            storageBucket: firebaseConfig.storageBucket || "",
-            messagingSenderId: firebaseConfig.messagingSenderId || "",
-            appId: firebaseConfig.appId || ""
-          }).toString();
-          
-          swRegistration = await navigator.serviceWorker.register(`/firebase-messaging-sw.js?${queryParams}`);
+          swRegistration = await navigator.serviceWorker.register(`/firebase-messaging-sw.js`);
         }
       } catch (swError) {
         console.error("CRITICAL: Failed to load Service Worker. Your React server might be stopped, or an adblocker is active.", swError);
@@ -64,6 +68,7 @@ export const generateFCMToken = async () => {
 };
 
 export const onMessageListener = (callback) => {
+  if (!messaging) return () => {};
   return onMessage(messaging, (payload) => {
     console.log("Message received. ", payload);
     callback(payload);

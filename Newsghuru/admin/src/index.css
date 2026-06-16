@@ -4,11 +4,24 @@
   --sidebar-hover: #1e1e1e;
   --sidebar-text: #cbd5e1;
   --sidebar-active-text: #f59e0b;
+  
+  /* DEFAULT THEME (DARK MODE) */
   --bg-light: #0a0a0a;
-  --card-bg: rgba(18, 18, 18, 0.6);
+  --card-bg: rgba(18, 18, 18, 0.8);
   --text-main: #ffffff;
-  --text-muted: #a1a1aa;
+  --text-muted: #94a3b8;
   --border-color: rgba(255, 255, 255, 0.08);
+  --input-bg: #161616;
+  --input-border: rgba(255, 255, 255, 0.15);
+  --table-header-bg: #181818;
+  --table-row-hover: rgba(255, 255, 255, 0.02);
+  --action-tile-bg: #141414;
+  --badge-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-bg: #0a0a0a;
+  --sidebar-text: #cbd5e1;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+  --sidebar-link-bg: rgba(255, 255, 255, 0.02);
+  --sidebar-link-border: rgba(255, 255, 255, 0.05);
 
   /* Gradients & Accents */
   --brand-gradient: linear-gradient(90deg, #f59e0b, #ea580c, #f59e0b);
@@ -28,6 +41,28 @@
   --status-draft-bg: rgba(148, 163, 184, 0.15);
 }
 
+/* LIGHT THEME OVERRIDES */
+html[data-theme="light"] {
+  --bg-light: #f5f7fa;
+  --card-bg: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --table-header-bg: #f8fafc;
+  --table-row-hover: #f8fafc;
+  --action-tile-bg: #f8fafc;
+  --badge-bg: #f1f5f9;
+
+  /* Sidebar stays premium black in both modes */
+  --sidebar-bg: #0a0a0a;
+  --sidebar-text: #cbd5e1;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+  --sidebar-link-bg: rgba(255, 255, 255, 0.02);
+  --sidebar-link-border: rgba(255, 255, 255, 0.05);
+}
+
 body {
   margin: 0;
   font-family: 'Noto Sans Tamil', 'Latha', 'Tamil MN', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
@@ -37,6 +72,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-light);
   color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 code {
@@ -49,15 +85,23 @@ code {
 }
 
 input, select, textarea {
-  background: var(--bg-light);
+  background: var(--input-bg);
   color: var(--text-main);
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--input-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14.5px;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
 }
 input::placeholder, textarea::placeholder {
-  color: var(--text-muted);
+  color: #94a3b8;
 }
 input:focus, select:focus, textarea:focus {
   border-color: var(--accent-orange);
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.12);
+  background: var(--input-bg);
   outline: none;
 }
 /* Fix webkit autofill for dark theme */

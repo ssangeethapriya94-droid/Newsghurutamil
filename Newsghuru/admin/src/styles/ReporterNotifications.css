@@ -18,7 +18,7 @@
 
 .notifications-header h2 {
   margin: 0;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-main, #0f172a);
   font-size: 22px;
 }
 

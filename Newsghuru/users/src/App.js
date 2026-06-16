@@ -24,6 +24,7 @@ import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import InformationPopup from "./components/InformationPopup";
 import AuthPopup from "./components/AuthPopup";
+import NotificationBanner from "./components/NotificationBanner";
 
 /* =========================================
    USER PAGES
@@ -100,6 +101,9 @@ function Layout({
       </main>
 
       <Footer openSubscribePopup={openSubscribePopup} />
+
+      {/* Browser Push Notification Permission Banner */}
+      <NotificationBanner />
     </div>
   );
 }
@@ -203,27 +207,8 @@ function App() {
     const unsubscribe = onMessageListener((payload) => {
       console.log("Foreground notification received:", payload);
       
-      // 1. Native OS/Browser notification (using service worker ready helper to bypass foreground browser blocks)
-      if (Notification.permission === "granted" && payload.notification) {
-        navigator.serviceWorker.ready.then((registration) => {
-          registration.showNotification(payload.notification.title || "📰 NewsGhuru", {
-            body: payload.notification.body || "",
-            icon: "/favicontam.png",
-            image: payload.notification.image || payload.data?.image || "",
-            data: {
-              link: payload.data?.link || "/"
-            }
-          });
-        }).catch((err) => {
-          console.error("Service worker not ready for foreground notification:", err);
-          // Fallback
-          new Notification(payload.notification.title || "📰 NewsGhuru", {
-            body: payload.notification.body || "",
-            icon: "/favicontam.png",
-            image: payload.notification.image || payload.data?.image || "",
-          });
-        });
-      }
+      // 1. Native OS/Browser notification (Removed to prevent multiple notifications from open tabs)
+      // We rely solely on the Custom In-App Visual Toast when the app is in the foreground.
 
       // 2. Custom in-app visual toast
       if (payload.notification) {

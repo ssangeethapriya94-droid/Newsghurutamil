@@ -2,10 +2,9 @@ import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "../styles/Sidebar.css";
 import { 
-  FaHome, FaPlusSquare, FaFileAlt, FaUserEdit, 
-  FaUpload, FaTimesCircle, FaRegCheckCircle, 
-  FaBell, FaUserCircle, FaSignOutAlt, FaBolt 
-} from "react-icons/fa";
+  FiPlusSquare, FiFileText, FiEdit3, FiUploadCloud, 
+  FiXCircle, FiCheckCircle, FiBell, FiUser, FiLogOut 
+} from "react-icons/fi";
 
 function ReporterSidebar({ isOpen }) {
   const navigate = useNavigate();
@@ -32,53 +31,65 @@ function ReporterSidebar({ isOpen }) {
 
       <div className="sidebar-content">
         
-
-
         <div className="sidebar-section">NEWS</div>
+        
         <NavLink className="sidebar-link" to="/reporter/create-news">
-          <span className="link-icon"><FaPlusSquare /></span>
+          <span className="link-icon"><FiPlusSquare /></span>
           Create News
         </NavLink>
+        
         <NavLink className="sidebar-link" to="/reporter/drafts">
-          <span className="link-icon"><FaFileAlt /></span>
+          <span className="link-icon"><FiFileText /></span>
           My Drafts
         </NavLink>
+        
         <NavLink className="sidebar-link" to="/reporter/my-articles">
-          <span className="link-icon"><FaUserEdit /></span>
+          <span className="link-icon"><FiEdit3 /></span>
           My Articles
         </NavLink>
         
         <div className="sidebar-section">STATUS</div>
+        
         <NavLink className="sidebar-link" to="/reporter/submitted">
-          <span className="link-icon"><FaUpload /></span>
+          <span className="link-icon"><FiUploadCloud /></span>
           Submitted News
         </NavLink>
+        
         <NavLink className="sidebar-link" to="/reporter/rejected">
-          <span className="link-icon"><FaTimesCircle /></span>
+          <span className="link-icon"><FiXCircle /></span>
           Rejected News
         </NavLink>
+        
         <NavLink className="sidebar-link" to="/reporter/published">
-          <span className="link-icon"><FaRegCheckCircle /></span>
+          <span className="link-icon"><FiCheckCircle /></span>
           Published News
         </NavLink>
 
         <div className="sidebar-section">ACCOUNT</div>
+        
         <NavLink className="sidebar-link" to="/reporter/notifications">
-          <span className="link-icon"><FaBell /></span>
+          <span className="link-icon"><FiBell /></span>
           Notifications
         </NavLink>
+        
         <NavLink className="sidebar-link" to="/reporter/profile">
-          <span className="link-icon"><FaUserCircle /></span>
+          <span className="link-icon"><FiUser /></span>
           My Profile
         </NavLink>
 
         {isLoggedIn && (
           <button className="logout-btn" onClick={handleLogout}>
-            <span className="link-icon"><FaSignOutAlt /></span>
+            <span className="link-icon"><FiLogOut /></span>
             Logout
           </button>
         )}
 
+      </div>
+
+      {/* Small themed glowing globe visual at the bottom of the sidebar */}
+      <div className="sidebar-globe-container">
+        <div className="sidebar-glowing-globe"></div>
+        <div className="sidebar-globe-grid"></div>
       </div>
     </div>
   );

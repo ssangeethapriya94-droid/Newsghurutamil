@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import "../styles/Sidebar.css";
 import { 
-  FaHome, FaClock, FaListAlt, FaCheckCircle, 
-  FaFire, FaTags, FaImages, FaUsers, 
-  FaBell, FaChartBar, FaCog, FaUserCircle, 
-  FaSignOutAlt, FaShieldAlt, FaPlusSquare, FaEnvelopeOpenText
-} from "react-icons/fa";
+  FiGrid, FiFileText, FiClock, FiList, FiCheckCircle, 
+  FiZap, FiFolder, FiImage, FiUsers, FiMail, 
+  FiBell, FiSettings, FiUser, FiLogOut 
+} from "react-icons/fi";
 import API from "../config/api";
 
 function Sidebar({ isOpen }) {
@@ -52,93 +51,100 @@ function Sidebar({ isOpen }) {
       <div className="sidebar-content">
         
         <NavLink className="sidebar-link" to="/admin/dashboard">
-          <span className="link-icon"><FaHome /></span>
+          <span className="link-icon"><FiGrid /></span>
           Dashboard
         </NavLink>
 
         <div className="sidebar-section">NEWS MANAGEMENT</div>
         
         <NavLink className="sidebar-link" to="/admin/add-news">
-          <span className="link-icon"><FaPlusSquare /></span>
+          <span className="link-icon"><FiFileText /></span>
           Add News
         </NavLink>
 
         <NavLink className="sidebar-link" to="/admin/pending">
-          <span className="link-icon"><FaClock /></span>
+          <span className="link-icon"><FiClock /></span>
           Pending Approval
         </NavLink>
 
         <NavLink className="sidebar-link" to="/admin/all-news">
-          <span className="link-icon"><FaListAlt /></span>
+          <span className="link-icon"><FiList /></span>
           All News
         </NavLink>
 
         <NavLink className="sidebar-link" to="/admin/published">
-          <span className="link-icon"><FaCheckCircle /></span>
+          <span className="link-icon"><FiCheckCircle /></span>
           Published News
         </NavLink>
 
         <NavLink className="sidebar-link" to="/admin/breaking">
-          <span className="link-icon"><FaFire /></span>
+          <span className="link-icon"><FiZap /></span>
           Breaking News
         </NavLink>
 
         <div className="sidebar-section">CONTENT</div>
 
         <NavLink className="sidebar-link" to="/admin/categories">
-          <span className="link-icon"><FaTags /></span>
+          <span className="link-icon"><FiFolder /></span>
           Categories
         </NavLink>
 
         <NavLink className="sidebar-link" to="/admin/media">
-          <span className="link-icon"><FaImages /></span>
+          <span className="link-icon"><FiImage /></span>
           Media Library
         </NavLink>
 
         <div className="sidebar-section">SYSTEM</div>
 
         <NavLink className="sidebar-link" to="/admin/users">
-          <span className="link-icon"><FaUsers /></span>
+          <span className="link-icon"><FiUsers /></span>
           Users
         </NavLink>
 
+
+
         <NavLink className="sidebar-link" to="/admin/contact-queries" style={{ position: "relative" }}>
-          <span className="link-icon"><FaEnvelopeOpenText /></span>
+          <span className="link-icon"><FiMail /></span>
           Contact Queries
           {unreadCount > 0 && (
             <span style={{
               background: "#ef4444", color: "white", fontSize: "10px", fontWeight: "bold",
-              padding: "2px 6px", borderRadius: "10px", marginLeft: "auto"
+              padding: "2px 6px", borderRadius: "10px", marginLeft: "auto",
+              boxShadow: "0 0 8px rgba(239, 68, 68, 0.4)"
             }}>
               {unreadCount}
             </span>
           )}
         </NavLink>
 
-
-
         <div className="sidebar-section">ACCOUNT</div>
 
         <NavLink className="sidebar-link" to="/admin/notifications">
-          <span className="link-icon"><FaBell /></span>
+          <span className="link-icon"><FiBell /></span>
           Notifications
         </NavLink>
 
         <NavLink className="sidebar-link" to="/admin/settings">
-          <span className="link-icon"><FaCog /></span>
+          <span className="link-icon"><FiSettings /></span>
           Settings
         </NavLink>
 
         <NavLink className="sidebar-link" to="/admin/profile">
-          <span className="link-icon"><FaUserCircle /></span>
+          <span className="link-icon"><FiUser /></span>
           My Profile
         </NavLink>
 
         <button className="logout-btn" onClick={handleLogout}>
-          <span className="link-icon"><FaSignOutAlt /></span>
+          <span className="link-icon"><FiLogOut /></span>
           Logout
         </button>
 
+      </div>
+
+      {/* Small themed glowing globe visual at the bottom of the sidebar */}
+      <div className="sidebar-globe-container">
+        <div className="sidebar-glowing-globe"></div>
+        <div className="sidebar-globe-grid"></div>
       </div>
     </div>
   );

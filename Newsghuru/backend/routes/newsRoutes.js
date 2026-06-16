@@ -60,29 +60,49 @@ const sendFCMPushNotification = async (news) => {
     
     logFCM(`🎯 Validated FCM tokens to notify: ${JSON.stringify(tokens)}`);
     
-    const hasImage = typeof news.image === "string" && news.image.startsWith("http");
-    const imageUrl = hasImage ? encodeURI(news.image) : null;
+    // Validate image URL — must be an absolute https:// URL with a real hostname
+    // (localhost URLs and relative paths are rejected by FCM notification.imageUrl)
+    const isValidImageUrl = (url) => {
+      if (typeof url !== "string" || !url.trim()) return false;
+      try {
+        const parsed = new URL(url);
+        // Allow http/https and localhost for local testing
+        return parsed.protocol === "https:" || parsed.protocol === "http:";
+      } catch {
+        return false;
+      }
+    };
+    const imageUrl = isValidImageUrl(news.image) ? news.image : null;
 
     if (tokens.length > 0 && messaging) {
+      const newsLink = `${process.env.FRONTEND_URL || "http://localhost:3001"}/news/${news._id}`;
       const message = {
+        // Top-level notification: NO imageUrl — FCM rejects non-https external URLs
         notification: {
-          title: "📰 NewsGhuru",
-          body: `${news.title}\nTap to Read`,
-          ...(imageUrl ? { imageUrl } : {}),
+          title: "📰 NewsGhuru — புதிய செய்தி",
+          body: news.title || "புதிய செய்தி வெளியிடப்பட்டது. படிக்க தொடவும்.",
         },
         data: {
-          link: `${process.env.FRONTEND_URL || "http://localhost:3001"}/news/${news._id}`,
+          link: newsLink,
           newsId: news._id.toString(),
+          title: news.title || "",
           ...(imageUrl ? { image: imageUrl } : {}),
         },
         webpush: {
           notification: {
+            title: "📰 NewsGhuru — புதிய செய்தி",
+            body: news.title || "புதிய செய்தி வெளியிடப்பட்டது.",
+            icon: `${process.env.FRONTEND_URL || "http://localhost:3001"}/favicontam.png`,
+            badge: `${process.env.FRONTEND_URL || "http://localhost:3001"}/favicontam.png`,
+            requireInteraction: false,
             ...(imageUrl ? { image: imageUrl } : {}),
-            icon: "/favicontam.png",
           },
           fcmOptions: {
-            link: `${process.env.FRONTEND_URL || "http://localhost:3001"}/news/${news._id}`
-          }
+            link: newsLink,
+          },
+          headers: {
+            Urgency: "high",
+          },
         },
         tokens: tokens,
       };
@@ -613,8 +633,19 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
     const totalNews = await News.countDocuments();
     const pendingApproval = await News.countDocuments({ status: "pending_admin_verification" });
     const publishedNews = await News.countDocuments({ status: "published" });
+    const rejectedNews = await News.countDocuments({ status: "rejected" });
     const totalReporters = await User.countDocuments({ role: "reporter" });
     const totalEditors = await User.countDocuments({ role: "editor" });
+    const totalUsers = await User.countDocuments();
+    
+    // Category distribution stats
+    const categoriesData = await News.aggregate([
+      { $group: { _id: "$category", count: { $sum: 1 } } }
+    ]);
+    const categoryStats = categoriesData.map(c => ({
+      category: c._id ? (c._id.charAt(0).toUpperCase() + c._id.slice(1)) : "Others",
+      count: c.count
+    }));
     
     // Breaking News count: published news with category exactly "breaking"
     const breakingNewsCount = await News.countDocuments({ 
@@ -692,11 +723,14 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
       totalNews,
       pendingApproval,
       publishedNews,
+      rejectedNews,
       totalReporters,
       totalEditors,
+      totalUsers,
       breakingNewsCount,
       weeklyStats,
       recentActivities,
+      categoryStats,
       pendingArticles: pendingMapped
     });
   } catch (error) {

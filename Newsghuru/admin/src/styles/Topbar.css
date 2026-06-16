@@ -2,9 +2,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  background: var(--brand-gradient);
-  border-bottom: 1px solid var(--border-color);
+  padding: 18px 30px;
+  background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
+  box-shadow: 0 4px 20px rgba(234, 88, 12, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -23,92 +24,203 @@
   font-size: 20px;
   color: #ffffff;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .page-title {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
   color: #ffffff;
   margin: 0;
+  letter-spacing: 0.5px;
 }
 
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 28px;
 }
-
-
 
 .notifications {
   position: relative;
-  font-size: 20px;
+  font-size: 22px;
   color: #ffffff;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.notifications:hover {
+  transform: scale(1.1);
+  opacity: 0.9;
 }
 
 .notification-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: -4px;
+  right: -4px;
   background: #ef4444;
   color: white;
-  font-size: 10px;
-  font-weight: bold;
-  padding: 2px 5px;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
   border-radius: 10px;
+  border: 1.5px solid #ea580c;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.user-profile:hover {
+  transform: translateY(-1px);
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
-  background: var(--brand-gradient);
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.15);
   color: white;
+  border: 2px solid rgba(255, 255, 255, 0.45);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .user-info {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .user-name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 700;
   color: #ffffff;
+  letter-spacing: 0.2px;
 }
 
 .user-role {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
 }
 
-/* Role mode badge */
-.current-role-badge {
-  background: rgba(0, 0, 0, 0.2);
-  color: #ffffff;
-  border: 1px solid rgba(255,255,255,0.2);
-  
-  padding: 6px 14px;
+/* ===========================
+   PREMIUM THEME TOGGLE PILL
+   =========================== */
+.theme-toggle-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 72px;
+  height: 34px;
   border-radius: 100px;
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  padding: 3px 5px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 0 0 1.5px rgba(255, 255, 255, 0.22),
+    0 4px 14px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
+.theme-toggle-pill:hover {
+  box-shadow:
+    0 0 0 1.5px rgba(255, 255, 255, 0.4),
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
 
+.theme-toggle-pill:active {
+  transform: scale(0.96);
+}
+
+/* Light mode pill style */
+.theme-toggle-pill.light-active {
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 0 0 1.5px rgba(255, 255, 255, 0.5),
+    0 4px 14px rgba(245, 158, 11, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* Sliding knob */
+.toggle-knob {
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255,255,255,0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  z-index: 2;
+}
+
+.theme-toggle-pill.light-active .toggle-knob {
+  transform: translateX(36px);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  box-shadow:
+    0 2px 10px rgba(245, 158, 11, 0.55),
+    0 0 0 1px rgba(245, 158, 11, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Icons */
+.toggle-icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  z-index: 3;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+
+.toggle-moon {
+  left: 7px;
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 1;
+}
+
+.toggle-sun {
+  right: 7px;
+  color: rgba(255, 255, 255, 0.55);
+  opacity: 0.65;
+}
+
+/* When light mode active: sun brightens, moon dims */
+.theme-toggle-pill.light-active .toggle-moon {
+  opacity: 0.45;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.theme-toggle-pill.light-active .toggle-sun {
+  opacity: 1;
+  color: #fffbeb;
+}
 
 @media (max-width: 768px) {
   .menu-toggle {
@@ -120,8 +232,8 @@
   .topbar-right {
     gap: 16px;
   }
-  .current-role-badge {
-    display: none; /* Hide role badge on mobile to prevent overlapping */
+  .theme-toggle-pill {
+    display: none; /* Hide theme toggle on mobile to prevent overlapping */
   }
   .user-info {
     display: none; /* Hide text name/role on mobile, keeping only the avatar badge */

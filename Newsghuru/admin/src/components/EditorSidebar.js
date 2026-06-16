@@ -2,9 +2,9 @@ import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "../styles/Sidebar.css";
 import { 
-  FaHome, FaTasks, FaClipboardCheck, FaCheckCircle, 
-  FaTimesCircle, FaBell, FaUserCircle, FaSignOutAlt, FaPenNib
-} from "react-icons/fa";
+  FiClock, FiCheckSquare, FiCheckCircle, FiXCircle, 
+  FiBell, FiUser, FiLogOut 
+} from "react-icons/fi";
 
 function EditorSidebar({ isOpen }) {
   const navigate = useNavigate();
@@ -29,49 +29,53 @@ function EditorSidebar({ isOpen }) {
 
       <div className="sidebar-content">
         
-
-
         <div className="sidebar-section">REVIEW QUEUE</div>
         
         <NavLink className="sidebar-link" to="/editor/pending">
-          <span className="link-icon"><FaTasks /></span>
+          <span className="link-icon"><FiClock /></span>
           Pending Articles
         </NavLink>
 
         <NavLink className="sidebar-link" to="/editor/review">
-          <span className="link-icon"><FaClipboardCheck /></span>
+          <span className="link-icon"><FiCheckSquare /></span>
           Review Queue
         </NavLink>
 
         <div className="sidebar-section">STATUS</div>
 
         <NavLink className="sidebar-link" to="/editor/approved">
-          <span className="link-icon"><FaCheckCircle /></span>
+          <span className="link-icon"><FiCheckCircle /></span>
           Approved Articles
         </NavLink>
 
         <NavLink className="sidebar-link" to="/editor/rejected">
-          <span className="link-icon"><FaTimesCircle /></span>
+          <span className="link-icon"><FiXCircle /></span>
           Rejected Articles
         </NavLink>
 
         <div className="sidebar-section">ACCOUNT</div>
 
         <NavLink className="sidebar-link" to="/editor/notifications">
-          <span className="link-icon"><FaBell /></span>
+          <span className="link-icon"><FiBell /></span>
           Notifications
         </NavLink>
 
         <NavLink className="sidebar-link" to="/editor/profile">
-          <span className="link-icon"><FaUserCircle /></span>
+          <span className="link-icon"><FiUser /></span>
           My Profile
         </NavLink>
 
         <button className="logout-btn" onClick={handleLogout}>
-          <span className="link-icon"><FaSignOutAlt /></span>
+          <span className="link-icon"><FiLogOut /></span>
           Logout
         </button>
 
+      </div>
+
+      {/* Small themed glowing globe visual at the bottom of the sidebar */}
+      <div className="sidebar-globe-container">
+        <div className="sidebar-glowing-globe"></div>
+        <div className="sidebar-globe-grid"></div>
       </div>
     </div>
   );

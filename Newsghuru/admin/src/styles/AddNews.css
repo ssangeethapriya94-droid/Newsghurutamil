@@ -47,13 +47,14 @@
 .add-news-form input[type="date"] {
   width: 100%;
   padding: 13px 16px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--input-border);
   border-radius: 12px;
   font-size: 15px;
   outline: none;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--input-bg);
   color: var(--text-main);
-  transition: all 0.25s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
 }
 
 .add-news-form textarea {
@@ -66,9 +67,9 @@
 .add-news-form textarea:focus,
 .add-news-form select:focus,
 .add-news-form input[type="date"]:focus {
-  background: var(--card-bg);
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+  background: var(--input-bg);
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.12);
 }
 
 /* =========================
