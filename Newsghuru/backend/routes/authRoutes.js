@@ -184,6 +184,34 @@ router.put("/users/change-password", verifyToken, async (req, res) => {
   }
 });
 
+// POST /api/users/subscribe - Subscribe to notifications
+router.post("/users/subscribe", verifyToken, async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+    
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    user.isSubscribed = true;
+    // Set notificationEnabled to true if they actually provided an fcmToken
+    user.notificationEnabled = !!fcmToken; 
+    if (fcmToken) {
+      user.fcmToken = fcmToken;
+    }
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Subscription successful",
+    });
+  } catch (error) {
+    console.error("Subscribe error:", error);
+    res.status(500).json({ success: false, message: "Server error during subscription" });
+  }
+});
+
 // Admin User Management routes
 const { authorizeRoles } = require("../middleware/authMiddleware");
 

@@ -41,6 +41,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  isSubscribed: {
+    type: Boolean,
+    default: false,
+  },
+  notificationEnabled: {
+    type: Boolean,
+    default: false,
+  },
+  fcmToken: {
+    type: String,
+    default: "",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

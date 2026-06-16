@@ -6,6 +6,7 @@ const News = require("../models/News");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
+const messaging = require("../config/firebaseAdmin");
 
 const fs = require('fs');
 const path = require('path');
@@ -29,6 +30,79 @@ const uploadFields = upload.fields([
   { name: "coverImage", maxCount: 1 },
   { name: "galleryImages", maxCount: 10 }
 ]);
+
+// Helper to write FCM debug logs to a file
+const logFCM = (message) => {
+  const logMsg = `[${new Date().toLocaleString()}] ${message}\n`;
+  console.log(message);
+  try {
+    fs.appendFileSync(path.join(__dirname, "../fcm-debug.log"), logMsg);
+  } catch (err) {
+    console.error("Failed to write to fcm-debug.log:", err);
+  }
+};
+
+// Helper to send FCM notifications to all subscribed users
+const sendFCMPushNotification = async (news) => {
+  logFCM(`📣 sendFCMPushNotification helper triggered for news article: "${news.title}" (ID: ${news._id})`);
+  try {
+    const subscribedUsers = await User.find({
+      isSubscribed: true,
+      notificationEnabled: true,
+      fcmToken: { $nin: [null, ""] }
+    });
+    
+    logFCM(`🔍 Found ${subscribedUsers.length} users with notifications enabled in DB.`);
+    
+    const tokens = subscribedUsers
+      .map(u => u.fcmToken)
+      .filter(t => typeof t === "string" && t.trim() !== "");
+    
+    logFCM(`🎯 Validated FCM tokens to notify: ${JSON.stringify(tokens)}`);
+    
+    const hasImage = typeof news.image === "string" && news.image.startsWith("http");
+    const imageUrl = hasImage ? encodeURI(news.image) : null;
+
+    if (tokens.length > 0 && messaging) {
+      const message = {
+        notification: {
+          title: "📰 NewsGhuru",
+          body: `${news.title}\nTap to Read`,
+          ...(imageUrl ? { imageUrl } : {}),
+        },
+        data: {
+          link: `${process.env.FRONTEND_URL || "http://localhost:3001"}/news/${news._id}`,
+          newsId: news._id.toString(),
+          ...(imageUrl ? { image: imageUrl } : {}),
+        },
+        webpush: {
+          notification: {
+            ...(imageUrl ? { image: imageUrl } : {}),
+            icon: "/favicontam.png",
+          },
+          fcmOptions: {
+            link: `${process.env.FRONTEND_URL || "http://localhost:3001"}/news/${news._id}`
+          }
+        },
+        tokens: tokens,
+      };
+      
+      logFCM("🚀 Dispatching FCM multicast payload...");
+      const response = await messaging.sendEachForMulticast(message);
+      logFCM(`✅ FCM Delivery Result: ${response.successCount} messages sent successfully, ${response.failureCount} failed.`);
+      if (response.responses && response.responses.length > 0) {
+        logFCM(`Detailed Responses: ${JSON.stringify(response.responses)}`);
+      }
+      return response;
+    } else if (tokens.length > 0) {
+      logFCM("⚠️ FCM Delivery skipped: firebase-admin messaging is null or not initialized.");
+    } else {
+      logFCM("ℹ️ FCM Delivery skipped: no valid FCM tokens found in subscribers list.");
+    }
+  } catch (fcmErr) {
+    logFCM(`❌ Failed to send FCM notifications: ${fcmErr.stack || fcmErr.message || fcmErr}`);
+  }
+};
 
 // GET /api/news/reporter/my-articles - Fetch articles for the logged-in reporter
 router.get("/reporter/my-articles", verifyToken, async (req, res) => {
@@ -124,6 +198,9 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
       } catch (notifErr) {
         console.error("Failed to send submission notifications to editors:", notifErr);
       }
+    } else if (savedNews.status === "published") {
+      // Direct Admin Publish: Send push notifications immediately
+      await sendFCMPushNotification(savedNews);
     }
 
     res.status(201).json(savedNews);
@@ -713,6 +790,10 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
     } catch (notifErr) {
       console.error("Failed to create notifications for publishing:", notifErr);
     }
+
+    // --- FIREBASE FCM PUSH NOTIFICATION ---
+    await sendFCMPushNotification(saved);
+    // ----------------------------------------
 
     res.json(saved);
   } catch (error) {

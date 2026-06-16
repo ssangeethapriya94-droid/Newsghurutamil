@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import API from "../config/api";
 import "../styles/AuthPopup.css";
+import { generateFCMToken } from "../firebase";
 
-const AuthPopup = ({ onClose, onLoginSuccess }) => {
+const AuthPopup = ({ onClose, onLoginSuccess, isSubscribeFlow }) => {
   const [activeTab, setActiveTab] = useState("login"); // 'login' or 'register'
   
   // Form States
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: ""
   });
@@ -72,28 +72,60 @@ const AuthPopup = ({ onClose, onLoginSuccess }) => {
         const payload = {
           name: formData.name,
           email: formData.email,
-          phone: formData.phone,
           password: formData.password,
           role: "reader" // Hardcode role to reader for public signups
         };
         
         await API.post("/api/register", payload);
         
-        setSuccess("Registration Successful! Please login to continue.");
-        
-        // Switch to login tab after registration
-        setTimeout(() => {
-          setActiveTab("login");
-          setSuccess("");
-          // Clear registration fields but keep email
-          setFormData(prev => ({
-            ...prev,
-            name: "",
-            phone: "",
-            password: "",
-            confirmPassword: ""
-          }));
-        }, 2000);
+        if (isSubscribeFlow) {
+          // Auto-login to process subscription immediately
+          const loginRes = await API.post("/api/login", {
+            email: formData.email,
+            password: formData.password
+          });
+          const token = loginRes.data.token;
+          localStorage.setItem("readerToken", token);
+          localStorage.setItem("readerData", JSON.stringify(loginRes.data.user));
+
+          try {
+            const fcmToken = await generateFCMToken();
+            if (!fcmToken) {
+              setError("❌ Please allow notifications in your browser settings to subscribe.");
+              setLoading(false);
+              return;
+            }
+            const subPayload = { fcmToken };
+            await API.post("/api/users/subscribe", subPayload, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            setSuccess("✅ Registration & Subscription Successful");
+            setTimeout(() => {
+              onLoginSuccess();
+              if (onClose) onClose();
+            }, 2000);
+          } catch (subErr) {
+            console.error("Subscription after registration failed", subErr);
+            onLoginSuccess();
+            if (onClose) onClose();
+          }
+        } else {
+          setSuccess("Account created successfully! Please login to continue.");
+          
+          // Switch to login tab after registration
+          setTimeout(() => {
+            setActiveTab("login");
+            setSuccess("");
+            // Clear registration fields but keep email
+            setFormData(prev => ({
+              ...prev,
+              name: "",
+              password: "",
+              confirmPassword: ""
+            }));
+          }, 2000);
+        }
         
       } else {
         // Login
@@ -102,9 +134,37 @@ const AuthPopup = ({ onClose, onLoginSuccess }) => {
           password: formData.password
         });
         
-        localStorage.setItem("readerToken", loginRes.data.token);
+        const token = loginRes.data.token;
+        localStorage.setItem("readerToken", token);
         localStorage.setItem("readerData", JSON.stringify(loginRes.data.user));
-        onLoginSuccess();
+        
+        if (isSubscribeFlow) {
+          try {
+            const fcmToken = await generateFCMToken();
+            if (!fcmToken) {
+              setError("❌ Please allow notifications in your browser settings to subscribe.");
+              setLoading(false);
+              return;
+            }
+            const payload = { fcmToken };
+            await API.post("/api/users/subscribe", payload, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            setSuccess("✅ Subscription Successful");
+            setTimeout(() => {
+              onLoginSuccess();
+              if (onClose) onClose();
+            }, 2000);
+          } catch (subErr) {
+            console.error("Subscription after login failed", subErr);
+            onLoginSuccess();
+            if (onClose) onClose();
+          }
+        } else {
+          onLoginSuccess();
+          if (onClose) onClose();
+        }
       }
     } catch (err) {
       const errorMsg = err.response?.data?.message || "An error occurred. Please try again.";
@@ -132,7 +192,7 @@ const AuthPopup = ({ onClose, onLoginSuccess }) => {
           transition: 'all 0.3s ease',
           transform: highlight ? 'scale(1.02)' : 'scale(1)'
         }}>
-          <span>Login Required to Continue Reading</span>
+          <span>{isSubscribeFlow ? "Login to Subscribe" : "Login Required"}</span>
           <button 
             className="auth-close-btn" 
             onClick={handleCloseClick}
@@ -201,16 +261,6 @@ const AuthPopup = ({ onClose, onLoginSuccess }) => {
               onChange={handleInputChange}
               required
             />
-            
-            {activeTab === "register" && (
-              <input 
-                type="tel" 
-                name="phone" 
-                placeholder="Phone Number (Optional)" 
-                value={formData.phone}
-                onChange={handleInputChange}
-              />
-            )}
             
             <input 
               type="password" 

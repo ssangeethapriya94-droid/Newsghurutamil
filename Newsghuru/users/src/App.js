@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { onMessageListener, generateFCMToken } from "./firebase";
+import API from "./config/api";
 
 import {
   BrowserRouter as Router,
@@ -53,6 +55,9 @@ function Layout({
   setDarkMode,
   authPopupVisible,
   setAuthPopupVisible,
+  subscribeFlow,
+  openSubscribePopup,
+  openLoginPopup,
   onLoginSuccess,
   onLogout,
   children,
@@ -68,13 +73,10 @@ function Layout({
       {authPopupVisible && (
         <AuthPopup 
           onClose={() => {
-            const token = localStorage.getItem("readerToken");
-            if (token) {
-              setAuthPopupVisible(false);
-              sessionStorage.setItem("authClosed", "true");
-            }
+            setAuthPopupVisible(false);
           }} 
           onLoginSuccess={onLoginSuccess}
+          isSubscribeFlow={subscribeFlow}
         />
       )}
       <Sidebar sidebar={sidebar} setSidebar={setSidebar} />
@@ -84,6 +86,7 @@ function Layout({
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         setAuthPopupVisible={setAuthPopupVisible}
+        openLoginPopup={openLoginPopup}
         onLoginSuccess={onLoginSuccess}
         onLogout={onLogout}
       />
@@ -96,7 +99,7 @@ function Layout({
         {children}
       </main>
 
-      <Footer />
+      <Footer openSubscribePopup={openSubscribePopup} />
     </div>
   );
 }
@@ -125,12 +128,17 @@ function App() {
   const [sidebar, setSidebar] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [authPopupVisible, setAuthPopupVisible] = useState(false);
+  const [subscribeFlow, setSubscribeFlow] = useState(false);
   
   // Track if user is logged in to force header rerender
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("readerToken"));
 
   const handleLoginSuccess = () => {
-    setAuthPopupVisible(false);
+    // If it's subscribe flow, let AuthPopup handle the close after subscribing
+    // Otherwise close immediately
+    if (!subscribeFlow) {
+      setAuthPopupVisible(false);
+    }
     setIsLoggedIn(true);
   };
 
@@ -140,24 +148,124 @@ function App() {
     setIsLoggedIn(false);
   };
 
+  const openSubscribePopup = () => {
+    setSubscribeFlow(true);
+    setAuthPopupVisible(true);
+  };
+
+  // Open regular login popup
+  const openLoginPopup = () => {
+    setSubscribeFlow(false);
+    setAuthPopupVisible(true);
+  };
+
+  const [toast, setToast] = useState(null);
+  const [toastHiding, setToastHiding] = useState(false);
+  const toastTimeoutRef = React.useRef(null);
+
+  const hideToast = () => {
+    setToastHiding(true);
+    setTimeout(() => {
+      setToast(null);
+      setToastHiding(false);
+    }, 300);
+  };
+
   useEffect(() => {
     document.body.className = darkMode
       ? "dark-theme"
       : "light-theme";
   }, [darkMode]);
 
-  // Require login to see the app
   useEffect(() => {
-    const token = localStorage.getItem("readerToken");
-    
-    if (!token) {
-      setAuthPopupVisible(true);
-    }
+    // Automatically generate/refresh FCM token on load if logged in and permission is already granted
+    const refreshFCMToken = async () => {
+      const token = localStorage.getItem("readerToken");
+      if (token && Notification.permission === "granted") {
+        try {
+          const fcmToken = await generateFCMToken();
+          if (fcmToken) {
+            await API.post("/api/users/subscribe", { fcmToken }, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            console.log("FCM Token auto-refreshed successfully");
+          }
+        } catch (err) {
+          console.error("Failed to auto-refresh FCM token:", err);
+        }
+      }
+    };
+    refreshFCMToken();
   }, [isLoggedIn]);
 
+  useEffect(() => {
+    // Listen for foreground messages
+    const unsubscribe = onMessageListener((payload) => {
+      console.log("Foreground notification received:", payload);
+      
+      // 1. Native OS/Browser notification (using service worker ready helper to bypass foreground browser blocks)
+      if (Notification.permission === "granted" && payload.notification) {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification(payload.notification.title || "📰 NewsGhuru", {
+            body: payload.notification.body || "",
+            icon: "/favicontam.png",
+            image: payload.notification.image || payload.data?.image || "",
+            data: {
+              link: payload.data?.link || "/"
+            }
+          });
+        }).catch((err) => {
+          console.error("Service worker not ready for foreground notification:", err);
+          // Fallback
+          new Notification(payload.notification.title || "📰 NewsGhuru", {
+            body: payload.notification.body || "",
+            icon: "/favicontam.png",
+            image: payload.notification.image || payload.data?.image || "",
+          });
+        });
+      }
+
+      // 2. Custom in-app visual toast
+      if (payload.notification) {
+        setToast({
+          title: payload.notification.title || "📰 NewsGhuru",
+          body: payload.notification.body || "",
+          link: payload.data?.link || "/"
+        });
+        setToastHiding(false);
+
+        // Auto-dismiss after 8 seconds
+        if (toastTimeoutRef.current) {
+          clearTimeout(toastTimeoutRef.current);
+        }
+        toastTimeoutRef.current = setTimeout(() => {
+          hideToast();
+        }, 8000);
+      }
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    };
+  }, []);
+
   return (
-    <Router>
-      <ScrollToTop />
+    <>
+      {toast && (
+        <div className={`toast-container ${toastHiding ? "hiding" : ""}`}>
+          <div className="toast-card">
+            <div className="toast-header">
+              <span className="toast-title">{toast.title}</span>
+              <button className="toast-close" onClick={hideToast}>&times;</button>
+            </div>
+            <div className="toast-body">{toast.body}</div>
+            <a href={toast.link} className="toast-action" onClick={hideToast}>Read Now &rarr;</a>
+          </div>
+        </div>
+      )}
+      <Router>
+        <ScrollToTop />
       <Routes>
 
         {/* HOME */}
@@ -171,6 +279,9 @@ function App() {
               setDarkMode={setDarkMode}
               authPopupVisible={authPopupVisible}
               setAuthPopupVisible={setAuthPopupVisible}
+              subscribeFlow={subscribeFlow}
+              openSubscribePopup={openSubscribePopup}
+              openLoginPopup={openLoginPopup}
               onLoginSuccess={handleLoginSuccess}
               onLogout={handleLogout}
             >
@@ -182,7 +293,7 @@ function App() {
         <Route
           path="/latest-news"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <LatestNews />
             </Layout>
           }
@@ -193,7 +304,7 @@ function App() {
         <Route
           path="/tamilnadu"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <TamilNadu />
             </Layout>
           }
@@ -202,7 +313,7 @@ function App() {
         <Route
           path="/india"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <India />
             </Layout>
           }
@@ -211,7 +322,7 @@ function App() {
         <Route
           path="/world"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <World />
             </Layout>
           }
@@ -220,7 +331,7 @@ function App() {
         <Route
           path="/business"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Business />
             </Layout>
           }
@@ -229,7 +340,7 @@ function App() {
         <Route
           path="/sports"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Sports />
             </Layout>
           }
@@ -238,7 +349,7 @@ function App() {
         <Route
           path="/education"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Education />
             </Layout>
           }
@@ -247,7 +358,7 @@ function App() {
         <Route
           path="/politics"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Politics />
             </Layout>
           }
@@ -256,7 +367,7 @@ function App() {
         <Route
           path="/cinema"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Cinema />
             </Layout>
           }
@@ -265,7 +376,7 @@ function App() {
         <Route
           path="/news/:id"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <NewsDetails />
             </Layout>
           }
@@ -274,7 +385,7 @@ function App() {
         <Route
           path="/privacy"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Privacy />
             </Layout>
           }
@@ -283,7 +394,7 @@ function App() {
         <Route
           path="/terms"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Terms />
             </Layout>
           }
@@ -292,7 +403,7 @@ function App() {
         <Route
           path="/contact"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
               <Contact />
             </Layout>
           }
@@ -303,6 +414,7 @@ function App() {
 
       </Routes>
     </Router>
+    </>
   );
 }
 
