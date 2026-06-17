@@ -108,40 +108,36 @@ function Categories() {
     <div className="reporter-my-articles">
       <div className="header-actions">
         <h2>🏷️ Categories CRUD</h2>
-        <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+        <div className="header-subtitle">
           Manage news taxonomy and slugs.
         </div>
       </div>
 
       {/* CREATE FORM */}
-      <form onSubmit={handleCreate} style={{ display: "flex", gap: "15px", marginBottom: "30px", background: "var(--bg-light)", padding: "20px", borderRadius: "8px", border: "1px solid var(--border-color)", flexWrap: "wrap", alignItems: "flex-end" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px", flex: 1, minWidth: "200px" }}>
-          <label style={{ fontWeight: 600, fontSize: "13px" }}>Category Name</label>
+      <form onSubmit={handleCreate} className="categories-create-form">
+        <div className="form-group">
+          <label>Category Name</label>
           <input
             type="text"
             value={name}
             onChange={handleNameChange}
             placeholder="e.g. Sports"
-            style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid var(--border-color)", outline: "none" }}
           />
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px", flex: 1, minWidth: "200px" }}>
-          <label style={{ fontWeight: 600, fontSize: "13px" }}>Slug (Lowercase, e.g. sports)</label>
+        <div className="form-group">
+          <label>Slug (Lowercase, e.g. sports)</label>
           <input
             type="text"
             value={slug}
             onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
             placeholder="e.g. sports"
-            style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid var(--border-color)", outline: "none" }}
           />
         </div>
-        <button
-          type="submit"
-          className="btn-primary"
-          style={{ height: "38px", background: "var(--primary-blue)", color: "white", border: "none", padding: "0 20px", borderRadius: "6px", fontWeight: 600, cursor: "pointer" }}
-        >
-          Add Category
-        </button>
+        <div className="form-submit">
+          <button type="submit" className="btn-primary add-category-btn">
+            Add Category
+          </button>
+        </div>
       </form>
 
       {/* LIST TABLE */}

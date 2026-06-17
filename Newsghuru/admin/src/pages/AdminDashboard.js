@@ -11,6 +11,18 @@ import "../styles/AdminDashboard.css";
 import { useNavigate } from "react-router-dom";
 import API from "../config/api";
 
+// Suppress Recharts internal warning about initial dimensions
+const originalConsoleWarn = console.warn;
+console.warn = function (...args) {
+  if (
+    typeof args[0] === "string" &&
+    args[0].includes("The width(-1) and height(-1) of chart should be greater than 0")
+  ) {
+    return;
+  }
+  originalConsoleWarn.apply(console, args);
+};
+
 const fallbackChartData = [
   { name: "Mon", submissions: 0, published: 0 },
   { name: "Tue", submissions: 0, published: 0 },
@@ -239,7 +251,7 @@ function AdminDashboard() {
             <h3>Weekly Statistics (Submissions vs Publications)</h3>
             <div className="area-chart-container" style={{ width: "100%", height: 250 }}>
               {isChartReady && (
-                <ResponsiveContainer width="99%" height="100%">
+                <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
                   <AreaChart data={chartData} margin={{ top: 15, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="chartColorOrange" x1="0" y1="0" x2="0" y2="1">
@@ -268,7 +280,7 @@ function AdminDashboard() {
             <h3>Category Distribution</h3>
             <div style={{ display: "flex", alignItems: "center", gap: "30px", width: "100%", height: "180px" }}>
               <div style={{ width: "40%", height: "100%", position: "relative" }}>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <PieChart>
                     <Pie
                       data={finalCategoryStats}
@@ -429,7 +441,7 @@ function AdminDashboard() {
           <div className="dashboard-layout-card overview-chart-card">
             <h3>News Summary Overview</h3>
             <div className="pie-chart-wrapper" style={{ height: 180, display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <PieChart>
                   <Pie
                     data={finalOverviewData}

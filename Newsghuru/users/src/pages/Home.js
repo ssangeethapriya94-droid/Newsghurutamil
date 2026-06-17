@@ -291,7 +291,10 @@ const Home = () => {
               <div
                 key={n._id}
                 className="home-user-card small-vertical-card"
-                onClick={() => navigate(`/news/${n._id}`, { state: n })}
+                onClick={() => {
+                  const { icon, ...stateData } = n;
+                  navigate(`/news/${n._id}`, { state: stateData });
+                }}
               >
                 <div className="card-img-container small-vertical-img">
                   <img src={n.image || n.coverImage} alt={n.titleTa || n.title} />
