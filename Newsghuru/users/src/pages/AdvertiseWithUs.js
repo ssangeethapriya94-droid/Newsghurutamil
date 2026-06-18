@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import API from "../config/api";
 import { FiSend, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import useSEO from "../hooks/useSEO";
-import "../styles/InfoPages.css"; // Reuse existing contact page styles for seamless integration
+import "../styles/InfoPages.css";
 
 const AdvertiseWithUs = () => {
   useSEO({
@@ -24,6 +24,25 @@ const AdvertiseWithUs = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [descriptionContent, setDescriptionContent] = useState("");
+  const [descLoading, setDescLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAdPageContent = async () => {
+      try {
+        setDescLoading(true);
+        const res = await API.get("/api/pages/advertise");
+        if (res.data && res.data.success) {
+          setDescriptionContent(res.data.content || "");
+        }
+      } catch (err) {
+        console.error("Error fetching advertise page description:", err);
+      } finally {
+        setDescLoading(false);
+      }
+    };
+    fetchAdPageContent();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -76,6 +95,20 @@ const AdvertiseWithUs = () => {
           நியூஸ் குரு செய்தித் தளத்தில் உங்கள் வணிகத்தை விளம்பரம் செய்து, லட்சக்கணக்கான வாசகர்களை சென்றடையுங்கள்.
         </p>
       </div>
+
+      {/* DYNAMIC CMS CONTENT BLOCK */}
+      {!descLoading && descriptionContent && (
+        <div 
+          className="advertise-cms-content"
+          dangerouslySetInnerHTML={{ __html: descriptionContent }}
+          style={{ 
+            background: "var(--bg-light)", padding: "24px", borderRadius: "12px", 
+            border: "1px solid var(--border-color)", marginBottom: "30px", 
+            color: "var(--text-secondary)", lineHeight: "1.8", fontSize: "15px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.02)"
+          }}
+        />
+      )}
 
       <div className="contact-container" style={{ background: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         
@@ -239,7 +272,11 @@ const AdvertiseWithUs = () => {
               padding: "12px 24px",
               cursor: "pointer",
               fontWeight: 600,
-              fontSize: "16px"
+              fontSize: "16px",
+              border: "none",
+              background: "linear-gradient(135deg, #f97316, #ea580c)",
+              color: "white",
+              borderRadius: "6px"
             }}
           >
             <FiSend /> {loading ? "அனுப்பப்படுகிறது..." : "கோரிக்கையை சமர்ப்பிக்கவும்"}

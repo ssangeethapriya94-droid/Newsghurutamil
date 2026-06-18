@@ -17,6 +17,7 @@ import ReporterSidebar from "./components/ReporterSidebar";
 import Topbar from "./components/Topbar";
 import Information from "./pages/Information";
 import Account from "./pages/Account";
+import StaticPagesSettings from "./pages/StaticPagesSettings";
 
 // Placeholder Reporter Pages
 import ReporterCreateNews from "./pages/ReporterCreateNews";
@@ -223,6 +224,17 @@ function App() {
             <ProtectedRoute requiredRole="admin">
               <Layout>
                 <Account />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/settings/pages"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Layout>
+                <StaticPagesSettings />
               </Layout>
             </ProtectedRoute>
           }
