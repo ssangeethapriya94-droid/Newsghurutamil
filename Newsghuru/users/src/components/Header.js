@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   FaBars, FaSun, FaMoon, FaSearch, FaTimes, FaBell, 
   FaFacebookF, FaTwitter, FaYoutube, FaInstagram,
-  FaCalendarAlt, FaChevronDown, FaClock, FaSignOutAlt, FaUserCircle
+  FaCalendarAlt, FaChevronDown, FaClock, FaSignOutAlt, FaUserCircle,
+  FaHome, FaNewspaper, FaMapMarkerAlt, FaFlag, FaGlobe, FaBriefcase,
+  FaFutbol, FaGraduationCap, FaLandmark, FaFilm, FaOm
 } from "react-icons/fa";
 import { useNavigate, useSearchParams, NavLink } from "react-router-dom";
 import API from "../config/api";
@@ -202,16 +204,17 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
   };
 
   const categories = [
-    { name: "முகப்பு",          slug: "/",             icon: "🏠" },
-    { name: "தற்போதைய செய்தி", slug: "/latest-news",   icon: "⚡" },
-    { name: "தமிழகம்",         slug: "/tamil",         icon: "🗺" },
-    { name: "இந்தியா",          slug: "/india",         icon: "🇮🇳" },
-    { name: "உலகம்",            slug: "/world",         icon: "🌍" },
-    { name: "வணிகம்",           slug: "/business",      icon: "💼" },
-    { name: "விளையாட்டு",       slug: "/sports",        icon: "🏆" },
-    { name: "கல்வி",            slug: "/education",     icon: "📚" },
-    { name: "அரசியல்",          slug: "/politics",      icon: "🏛" },
-    { name: "சினிமா",           slug: "/cinema",        icon: "🎬" },
+    { name: "முகப்பு",          slug: "/",             icon: <FaHome /> },
+    { name: "தற்போதைய செய்தி", slug: "/latest-news",   icon: <FaNewspaper /> },
+    { name: "தமிழகம்",         slug: "/tamil",         icon: <FaMapMarkerAlt /> },
+    { name: "இந்தியா",          slug: "/india",         icon: <FaFlag /> },
+    { name: "உலகம்",            slug: "/world",         icon: <FaGlobe /> },
+    { name: "வணிகம்",           slug: "/business",      icon: <FaBriefcase /> },
+    { name: "விளையாட்டு",       slug: "/sports",        icon: <FaFutbol /> },
+    { name: "கல்வி",            slug: "/education",     icon: <FaGraduationCap /> },
+    { name: "அரசியல்",          slug: "/politics",      icon: <FaLandmark /> },
+    { name: "சினிமா",           slug: "/cinema",        icon: <FaFilm /> },
+    { name: "ஆன்மீகம்",         slug: "/category/spiritual", icon: <FaOm /> },
   ];
 
 
@@ -402,7 +405,7 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
               style={{ background: "var(--brand-gradient)", color: "#fff", border: "none", padding: "8px 18px", borderRadius: "var(--border-radius-sm)", fontWeight: "600", cursor: "pointer" }} 
               onClick={() => openLoginPopup && openLoginPopup()}
             >
-              உள்நுழைக
+              Login
             </button>
           )}
         </div>
@@ -428,7 +431,10 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
               }
               end={item.slug === "/"}
             >
-              {item.name}
+              <span style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}>
+                {item.icon}
+              </span>
+              <span>{item.name}</span>
             </NavLink>
 
             {/* MEGA DROP DOWN PANEL */}
