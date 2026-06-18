@@ -167,10 +167,7 @@ function Sidebar({ isOpen }) {
           Settings
         </NavLink>
 
-        <NavLink className="sidebar-link" to="/admin/settings/pages" style={{ paddingLeft: "35px", fontSize: "14px", opacity: 0.85 }}>
-          <span className="link-icon" style={{ marginRight: "8px" }}><FiFileText /></span>
-          Static Pages CMS
-        </NavLink>
+
 
         <NavLink className="sidebar-link" to="/admin/profile">
           <span className="link-icon"><FiUser /></span>
