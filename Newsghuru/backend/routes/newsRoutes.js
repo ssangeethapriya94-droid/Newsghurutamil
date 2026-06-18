@@ -7,6 +7,7 @@ const User = require("../models/User");
 const Notification = require("../models/Notification");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 const messaging = require("../config/firebaseAdmin");
+const { sendNewsPublishEmail, getTransporter } = require("../utils/emailService");
 
 const fs = require('fs');
 const path = require('path');
@@ -221,6 +222,20 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
     } else if (savedNews.status === "published") {
       // Direct Admin Publish: Send push notifications immediately
       await sendFCMPushNotification(savedNews);
+
+      // --- NEW EMAIL NOTIFICATION CODE (Runs safely in the background) ---
+      try {
+        const users = await User.find({ isSubscribed: true }).select("email");
+        const userEmails = users.map(user => user.email).filter(email => email);
+        if (userEmails.length > 0) {
+          sendNewsPublishEmail(userEmails, savedNews);
+        } else {
+          console.log("ℹ️ No subscribed users found to notify via email.");
+        }
+      } catch (mailErr) {
+        console.error("❌ Failed to trigger email notifications:", mailErr);
+      }
+      // --- END NEW EMAIL NOTIFICATION CODE ---
     }
 
     res.status(201).json(savedNews);
@@ -285,6 +300,65 @@ router.get("/category/:category", async (req, res) => {
     res.status(500).json({
       message: error.message,
     });
+  }
+});
+
+
+// GET /api/news/test-email - Test email sending functionality
+router.get("/test-email", async (req, res) => {
+  const targetEmail = req.query.email || process.env.SMTP_EMAIL;
+  const email = process.env.SMTP_EMAIL;
+  const password = process.env.SMTP_PASSWORD;
+
+  const diagnostics = {
+    env: {
+      smtpEmailLength: email ? email.length : 0,
+      smtpPasswordLength: password ? password.length : 0,
+      hasEmailPlaceholder: email ? email.includes("your_email_here") : false,
+      hasPasswordPlaceholder: password ? password.includes("your_16_character_app_password_here") : false,
+      emailHasSpaces: email ? /^\s|\s$/.test(email) : false,
+      passwordHasSpaces: password ? /^\s|\s$/.test(password) : false,
+    },
+    transporterVerified: false,
+    emailSent: false,
+    error: null,
+  };
+
+  try {
+    if (diagnostics.env.hasEmailPlaceholder || diagnostics.env.hasPasswordPlaceholder) {
+      throw new Error("SMTP credentials in .env are still set to placeholder values. Please update backend/.env with your actual Gmail address and App Password.");
+    }
+
+    const testTransporter = getTransporter();
+    
+    // Verify connection configuration
+    await testTransporter.verify();
+    diagnostics.transporterVerified = true;
+
+    // Send a test mail to the specified email (or the sender email)
+    if (targetEmail) {
+      const info = await testTransporter.sendMail({
+        from: `"NewsGhuru Test" <${email}>`,
+        to: targetEmail,
+        subject: "NewsGhuru SMTP Test Email",
+        text: "If you receive this, Nodemailer is configured successfully for NewsGhuru!",
+        html: "<p>If you receive this, Nodemailer is configured successfully for NewsGhuru!</p>",
+      });
+      diagnostics.emailSent = true;
+      diagnostics.info = info;
+    } else {
+      diagnostics.message = "Transporter verified, but email send was skipped because recipient is invalid.";
+    }
+
+    res.json({ success: true, diagnostics });
+  } catch (err) {
+    diagnostics.error = {
+      message: err.message,
+      code: err.code,
+      response: err.response,
+      responseCode: err.responseCode,
+    };
+    res.status(500).json({ success: false, diagnostics });
   }
 });
 
@@ -828,6 +902,26 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
     // --- FIREBASE FCM PUSH NOTIFICATION ---
     await sendFCMPushNotification(saved);
     // ----------------------------------------
+
+    // --- NEW EMAIL NOTIFICATION CODE (Runs safely in the background) ---
+    try {
+      // Fetch all users who should receive the email (isSubscribed: true)
+      const users = await User.find({ isSubscribed: true }).select("email");
+      const userEmails = users.map(user => user.email).filter(email => email);
+      
+      if (userEmails.length > 0) {
+        // Send email without "await" so it doesn't slow down the admin's response time
+        sendNewsPublishEmail(userEmails, saved);
+      } else {
+        console.log("ℹ️ No subscribed users found to notify via email.");
+      }
+    } catch (mailErr) {
+      console.error("❌ Failed to trigger email notifications:", mailErr);
+    }
+    // --- END NEW EMAIL NOTIFICATION CODE ---
+
+
+
 
     res.json(saved);
   } catch (error) {

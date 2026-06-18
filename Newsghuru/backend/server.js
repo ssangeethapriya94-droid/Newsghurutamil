@@ -1,6 +1,8 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const path = require("path");
 
 const connectDB = require("./db");
@@ -13,8 +15,6 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const mediaRoutes = require("./routes/mediaRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const Category = require("./models/Category");
-
-dotenv.config();
 
 // Connect MongoDB
 connectDB().then(() => {

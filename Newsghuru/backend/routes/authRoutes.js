@@ -2,6 +2,8 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { verifyToken } = require("../middleware/authMiddleware");
+const News = require("../models/News");
+const { sendNewsPublishEmail } = require("../utils/emailService");
 
 const router = express.Router();
 
@@ -40,7 +42,6 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET || "default_super_secret_key", {
       expiresIn: "7d", // Token expires in 7 days
     });
-
     // 5. Return token, role, and user info
     res.json({
       message: "Login successful",
