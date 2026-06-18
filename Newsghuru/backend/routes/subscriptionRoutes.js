@@ -1,0 +1,445 @@
+const express = require("express");
+const crypto = require("crypto");
+const Razorpay = require("razorpay");
+const SubscriptionPlan = require("../models/SubscriptionPlan");
+const User = require("../models/User");
+const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
+
+const router = express.Router();
+
+// GET /api/subscription/plans - Get all plans (public)
+router.get("/plans", async (req, res) => {
+  try {
+    let plans = await SubscriptionPlan.find().sort({ price: 1 });
+    if (plans.length === 0) {
+      const defaultPlans = [
+        {
+          name: "1 Month",
+          price: 129,
+          duration: "Month",
+          durationMonths: 1,
+          benefits: [
+            "பிரீமியம் கட்டுரைகள்",
+            "விளம்பரமற்ற வாசிப்பு"
+          ],
+          isRecommended: false
+        },
+        {
+          name: "6 Months",
+          price: 749,
+          duration: "6 Months",
+          durationMonths: 6,
+          benefits: [
+            "பிரீமியம் கட்டுரைகள்",
+            "விளம்பரமற்ற வாசிப்பு"
+          ],
+          isRecommended: false
+        },
+        {
+          name: "1 Year",
+          price: 999,
+          duration: "Year",
+          durationMonths: 12,
+          benefits: [
+            "பிரீமியம் கட்டுரைகள்",
+            "விளம்பரமற்ற வாசிப்பு"
+          ],
+          isRecommended: true
+        },
+        {
+          name: "LIFETIME",
+          price: 9999,
+          duration: "Lifetime",
+          durationMonths: 999,
+          benefits: [
+            "பிரீமியம் கட்டுரைகள்",
+            "விளம்பரமற்ற வாசிப்பு"
+          ],
+          isRecommended: false
+        }
+      ];
+      plans = await SubscriptionPlan.insertMany(defaultPlans);
+      console.log("✅ Auto-seeded subscription plans inside GET /plans route (no magazines/newspapers)");
+    }
+    
+    res.json({ success: true, plans });
+  } catch (error) {
+    console.error("Fetch plans error:", error);
+    res.status(500).json({ success: false, message: "Error fetching plans" });
+  }
+});
+
+// POST /api/subscription/plans - Create a new plan (Admin only)
+router.post("/plans", verifyToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const { name, price, duration, durationMonths, benefits, isRecommended } = req.body;
+    if (!name || !price || !duration) {
+      return res.status(400).json({ success: false, message: "Name, price, and duration are required" });
+    }
+
+    const planExists = await SubscriptionPlan.findOne({ name });
+    if (planExists) {
+      return res.status(400).json({ success: false, message: "Plan with this name already exists" });
+    }
+
+    const newPlan = new SubscriptionPlan({
+      name,
+      price,
+      duration,
+      durationMonths: durationMonths || 1,
+      benefits: benefits || [],
+      isRecommended: !!isRecommended
+    });
+
+    await newPlan.save();
+    res.status(201).json({ success: true, message: "Subscription plan created successfully", plan: newPlan });
+  } catch (error) {
+    console.error("Create plan error:", error);
+    res.status(500).json({ success: false, message: "Error creating plan" });
+  }
+});
+
+// PUT /api/subscription/plans/:id - Update a plan (Admin only)
+router.put("/plans/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const { name, price, duration, durationMonths, benefits, isRecommended } = req.body;
+    const plan = await SubscriptionPlan.findById(req.params.id);
+    if (!plan) {
+      return res.status(404).json({ success: false, message: "Subscription plan not found" });
+    }
+
+    if (name) plan.name = name;
+    if (price !== undefined) plan.price = price;
+    if (duration) plan.duration = duration;
+    if (durationMonths !== undefined) plan.durationMonths = durationMonths;
+    if (benefits) plan.benefits = benefits;
+    if (isRecommended !== undefined) plan.isRecommended = isRecommended;
+
+    await plan.save();
+    res.json({ success: true, message: "Subscription plan updated successfully", plan });
+  } catch (error) {
+    console.error("Update plan error:", error);
+    res.status(500).json({ success: false, message: "Error updating plan" });
+  }
+});
+
+// DELETE /api/subscription/plans/:id - Delete a plan (Admin only)
+router.delete("/plans/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const plan = await SubscriptionPlan.findById(req.params.id);
+    if (!plan) {
+      return res.status(404).json({ success: false, message: "Subscription plan not found" });
+    }
+
+    await SubscriptionPlan.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: "Subscription plan deleted successfully" });
+  } catch (error) {
+    console.error("Delete plan error:", error);
+    res.status(500).json({ success: false, message: "Error deleting plan" });
+  }
+});
+
+// POST /api/subscription/create-order - Create Razorpay order or Mock order
+router.post("/create-order", verifyToken, async (req, res) => {
+  try {
+    const { planId } = req.body;
+    if (!planId) {
+      return res.status(400).json({ success: false, message: "Plan ID is required" });
+    }
+
+    let plan = await SubscriptionPlan.findById(planId);
+    if (!plan) {
+      // Fallback check by static ID mapping to seeded plan names
+      const staticIdMap = {
+        "665f80e0c034b12345678901": "1 Month",
+        "665f80e0c034b12345678902": "6 Months",
+        "665f80e0c034b12345678903": "1 Year",
+        "665f80e0c034b12345678904": "LIFETIME"
+      };
+      const fallbackName = staticIdMap[planId];
+      if (fallbackName) {
+        plan = await SubscriptionPlan.findOne({ name: fallbackName });
+      }
+    }
+
+    if (!plan) {
+      return res.status(404).json({ success: false, message: "Subscription plan not found" });
+    }
+
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    // Check if Razorpay keys are configured. If not, use mock mode.
+    if (keyId && keySecret && keyId !== "your_key_id" && keySecret !== "your_key_secret") {
+      try {
+        const instance = new Razorpay({
+          key_id: keyId,
+          key_secret: keySecret
+        });
+
+        const options = {
+          amount: Math.round(plan.price * 100), // Razorpay accepts amount in paise (1 INR = 100 paise)
+          currency: "INR",
+          receipt: `rcpt_${req.user._id.toString().slice(-6)}_${Date.now()}`,
+          notes: {
+            planId: plan._id.toString(),
+            planName: plan.name,
+            userId: req.user._id.toString()
+          }
+        };
+
+        const order = await instance.orders.create(options);
+        return res.json({
+          success: true,
+          isMock: false,
+          orderId: order.id,
+          amount: order.amount,
+          currency: order.currency,
+          key: keyId
+        });
+      } catch (rzpErr) {
+        console.error("Razorpay instance order creation failed, falling back to mock mode:", rzpErr.message);
+        // Fallback to mock mode if actual creation fails (e.g. invalid keys)
+      }
+    }
+
+    // Mock order creation for sandbox testing
+    console.log("⚠️ Razorpay credentials missing or invalid. Initializing in Mock Sandbox mode.");
+    res.json({
+      success: true,
+      isMock: true,
+      orderId: `mock_order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      amount: Math.round(plan.price * 100),
+      currency: "INR",
+      key: "rzp_test_mockkey_newsghuru"
+    });
+
+  } catch (error) {
+    console.error("Create order error:", error);
+    res.status(500).json({ success: false, message: "Error creating payment order" });
+  }
+});
+
+// POST /api/subscription/verify-payment - Verify signature for real payments
+router.post("/verify-payment", verifyToken, async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId } = req.body;
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !planId) {
+      return res.status(400).json({ success: false, message: "All payment verification fields are required" });
+    }
+
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) {
+      return res.status(500).json({ success: false, message: "Razorpay secret key not configured on backend" });
+    }
+
+    // Verify signature
+    const hmac = crypto.createHmac("sha256", keySecret);
+    hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
+    const generated_signature = hmac.digest("hex");
+
+    if (generated_signature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Payment verification failed. Invalid signature." });
+    }
+
+    // Update user subscription state based on plan duration
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    let plan = await SubscriptionPlan.findById(planId);
+    if (!plan) {
+      const staticIdMap = {
+        "665f80e0c034b12345678901": "1 Month",
+        "665f80e0c034b12345678902": "6 Months",
+        "665f80e0c034b12345678903": "1 Year",
+        "665f80e0c034b12345678904": "LIFETIME"
+      };
+      const fallbackName = staticIdMap[planId];
+      if (fallbackName) {
+        plan = await SubscriptionPlan.findOne({ name: fallbackName });
+      }
+    }
+
+    if (!plan) {
+      return res.status(404).json({ success: false, message: "Subscription plan not found" });
+    }
+
+    const durationMonths = plan.durationMonths || 1;
+    const validUntil = new Date();
+    validUntil.setMonth(validUntil.getMonth() + durationMonths);
+
+    user.isPremium = true;
+    user.premiumPlan = plan._id;
+    user.premiumValidUntil = validUntil;
+    await user.save();
+
+    // Remove password and send
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    res.json({
+      success: true,
+      message: "Payment verified successfully. Welcome to Premium!",
+      user: userObj
+    });
+
+  } catch (error) {
+    console.error("Verify payment error:", error);
+    res.status(500).json({ success: false, message: "Error verifying payment" });
+  }
+});
+
+// POST /api/subscription/verify-mock-payment - Verify mock signature for testing
+router.post("/verify-mock-payment", verifyToken, async (req, res) => {
+  try {
+    const { planId, orderId } = req.body;
+    if (!planId || !orderId) {
+      return res.status(400).json({ success: false, message: "Plan ID and Order ID are required" });
+    }
+
+    // Update user subscription state in DB based on plan duration
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    let plan = await SubscriptionPlan.findById(planId);
+    if (!plan) {
+      const staticIdMap = {
+        "665f80e0c034b12345678901": "1 Month",
+        "665f80e0c034b12345678902": "6 Months",
+        "665f80e0c034b12345678903": "1 Year",
+        "665f80e0c034b12345678904": "LIFETIME"
+      };
+      const fallbackName = staticIdMap[planId];
+      if (fallbackName) {
+        plan = await SubscriptionPlan.findOne({ name: fallbackName });
+      }
+    }
+
+    if (!plan) {
+      return res.status(404).json({ success: false, message: "Subscription plan not found" });
+    }
+
+    const durationMonths = plan.durationMonths || 1;
+    const validUntil = new Date();
+    validUntil.setMonth(validUntil.getMonth() + durationMonths);
+
+    user.isPremium = true;
+    user.premiumPlan = plan._id;
+    user.premiumValidUntil = validUntil;
+    await user.save();
+
+    // Remove password and send
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    console.log(`✅ User ${user.email} upgraded to premium successfully via mock payment.`);
+    res.json({
+      success: true,
+      message: "Mock payment verified successfully. Welcome to Premium!",
+      user: userObj
+    });
+
+  } catch (error) {
+    console.error("Verify mock payment error:", error);
+    res.status(500).json({ success: false, message: "Error verifying mock payment" });
+  }
+});
+
+// GET /api/subscription/status - Get current user's subscription status
+router.get("/status", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password").populate("premiumPlan");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Auto-expire premium if needed
+    if (user.isPremium && user.premiumValidUntil && new Date() > user.premiumValidUntil) {
+      user.isPremium = false;
+      user.premiumValidUntil = null;
+      user.premiumPlan = null;
+      await user.save();
+    }
+
+    res.json({
+      success: true,
+      isPremium: user.isPremium,
+      premiumValidUntil: user.premiumValidUntil,
+      premiumPlan: user.premiumPlan
+    });
+  } catch (error) {
+    console.error("Subscription status error:", error);
+    res.status(500).json({ success: false, message: "Error fetching subscription status" });
+  }
+});
+
+// POST /api/subscription/webhook - Handle Razorpay webhook events (raw body needed)
+router.post("/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  try {
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      console.warn("⚠️ RAZORPAY_WEBHOOK_SECRET not configured. Skipping webhook verification.");
+      return res.status(200).json({ received: true });
+    }
+
+    const razorpaySignature = req.headers["x-razorpay-signature"];
+    if (!razorpaySignature) {
+      return res.status(400).json({ success: false, message: "Missing Razorpay signature header" });
+    }
+
+    // Verify webhook signature
+    const body = req.body.toString();
+    const expectedSignature = crypto
+      .createHmac("sha256", webhookSecret)
+      .update(body)
+      .digest("hex");
+
+    if (expectedSignature !== razorpaySignature) {
+      console.error("❌ Razorpay webhook signature mismatch");
+      return res.status(400).json({ success: false, message: "Invalid webhook signature" });
+    }
+
+    const event = JSON.parse(body);
+    console.log("📩 Razorpay webhook event received:", event.event);
+
+    // Handle payment.captured event (most reliable confirmation)
+    if (event.event === "payment.captured") {
+      const payment = event.payload.payment.entity;
+      const orderId = payment.order_id;
+      const notes = payment.notes || {};
+      const planId = notes.planId;
+      const userId = notes.userId;
+
+      if (planId && userId) {
+        const user = await User.findById(userId);
+        const plan = await SubscriptionPlan.findById(planId);
+
+        if (user && plan && !user.isPremium) {
+          const durationMonths = plan.durationMonths || 1;
+          const validUntil = new Date();
+          validUntil.setMonth(validUntil.getMonth() + durationMonths);
+
+          user.isPremium = true;
+          user.premiumPlan = plan._id;
+          user.premiumValidUntil = validUntil;
+          await user.save();
+
+          console.log(`✅ Webhook: User ${user.email} upgraded to premium via payment.captured event. Valid until: ${validUntil.toISOString()}`);
+        }
+      } else {
+        console.warn("⚠️ Webhook payment.captured: Missing planId or userId in payment notes. Order ID:", orderId);
+      }
+    }
+
+    res.status(200).json({ received: true });
+  } catch (error) {
+    console.error("Webhook handling error:", error);
+    res.status(500).json({ success: false, message: "Webhook processing error" });
+  }
+});
+
+module.exports = router;

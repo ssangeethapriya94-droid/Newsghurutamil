@@ -18,42 +18,11 @@ import {
   FaBriefcase,
   FaGraduationCap,
   FaLandmark,
-  FaFilm,
-  FaBell
+  FaFilm
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import API from "../config/api";
-import { generateFCMToken } from "../firebase";
 
-const Footer = ({ openSubscribePopup }) => {
-  const [subscribeMessage, setSubscribeMessage] = React.useState("");
-
-  const handleSubscribeClick = async () => {
-    const token = localStorage.getItem("readerToken");
-    if (token) {
-      try {
-        const fcmToken = await generateFCMToken();
-        if (!fcmToken) {
-          setSubscribeMessage("❌ Please allow notifications in your browser settings");
-          setTimeout(() => setSubscribeMessage(""), 5000);
-          return;
-        }
-        const payload = { fcmToken };
-        await API.post("/api/users/subscribe", payload, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        setSubscribeMessage("✅ Subscription Successful");
-        setTimeout(() => setSubscribeMessage(""), 3000);
-      } catch (error) {
-        console.error("Subscription failed:", error);
-        setSubscribeMessage("❌ Subscription failed");
-        setTimeout(() => setSubscribeMessage(""), 3000);
-      }
-    } else {
-      if (openSubscribePopup) openSubscribePopup();
-    }
-  };
+const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-top">
@@ -122,10 +91,6 @@ const Footer = ({ openSubscribePopup }) => {
           <p className="footer-company">
             நியூஸ் குரு என்பது குருதேவா என்டர்டெயின்மென்ட்ஸ் பிரைவேட் லிமிடெட் மூலம் நடத்தப்படும் ஒரு டிஜிட்டல் ஊடக பிராண்ட் ஆகும்.
           </p>
-          <button onClick={handleSubscribeClick} className="footer-btn" style={{ border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-            <FaBell /> இப்போது குழுசேரவும்
-          </button>
-          {subscribeMessage && <div style={{ color: '#4caf50', marginTop: '10px', fontSize: '0.9rem' }}>{subscribeMessage}</div>}
         </div>
       </div>
 

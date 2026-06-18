@@ -13,6 +13,10 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const mediaRoutes = require("./routes/mediaRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const Category = require("./models/Category");
+const adRoutes = require("./routes/adRoutes");
+const AdSettings = require("./models/AdSettings");
+const SubscriptionPlan = require("./models/SubscriptionPlan");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
 
 dotenv.config();
 
@@ -20,6 +24,8 @@ dotenv.config();
 connectDB().then(() => {
   seedAdmin();
   seedCategories();
+  seedAdSettings();
+  seedSubscriptionPlans();
 });
 
 const seedAdmin = async () => {
@@ -62,6 +68,81 @@ const seedCategories = async () => {
   }
 };
 
+const seedAdSettings = async () => {
+  try {
+    const settingsCount = await AdSettings.countDocuments();
+    if (settingsCount === 0) {
+      await AdSettings.create({
+        globalRotationInterval: 10,
+        popupEnabled: true,
+        popupDelay: 3,
+        popupAutoClose: 10
+      });
+      console.log("✅ Default Advertisement settings seeded in MongoDB");
+    }
+  } catch (error) {
+    console.error("❌ Seeding advertisement settings failed:", error.message);
+  }
+};
+
+const seedSubscriptionPlans = async () => {
+  try {
+    // Drop all subscription plans to force reseeding of the updated clean benefits (no magazines/newspapers)
+    await SubscriptionPlan.deleteMany({});
+    
+    const defaultPlans = [
+      {
+        name: "1 Month",
+        price: 129,
+        duration: "1 Month",
+        durationMonths: 1,
+        benefits: [
+          "பிரீமியம் கட்டுரைகள்",
+          "விளம்பரமற்ற வாசிப்பு"
+        ],
+        isRecommended: false
+      },
+      {
+        name: "6 Months",
+        price: 749,
+        duration: "6 Months",
+        durationMonths: 6,
+        benefits: [
+          "பிரீமியம் கட்டுரைகள்",
+          "விளம்பரமற்ற வாசிப்பு"
+        ],
+        isRecommended: false
+      },
+      {
+        name: "1 Year",
+        price: 999,
+        duration: "1 Year",
+        durationMonths: 12,
+        benefits: [
+          "பிரீமியம் கட்டுரைகள்",
+          "விளம்பரமற்ற வாசிப்பு"
+        ],
+        isRecommended: true
+      },
+      {
+        name: "LIFETIME",
+        price: 9999,
+        duration: "LIFETIME",
+        durationMonths: 999,
+        benefits: [
+          "பிரீமியம் கட்டுரைகள்",
+          "விளம்பரமற்ற வாசிப்பு"
+        ],
+        isRecommended: false
+      }
+    ];
+    await SubscriptionPlan.insertMany(defaultPlans);
+    console.log("✅ Default Subscription Plans seeded in MongoDB (no magazines/newspapers)");
+  } catch (error) {
+    console.error("❌ Seeding subscription plans failed:", error.message);
+  }
+};
+
 const app = express();
 
 // Trust proxy so req.protocol accurately reports https behind a load balancer (like Render)
@@ -82,6 +163,8 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/ads", adRoutes);
+app.use("/api/subscription", subscriptionRoutes);
 
 // Auth Routes
 app.use("/api", authRoutes);

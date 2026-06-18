@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import API from "../config/api";
 import "../styles/AuthPopup.css";
-import { generateFCMToken } from "../firebase";
 
 const AuthPopup = ({ onClose, onLoginSuccess, isSubscribeFlow }) => {
   const [activeTab, setActiveTab] = useState("login"); // 'login' or 'register'
@@ -18,16 +17,9 @@ const AuthPopup = ({ onClose, onLoginSuccess, isSubscribeFlow }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [highlight, setHighlight] = useState(false);
 
   const handleCloseClick = () => {
-    const token = localStorage.getItem("readerToken");
-    if (!token) {
-      setHighlight(true);
-      setTimeout(() => setHighlight(false), 1000); // Remove highlight after 1 second
-    } else {
-      if (onClose) onClose();
-    }
+    if (onClose) onClose();
   };
 
   const handleInputChange = (e) => {
@@ -88,28 +80,12 @@ const AuthPopup = ({ onClose, onLoginSuccess, isSubscribeFlow }) => {
           localStorage.setItem("readerToken", token);
           localStorage.setItem("readerData", JSON.stringify(loginRes.data.user));
 
-          try {
-            const fcmToken = await generateFCMToken();
-            if (!fcmToken) {
-              setError("❌ Please allow notifications in your browser settings to subscribe.");
-              setLoading(false);
-              return;
-            }
-            const subPayload = { fcmToken };
-            await API.post("/api/users/subscribe", subPayload, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            setSuccess("✅ Registration & Subscription Successful");
-            setTimeout(() => {
-              onLoginSuccess();
-              if (onClose) onClose();
-            }, 2000);
-          } catch (subErr) {
-            console.error("Subscription after registration failed", subErr);
+          setSuccess("✅ Registration Successful");
+          setTimeout(() => {
             onLoginSuccess();
             if (onClose) onClose();
-          }
+            window.dispatchEvent(new CustomEvent("reader-login-success"));
+          }, 500);
         } else {
           setSuccess("Account created successfully! Please login to continue.");
           
@@ -138,33 +114,12 @@ const AuthPopup = ({ onClose, onLoginSuccess, isSubscribeFlow }) => {
         localStorage.setItem("readerToken", token);
         localStorage.setItem("readerData", JSON.stringify(loginRes.data.user));
         
-        if (isSubscribeFlow) {
-          try {
-            const fcmToken = await generateFCMToken();
-            if (!fcmToken) {
-              setError("❌ Please allow notifications in your browser settings to subscribe.");
-              setLoading(false);
-              return;
-            }
-            const payload = { fcmToken };
-            await API.post("/api/users/subscribe", payload, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            setSuccess("✅ Subscription Successful");
-            setTimeout(() => {
-              onLoginSuccess();
-              if (onClose) onClose();
-            }, 2000);
-          } catch (subErr) {
-            console.error("Subscription after login failed", subErr);
-            onLoginSuccess();
-            if (onClose) onClose();
-          }
-        } else {
+        setSuccess("✅ Login Successful");
+        setTimeout(() => {
           onLoginSuccess();
           if (onClose) onClose();
-        }
+          window.dispatchEvent(new CustomEvent("reader-login-success"));
+        }, 500);
       }
     } catch (err) {
       const errorMsg = err.response?.data?.message || "An error occurred. Please try again.";
@@ -184,15 +139,15 @@ const AuthPopup = ({ onClose, onLoginSuccess, isSubscribeFlow }) => {
     <div className="auth-popup-overlay">
       <div className="auth-popup-container">
         <div className="auth-popup-header" style={{
-          background: highlight ? '#991b1b' : '#d32f2f', 
-          color: highlight ? '#ffeb3b' : 'white', 
+          background: '#d32f2f', 
+          color: 'white', 
           padding: '12px 15px', 
           textAlign: 'center', fontWeight: '600', fontSize: '1rem', 
           position: 'relative',
           transition: 'all 0.3s ease',
-          transform: highlight ? 'scale(1.02)' : 'scale(1)'
+          transform: 'scale(1)'
         }}>
-          <span>{isSubscribeFlow ? "Login to Subscribe" : "Login Required"}</span>
+          <span>{isSubscribeFlow ? "Login to Subscribe" : "Login"}</span>
           <button 
             className="auth-close-btn" 
             onClick={handleCloseClick}

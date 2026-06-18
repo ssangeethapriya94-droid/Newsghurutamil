@@ -45,6 +45,19 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
+  premiumValidUntil: {
+    type: Date,
+    default: null,
+  },
+  premiumPlan: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "SubscriptionPlan",
+    default: null,
+  },
   notificationEnabled: {
     type: Boolean,
     default: false,
