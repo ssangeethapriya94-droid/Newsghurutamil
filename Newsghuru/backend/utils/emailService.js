@@ -76,6 +76,7 @@ const sendNewsPublishEmail = async (userEmails, news) => {
 
   const mailOptions = {
     from: `"NewsGhuru" <${process.env.SMTP_EMAIL}>`,
+    to: process.env.SMTP_EMAIL,
     bcc: userEmails, // Use BCC to hide user emails from each other
     subject: `📰 NewsGhuru Breaking News: ${news.title}`,
     html: `

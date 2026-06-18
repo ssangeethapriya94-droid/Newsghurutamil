@@ -48,8 +48,6 @@ const sendFCMPushNotification = async (news) => {
   logFCM(`📣 sendFCMPushNotification helper triggered for news article: "${news.title}" (ID: ${news._id})`);
   try {
     const subscribedUsers = await User.find({
-      isSubscribed: true,
-      notificationEnabled: true,
       fcmToken: { $nin: [null, ""] }
     });
     
@@ -225,12 +223,12 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
 
       // --- NEW EMAIL NOTIFICATION CODE (Runs safely in the background) ---
       try {
-        const users = await User.find({ isSubscribed: true }).select("email");
+        const users = await User.find({ email: { $exists: true, $ne: "" } }).select("email");
         const userEmails = users.map(user => user.email).filter(email => email);
         if (userEmails.length > 0) {
           sendNewsPublishEmail(userEmails, savedNews);
         } else {
-          console.log("ℹ️ No subscribed users found to notify via email.");
+          console.log("ℹ️ No users with emails found to notify.");
         }
       } catch (mailErr) {
         console.error("❌ Failed to trigger email notifications:", mailErr);
@@ -905,15 +903,15 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
 
     // --- NEW EMAIL NOTIFICATION CODE (Runs safely in the background) ---
     try {
-      // Fetch all users who should receive the email (isSubscribed: true)
-      const users = await User.find({ isSubscribed: true }).select("email");
+      // Fetch all users who have an email
+      const users = await User.find({ email: { $exists: true, $ne: "" } }).select("email");
       const userEmails = users.map(user => user.email).filter(email => email);
       
       if (userEmails.length > 0) {
         // Send email without "await" so it doesn't slow down the admin's response time
         sendNewsPublishEmail(userEmails, saved);
       } else {
-        console.log("ℹ️ No subscribed users found to notify via email.");
+        console.log("ℹ️ No users with emails found to notify.");
       }
     } catch (mailErr) {
       console.error("❌ Failed to trigger email notifications:", mailErr);
