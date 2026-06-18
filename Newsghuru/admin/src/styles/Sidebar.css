@@ -288,3 +288,57 @@
     transform: translateX(0);
   }
 }
+
+/* =========================================
+   SIDEBAR SUB-MENU STYLING
+   ========================================= */
+.sidebar-link-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-sublinks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 20px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  border-left: 1.5px dashed rgba(234, 88, 12, 0.25);
+  margin-left: 28px;
+  animation: slideDownSubmenu 0.2s ease-out;
+}
+
+@keyframes slideDownSubmenu {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sidebar-sublink {
+  color: var(--sidebar-text, #cbd5e1);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 550;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-sublink:hover {
+  color: var(--accent-orange);
+  background: rgba(234, 88, 12, 0.05);
+  transform: translateX(4px);
+}
+
+.sidebar-sublink.active {
+  background: rgba(234, 88, 12, 0.15);
+  border-color: rgba(234, 88, 12, 0.3);
+  color: var(--accent-orange);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.08);
+}

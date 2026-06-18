@@ -5,7 +5,8 @@ import {
   FiGrid, FiFileText, FiClock, FiList, FiCheckCircle, 
   FiZap, FiFolder, FiImage, FiUsers, FiMail, 
   FiBell, FiSettings, FiUser, FiLogOut,
-  FiSliders, FiLayers, FiPlusCircle, FiInbox, FiBarChart2
+  FiSliders, FiLayers, FiPlusCircle, FiInbox, FiBarChart2,
+  FiChevronDown, FiChevronUp
 } from "react-icons/fi";
 import API from "../config/api";
 
@@ -13,6 +14,9 @@ function Sidebar({ isOpen }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [settingsExpanded, setSettingsExpanded] = useState(
+    location.pathname.startsWith("/admin/settings")
+  );
 
   const fetchUnreadCount = async () => {
     if (localStorage.getItem("role") === "admin") {
@@ -30,6 +34,12 @@ function Sidebar({ isOpen }) {
   useEffect(() => {
     fetchUnreadCount();
   }, [location.pathname]); // Refetch when navigating (e.g. after reviewing a query)
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/admin/settings")) {
+      setSettingsExpanded(true);
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -162,10 +172,46 @@ function Sidebar({ isOpen }) {
           Notifications
         </NavLink>
 
-        <NavLink className="sidebar-link" to="/admin/settings">
-          <span className="link-icon"><FiSettings /></span>
-          Settings
-        </NavLink>
+        <div className="sidebar-link-group">
+          <button 
+            type="button"
+            className={`sidebar-link ${location.pathname.startsWith("/admin/settings") ? "active" : ""}`} 
+            onClick={() => setSettingsExpanded(!settingsExpanded)}
+            style={{ 
+              width: "100%",
+              display: "flex", 
+              justifyContent: "space-between", 
+              alignItems: "center", 
+              cursor: "pointer",
+              textAlign: "left",
+              outline: "none"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span className="link-icon"><FiSettings /></span>
+              Settings
+            </div>
+            <span style={{ display: "flex", alignItems: "center", fontSize: "14px" }}>
+              {settingsExpanded ? <FiChevronUp /> : <FiChevronDown />}
+            </span>
+          </button>
+          {settingsExpanded && (
+            <div className="sidebar-sublinks">
+              <NavLink 
+                className="sidebar-sublink" 
+                to="/admin/settings/account"
+              >
+                <FiUser size={13} /> Account Settings
+              </NavLink>
+              <NavLink 
+                className="sidebar-sublink" 
+                to="/admin/settings/pages"
+              >
+                <FiFileText size={13} /> Website Pages
+              </NavLink>
+            </div>
+          )}
+        </div>
 
 
 

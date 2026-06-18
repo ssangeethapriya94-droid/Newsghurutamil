@@ -10,6 +10,7 @@ import { useNavigate, useSearchParams, NavLink } from "react-router-dom";
 import API from "../config/api";
 import SearchOverlay from "./SearchOverlay";
 import DateBar from "./DateBar";
+import AdZone from "./AdZone";
 import "../styles/Header.css";
 
 /* =========================================
@@ -314,6 +315,11 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
             className="brand-logo-img"
           />
           <h1 className="brand-name-serif">நியூஸ் குரு</h1>
+        </div>
+
+        {/* HEADER ADVERTISEMENT BANNER */}
+        <div className="header-ad-zone">
+          <AdZone position="HEADER_BANNER" />
         </div>
 
         <div className="main-bar-actions">

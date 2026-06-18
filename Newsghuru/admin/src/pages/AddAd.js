@@ -129,7 +129,7 @@ function AddAd() {
 
     let warning = "";
 
-    if (["TOP_BANNER", "SECTION_BANNER", "ARTICLE_ADVERTISEMENT"].includes(pos)) {
+    if (["HEADER_BANNER", "TOP_BANNER", "SECTION_BANNER", "ARTICLE_ADVERTISEMENT"].includes(pos)) {
       if (!isHorizontal) {
         warning = `Warning: The selected image is vertical or square (${width}x${height}px). Horizontal banner positions (${pos}) display best with landscape images (recommended e.g., 970x250 or 728x90). The image will be letterboxed on the user site to prevent stretching.`;
       }
@@ -386,6 +386,7 @@ function AddAd() {
               <div style={{ marginTop: "15px", background: "var(--bg-light)", border: "1px solid var(--border-color)", padding: "12px", borderRadius: "6px" }}>
                 <h4 style={{ margin: "0 0 5px 0", color: "var(--accent-orange)", fontSize: "13px" }}>Recommended Dimensions:</h4>
                 <ul style={{ margin: 0, paddingLeft: "20px", color: "var(--text-muted)", fontSize: "12px" }}>
+                  <li><strong>HEADER_BANNER:</strong> 728 x 90 px</li>
                   <li><strong>TOP_BANNER:</strong> 970 x 250 px</li>
                   <li><strong>SIDEBAR:</strong> 300 x 250 px</li>
                   <li><strong>SECTION_BANNER:</strong> 728 x 90 px or 970 x 90 px</li>
@@ -426,6 +427,7 @@ function AddAd() {
             <div className="form-group">
               <label>Ad Position / Location *</label>
               <select name="position" value={formData.position} onChange={handleInputChange}>
+                <option value="HEADER_BANNER">HEADER_BANNER (Header Area)</option>
                 <option value="TOP_BANNER">TOP_BANNER (Below Navbar)</option>
                 <option value="SIDEBAR">SIDEBAR (Right Sidebar)</option>
                 <option value="SECTION_BANNER">SECTION_BANNER (In-Between News Sections)</option>
@@ -526,7 +528,7 @@ function AddAd() {
             </div>
           )}
 
-          {["TOP_BANNER", "SIDEBAR", "SECTION_BANNER", "ARTICLE_ADVERTISEMENT", "FLOATING_ADVERTISEMENT"].includes(formData.position) && (
+          {["HEADER_BANNER", "TOP_BANNER", "SIDEBAR", "SECTION_BANNER", "ARTICLE_ADVERTISEMENT", "FLOATING_ADVERTISEMENT"].includes(formData.position) && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px", marginTop: "20px", padding: "15px", background: "var(--bg-light)", borderRadius: "6px", border: "1px solid var(--border-color)", borderLeft: "4px solid #10b981" }}>
               <div className="form-group">
                 <label>Rotation Duration Interval (Seconds, when multiple ads exist) *</label>

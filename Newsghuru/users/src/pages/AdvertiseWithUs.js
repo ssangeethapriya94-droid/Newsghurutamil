@@ -230,6 +230,7 @@ const AdvertiseWithUs = () => {
                   outline: "none"
                 }}
               >
+                <option value="HEADER_BANNER">HEADER_BANNER (உயர்மட்ட பேனர் / Header)</option>
                 <option value="TOP_BANNER">TOP_BANNER (தலைப்பு பேனர்)</option>
                 <option value="SIDEBAR">SIDEBAR (வலது பக்கப் பட்டி)</option>
                 <option value="SECTION_BANNER">SECTION_BANNER (பிரிவுகளுக்கு இடையே)</option>

@@ -45,6 +45,7 @@ const advertisementSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
+        "HEADER_BANNER",
         "TOP_BANNER",
         "SIDEBAR",
         "SECTION_BANNER",

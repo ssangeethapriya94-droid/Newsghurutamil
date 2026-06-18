@@ -136,6 +136,7 @@ function AllAds() {
             style={{ padding: "8px 12px", borderRadius: "10px", fontSize: "14px" }}
           >
             <option value="all">All Positions</option>
+            <option value="HEADER_BANNER">HEADER_BANNER</option>
             <option value="TOP_BANNER">TOP_BANNER</option>
             <option value="SIDEBAR">SIDEBAR</option>
             <option value="SECTION_BANNER">SECTION_BANNER</option>
