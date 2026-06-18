@@ -54,3 +54,5 @@ Thumbs.db
 *.sw?
 
 backend/uploads/
+backend/scratch/
+
