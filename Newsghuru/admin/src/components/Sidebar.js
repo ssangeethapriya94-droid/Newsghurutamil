@@ -4,7 +4,8 @@ import "../styles/Sidebar.css";
 import { 
   FiGrid, FiFileText, FiClock, FiList, FiCheckCircle, 
   FiZap, FiFolder, FiImage, FiUsers, FiMail, 
-  FiBell, FiSettings, FiUser, FiLogOut 
+  FiBell, FiSettings, FiUser, FiLogOut,
+  FiSliders, FiLayers, FiPlusCircle, FiInbox, FiBarChart2
 } from "react-icons/fi";
 import API from "../config/api";
 
@@ -94,11 +95,48 @@ function Sidebar({ isOpen }) {
           Media Library
         </NavLink>
 
+        <div className="sidebar-section">ADVERTISEMENTS</div>
+
+        <NavLink className="sidebar-link" to="/admin/ads/dashboard">
+          <span className="link-icon"><FiSliders /></span>
+          Ad Dashboard
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/ads/all">
+          <span className="link-icon"><FiLayers /></span>
+          All Advertisements
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/ads/add">
+          <span className="link-icon"><FiPlusCircle /></span>
+          Add Advertisement
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/ads/requests">
+          <span className="link-icon"><FiInbox /></span>
+          Ad Requests
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/ads/analytics">
+          <span className="link-icon"><FiBarChart2 /></span>
+          Ad Analytics
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/ads/settings">
+          <span className="link-icon"><FiSettings /></span>
+          Ad Settings
+        </NavLink>
+
         <div className="sidebar-section">SYSTEM</div>
 
         <NavLink className="sidebar-link" to="/admin/users">
           <span className="link-icon"><FiUsers /></span>
           Users
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/subscriptions">
+          <span className="link-icon"><FiLayers /></span>
+          Subscription Plans
         </NavLink>
 
 

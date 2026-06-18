@@ -36,6 +36,15 @@ import Categories from "./pages/Categories";
 import UsersManagement from "./pages/UsersManagement";
 import MediaLibrary from "./pages/MediaLibrary";
 import ContactQueries from "./pages/ContactQueries";
+import SubscriptionPlans from "./pages/SubscriptionPlans";
+
+// Advertisement pages
+import AdDashboard from "./pages/AdDashboard";
+import AllAds from "./pages/AllAds";
+import AddAd from "./pages/AddAd";
+import AdRequests from "./pages/AdRequests";
+import AdAnalytics from "./pages/AdAnalytics";
+import AdSettings from "./pages/AdSettings";
 
 const isLoggedIn = () => {
   return localStorage.getItem("token") && localStorage.getItem("role");
@@ -225,7 +234,17 @@ function App() {
         <Route path="/admin/media" element={<ProtectedRoute requiredRole="admin"><Layout><MediaLibrary /></Layout></ProtectedRoute>} />
         <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><Layout><UsersManagement /></Layout></ProtectedRoute>} />
         <Route path="/admin/contact-queries" element={<ProtectedRoute requiredRole="admin"><Layout><ContactQueries /></Layout></ProtectedRoute>} />
+        <Route path="/admin/subscriptions" element={<ProtectedRoute requiredRole="admin"><Layout><SubscriptionPlans /></Layout></ProtectedRoute>} />
         <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
+
+        {/* ADVERTISEMENT MANAGEMENT MODULE ROUTES */}
+        <Route path="/admin/ads/dashboard" element={<ProtectedRoute requiredRole="admin"><Layout><AdDashboard /></Layout></ProtectedRoute>} />
+        <Route path="/admin/ads/all" element={<ProtectedRoute requiredRole="admin"><Layout><AllAds /></Layout></ProtectedRoute>} />
+        <Route path="/admin/ads/add" element={<ProtectedRoute requiredRole="admin"><Layout><AddAd /></Layout></ProtectedRoute>} />
+        <Route path="/admin/ads/edit/:id" element={<ProtectedRoute requiredRole="admin"><Layout><AddAd /></Layout></ProtectedRoute>} />
+        <Route path="/admin/ads/requests" element={<ProtectedRoute requiredRole="admin"><Layout><AdRequests /></Layout></ProtectedRoute>} />
+        <Route path="/admin/ads/analytics" element={<ProtectedRoute requiredRole="admin"><Layout><AdAnalytics /></Layout></ProtectedRoute>} />
+        <Route path="/admin/ads/settings" element={<ProtectedRoute requiredRole="admin"><Layout><AdSettings /></Layout></ProtectedRoute>} />
 
         {/* REPORTER ROUTES */}
         <Route

@@ -11,8 +11,17 @@ import {
 
 import { useNavigate } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
+import AdZone from "../components/AdZone";
 
 const LatestNews = () => {
+  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const handleResize = () => setIsLargeScreen(window.innerWidth >= 1024);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const navigate = useNavigate();
 
   useSEO({
@@ -100,7 +109,8 @@ const LatestNews = () => {
   }
 
   return (
-    <section className="breaking-news-page">
+    <section className="breaking-news-page" style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 15px" }}>
+      <AdZone position="TOP_BANNER" />
 
       {/* TITLE */}
       <div className="breaking-page-title">
@@ -117,8 +127,10 @@ const LatestNews = () => {
           தேர்ந்தெடுக்கப்பட்ட தேதியில் முக்கிய செய்திகள் எதுவும் இல்லை...
         </div>
       ) : (
-        <>
-          {/* FEATURED NEWS */}
+        <div style={isLargeScreen ? { display: "grid", gridTemplateColumns: "1fr 300px", gap: "25px", alignItems: "start" } : { display: "flex", flexDirection: "column", gap: "25px" }}>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            {/* FEATURED NEWS */}
           <div
             className="main-breaking-card"
             onClick={() =>
@@ -155,7 +167,7 @@ const LatestNews = () => {
             </div>
           </div>
 
-          {/* NEWS GRID */}
+          <AdZone position="SECTION_BANNER" />
           <div className="breaking-news-grid">
 
             {filteredBreaking.slice(1).map((item) => (
@@ -212,7 +224,14 @@ const LatestNews = () => {
             ))}
 
           </div>
-        </>
+          </div>
+          
+          <div style={isLargeScreen ? { position: "sticky", top: "20px", display: "flex", flexDirection: "column", gap: "20px" } : { display: "flex", flexDirection: "column", gap: "20px" }}>
+            <AdZone position="SIDEBAR" />
+            <AdZone position="SIDEBAR" />
+          </div>
+
+        </div>
       )}
 
     </section>

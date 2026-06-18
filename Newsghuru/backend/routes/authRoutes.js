@@ -33,6 +33,14 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // Check if premium subscription has expired
+    if (user.isPremium && user.premiumValidUntil && new Date() > user.premiumValidUntil) {
+      user.isPremium = false;
+      user.premiumValidUntil = null;
+      user.premiumPlan = null;
+      await user.save();
+    }
+
     // 4. Generate JWT Token
     const payload = {
       userId: user._id,
@@ -51,6 +59,9 @@ router.post("/login", async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        isPremium: user.isPremium,
+        premiumValidUntil: user.premiumValidUntil,
+        premiumPlan: user.premiumPlan,
       },
     });
   } catch (error) {
@@ -94,6 +105,15 @@ router.get("/users/profile", verifyToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
+
+    // Check if premium subscription has expired
+    if (user.isPremium && user.premiumValidUntil && new Date() > user.premiumValidUntil) {
+      user.isPremium = false;
+      user.premiumValidUntil = null;
+      user.premiumPlan = null;
+      await user.save();
+    }
+
     res.json({
       success: true,
       user,

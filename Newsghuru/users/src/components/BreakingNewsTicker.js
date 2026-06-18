@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaBolt,  } from "react-icons/fa";
+import { FaBolt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import API from "../config/api";
 import "../styles/BreakingNewsTicker.css";
@@ -23,12 +23,14 @@ const BreakingNewsTicker = () => {
   }, []);
 
   const displayNews = breakingNews.length > 0 ? breakingNews : [
-    { _id: 'default', title: 'காத்திருக்கவும்... செய்திகள் ஏற்றப்படுகின்றன...' } // Or "No news" in Tamil
+    { _id: 'default', title: 'காத்திருக்கவும்... செய்திகள் ஏற்றப்படுகின்றன...' }
   ];
+
   return (
     <div className="ticker-container">
       <div className="ticker-label">
-        <FaBolt /> முக்கிய செய்திகள்
+        <FaBolt className="live-dot" style={{ color: "#fff", animation: "blink 1s infinite" }} />
+        <span>முக்கிய செய்திகள்</span>
       </div>
 
       <div className="ticker-scroll-wrapper">
@@ -43,12 +45,10 @@ const BreakingNewsTicker = () => {
               >
                 {news.titleTa || news.title}
               </span>
-              {index < displayNews.length - 1 && (
-                <span className="ticker-separator">|</span>
-              )}
+              <span className="ticker-separator">✦</span>
             </span>
           ))}
-          {/* Duplicate for infinite scroll loop */}
+          {/* Duplicate for infinite loop scroll */}
           {displayNews.map((news, index) => (
             <span key={`dup-${news._id}`} className="ticker-item">
               <span
@@ -59,9 +59,7 @@ const BreakingNewsTicker = () => {
               >
                 {news.titleTa || news.title}
               </span>
-              {index < displayNews.length - 1 && (
-                <span className="ticker-separator">|</span>
-              )}
+              <span className="ticker-separator">✦</span>
             </span>
           ))}
         </div>

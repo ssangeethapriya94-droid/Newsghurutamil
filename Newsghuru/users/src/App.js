@@ -17,8 +17,6 @@ import "./styles/global.css";
 
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
-import DateBar from "./components/DateBar";
-import Navbar from "./components/Navbar";
 import BreakingNewsTicker from "./components/BreakingNewsTicker";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -44,6 +42,12 @@ import NewsDetails from "./pages/NewsDetails";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
+import AdvertiseWithUs from "./pages/AdvertiseWithUs";
+import Bookmarks from "./pages/Bookmarks";
+import MobileBottomNav from "./components/MobileBottomNav";
+import Tech from "./pages/Tech";
+import GenericCategory from "./pages/GenericCategory";
+import SubscribePlans from "./pages/SubscribePlans";
 
 /* =========================================
    MAIN LAYOUT
@@ -61,6 +65,7 @@ function Layout({
   openLoginPopup,
   onLoginSuccess,
   onLogout,
+  currentUser,
   children,
 }) {
   const location = useLocation();
@@ -90,17 +95,17 @@ function Layout({
         openLoginPopup={openLoginPopup}
         onLoginSuccess={onLoginSuccess}
         onLogout={onLogout}
+        currentUser={currentUser}
       />
 
-      <DateBar />
-      <Navbar />
       <BreakingNewsTicker />
 
       <main className="main-content" key={location.pathname + location.search}>
         {children}
       </main>
 
-      <Footer openSubscribePopup={openSubscribePopup} />
+      <Footer />
+      <MobileBottomNav setSidebar={setSidebar} />
 
       {/* Browser Push Notification Permission Banner */}
       <NotificationBanner />
@@ -136,20 +141,58 @@ function App() {
   
   // Track if user is logged in to force header rerender
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("readerToken"));
+  
+  // Reactive state for the currently logged-in user profile
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const dataStr = localStorage.getItem("readerData");
+      return dataStr ? JSON.parse(dataStr) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    // Sync user profile on mount or login to fetch up-to-date isPremium status
+    const syncUserProfile = async () => {
+      const token = localStorage.getItem("readerToken");
+      if (token) {
+        try {
+          const res = await API.get("/api/users/profile", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.data && res.data.success) {
+            localStorage.setItem("readerData", JSON.stringify(res.data.user));
+            setCurrentUser(res.data.user);
+          }
+        } catch (err) {
+          console.error("Error syncing user profile:", err);
+          if (err.response?.status === 401) {
+            localStorage.removeItem("readerToken");
+            localStorage.removeItem("readerData");
+            setIsLoggedIn(false);
+            setCurrentUser(null);
+          }
+        }
+      }
+    };
+    syncUserProfile();
+  }, [isLoggedIn]);
 
   const handleLoginSuccess = () => {
-    // If it's subscribe flow, let AuthPopup handle the close after subscribing
-    // Otherwise close immediately
-    if (!subscribeFlow) {
-      setAuthPopupVisible(false);
-    }
+    setAuthPopupVisible(false);
     setIsLoggedIn(true);
+    try {
+      const dataStr = localStorage.getItem("readerData");
+      setCurrentUser(dataStr ? JSON.parse(dataStr) : null);
+    } catch (e) {}
   };
 
   const handleLogout = () => {
     localStorage.removeItem("readerToken");
     localStorage.removeItem("readerData");
     setIsLoggedIn(false);
+    setCurrentUser(null);
   };
 
   const openSubscribePopup = () => {
@@ -180,6 +223,28 @@ function App() {
       ? "dark-theme"
       : "light-theme";
   }, [darkMode]);
+
+  useEffect(() => {
+    const handleOpenLogin = () => {
+      setSubscribeFlow(true);
+      setAuthPopupVisible(true);
+    };
+    window.addEventListener("open-reader-login", handleOpenLogin);
+    return () => window.removeEventListener("open-reader-login", handleOpenLogin);
+  }, []);
+
+  // Listen for payment-success event dispatched by SubscribePlans after checkout
+  useEffect(() => {
+    const handlePaymentSuccess = (e) => {
+      const updatedUser = e.detail?.user;
+      if (updatedUser) {
+        setCurrentUser(updatedUser);
+        setIsLoggedIn(true);
+      }
+    };
+    window.addEventListener("payment-success", handlePaymentSuccess);
+    return () => window.removeEventListener("payment-success", handlePaymentSuccess);
+  }, []);
 
   useEffect(() => {
     // Automatically generate/refresh FCM token on load if logged in and permission is already granted
@@ -296,6 +361,15 @@ function App() {
         />
 
         <Route
+          path="/tamil"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+              <TamilNadu />
+            </Layout>
+          }
+        />
+
+        <Route
           path="/india"
           element={
             <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
@@ -307,7 +381,7 @@ function App() {
         <Route
           path="/world"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <World />
             </Layout>
           }
@@ -316,7 +390,7 @@ function App() {
         <Route
           path="/business"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <Business />
             </Layout>
           }
@@ -325,7 +399,7 @@ function App() {
         <Route
           path="/sports"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <Sports />
             </Layout>
           }
@@ -334,7 +408,7 @@ function App() {
         <Route
           path="/education"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <Education />
             </Layout>
           }
@@ -343,7 +417,7 @@ function App() {
         <Route
           path="/politics"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <Politics />
             </Layout>
           }
@@ -352,8 +426,17 @@ function App() {
         <Route
           path="/cinema"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <Cinema />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/tech"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
+              <Tech />
             </Layout>
           }
         />
@@ -361,7 +444,7 @@ function App() {
         <Route
           path="/news/:id"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <NewsDetails />
             </Layout>
           }
@@ -370,7 +453,7 @@ function App() {
         <Route
           path="/privacy"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <Privacy />
             </Layout>
           }
@@ -379,7 +462,7 @@ function App() {
         <Route
           path="/terms"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <Terms />
             </Layout>
           }
@@ -388,8 +471,44 @@ function App() {
         <Route
           path="/contact"
           element={
-            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout }}>
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <Contact />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/advertise-with-us"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
+              <AdvertiseWithUs />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/bookmarks"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
+              <Bookmarks />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/category/:categoryName"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
+              <GenericCategory />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/subscribe"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
+              <SubscribePlans />
             </Layout>
           }
         />
