@@ -4,33 +4,33 @@ import useSEO from "../hooks/useSEO";
 import { FaShieldAlt } from "react-icons/fa";
 import "../styles/InfoPages.css";
 
-const Terms = () => {
+const Disclaimer = () => {
   const [content, setContent] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useSEO({
-    title: "விதிமுறைகள் மற்றும் நிபந்தனைகள் (Terms & Conditions)",
-    description: "நியூஸ் குரு சேவைகளைப் பயன்படுத்துவதற்கான விதிகள் மற்றும் விதிமுறைகள்",
-    keywords: "விதிமுறைகள், நிபந்தனைகள், terms and conditions, நியூஸ் குரு, newsghuru terms",
+    title: "மறுப்புரை (Disclaimer)",
+    description: "நியூஸ் குரு வலைத்தளத்தின் பொறுப்புத் துறப்பு (Disclaimer) கொள்கை மற்றும் விதிமுறைகள்",
+    keywords: "மறுப்புரை, பொறுப்புத் துறப்பு, disclaimer, newsghuru disclaimer, நியூஸ் குரு",
   });
 
   useEffect(() => {
-    const fetchTerms = async () => {
+    const fetchDisclaimer = async () => {
       try {
         setLoading(true);
-        const res = await API.get("/api/pages/terms");
+        const res = await API.get("/api/pages/disclaimer");
         if (res.data && res.data.success) {
           setContent(res.data.content || "");
           setLastUpdated(res.data.lastUpdated);
         }
       } catch (err) {
-        console.error("Error fetching terms and conditions:", err);
+        console.error("Error fetching disclaimer:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchTerms();
+    fetchDisclaimer();
   }, []);
 
   const formatDate = (dateStr) => {
@@ -46,19 +46,19 @@ const Terms = () => {
   return (
     <div className="info-page">
       <div className="info-header">
-        <h1>விதிமுறைகள் மற்றும் நிபந்தனைகள் (Terms & Conditions)</h1>
-        <p>நியூஸ் குரு சேவைகளைப் பயன்படுத்துவதற்கான விதிகள்</p>
+        <h1>மறுப்புரை (Disclaimer)</h1>
+        <p>நியூஸ் குரு வலைத்தளத்தின் பொறுப்புத் துறப்பு கொள்கை விவரங்கள்</p>
       </div>
 
       <div className="info-card">
         {loading ? (
           <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-secondary)" }}>
-            விதிமுறைகள் மற்றும் நிபந்தனைகள் விவரங்கள் ஏற்றப்படுகின்றன...
+            மறுப்புரை விவரங்கள் ஏற்றப்படுகின்றன...
           </div>
         ) : (
           <>
             <div 
-              className="terms-rich-text"
+              className="disclaimer-rich-text"
               dangerouslySetInnerHTML={{ __html: content }} 
               style={{ color: "var(--text-secondary)", lineHeight: "1.8", fontSize: "16px" }}
             />
@@ -87,4 +87,4 @@ const Terms = () => {
   );
 };
 
-export default Terms;
+export default Disclaimer;

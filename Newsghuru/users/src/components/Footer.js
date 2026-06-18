@@ -58,9 +58,8 @@ const Footer = () => {
           <ul>
             <li><Link to="/"><FaChevronRight className="chevron-link-icon" /> முகப்பு</Link></li>
             <li><Link to="/latest-news"><FaChevronRight className="chevron-link-icon" /> தற்போதைய செய்தி</Link></li>
-            <li><Link to="/tamilnadu"><FaChevronRight className="chevron-link-icon" /> தமிழகம்</Link></li>
-            <li><Link to="/india"><FaChevronRight className="chevron-link-icon" /> இந்தியா</Link></li>
-            <li><Link to="/world"><FaChevronRight className="chevron-link-icon" /> உலகம்</Link></li>
+            <li><Link to="/about-us"><FaChevronRight className="chevron-link-icon" /> எங்களைப் பற்றி (About Us)</Link></li>
+            <li><Link to="/advertise-with-us"><FaChevronRight className="chevron-link-icon" /> விளம்பரம் செய்ய</Link></li>
           </ul>
         </div>
 
@@ -101,6 +100,7 @@ const Footer = () => {
           <div className="footer-bottom-links">
             <Link to="/privacy">தனியுரிமைக் கொள்கை</Link>
             <Link to="/terms">விதிமுறைகள் மற்றும் நிபந்தனைகள்</Link>
+            <Link to="/disclaimer">மறுப்புரை (Disclaimer)</Link>
             <Link to="/contact">தொடர்பு</Link>
           </div>
         </div>

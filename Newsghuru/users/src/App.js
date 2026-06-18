@@ -42,6 +42,8 @@ import NewsDetails from "./pages/NewsDetails";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
+import Disclaimer from "./pages/Disclaimer";
+import AboutUs from "./pages/AboutUs";
 import AdvertiseWithUs from "./pages/AdvertiseWithUs";
 import Bookmarks from "./pages/Bookmarks";
 import MobileBottomNav from "./components/MobileBottomNav";
@@ -455,6 +457,33 @@ function App() {
           element={
             <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
               <Privacy />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/about"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
+              <AboutUs />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/about-us"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
+              <AboutUs />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/disclaimer"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser }}>
+              <Disclaimer />
             </Layout>
           }
         />

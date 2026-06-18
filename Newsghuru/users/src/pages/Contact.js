@@ -1,11 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import API from "../config/api";
 import "../styles/InfoPages.css";
-import { FaEnvelope, FaMapMarkerAlt, FaBuilding, FaPaperPlane } from "react-icons/fa";
+import { FaPaperPlane } from "react-icons/fa";
 
 const Contact = () => {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [descriptionContent, setDescriptionContent] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContactDetails = async () => {
+      try {
+        setLoading(true);
+        const res = await API.get("/api/pages/contact");
+        if (res.data && res.data.success) {
+          setDescriptionContent(res.data.content || "");
+        }
+      } catch (err) {
+        console.error("Error fetching contact page content:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContactDetails();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,45 +44,23 @@ const Contact = () => {
   return (
     <div className="info-page">
       <div className="info-header">
-        <h1>தொடர்பு கொள்ள</h1>
+        <h1>தொடர்பு கொள்ள (Contact Us)</h1>
         <p>உங்களுக்கு ஏதேனும் கேள்விகள் அல்லது செய்திகள் இருந்தால் எங்களைத் தொடர்பு கொள்ளவும்</p>
       </div>
 
       <div className="info-card">
         <div className="contact-grid">
-          {/* CONTACT INFO */}
-          <div className="contact-info">
-            <div className="contact-item">
-              <div className="contact-icon">
-                <FaEnvelope />
-              </div>
-              <div className="contact-details">
-                <h3>மின்னஞ்சல் முகவரி</h3>
-                <a href="mailto:info@newsghuru.in">info@newsghuru.in</a>
-              </div>
-            </div>
-
-            <div className="contact-item">
-              <div className="contact-icon">
-                <FaMapMarkerAlt />
-              </div>
-              <div className="contact-details">
-                <h3>முகவரி</h3>
-                <p>சென்னை, தமிழ்நாடு, இந்தியா</p>
-              </div>
-            </div>
-
-            <div className="contact-item">
-              <div className="contact-icon">
-                <FaBuilding />
-              </div>
-              <div className="contact-details">
-                <h3>நிறுவனம்</h3>
-                <p>
-                  நியூஸ் குரு என்பது குருதேவா என்டர்டெயின்மென்ட்ஸ் பிரைவேட் லிமிடெட் மூலம் நடத்தப்படும் ஒரு டிஜிட்டல் ஊடக பிராண்ட் ஆகும்.
-                </p>
-              </div>
-            </div>
+          {/* DYNAMIC CONTACT INFO FROM CMS */}
+          <div className="contact-info" style={{ display: "block", color: "var(--text-secondary)", lineHeight: "1.8" }}>
+            {loading ? (
+              <p>தகவல்கள் ஏற்றப்படுகின்றன...</p>
+            ) : (
+              <div 
+                className="contact-cms-content"
+                dangerouslySetInnerHTML={{ __html: descriptionContent }}
+                style={{ fontSize: "16px" }}
+              />
+            )}
           </div>
 
           {/* CONTACT FORM */}
