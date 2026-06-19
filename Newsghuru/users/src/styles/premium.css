@@ -110,17 +110,25 @@
 
 /* Layer 2: Main Header */
 .header-main-bar {
-  height: 85px;
+  height: 120px;
   padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  transition: height 0.3s ease;
+}
+
+@media (max-width: 992px) {
+  .header-main-bar {
+    height: 85px;
+  }
 }
 
 .header-ad-zone {
   flex: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 0 20px;
 }
 

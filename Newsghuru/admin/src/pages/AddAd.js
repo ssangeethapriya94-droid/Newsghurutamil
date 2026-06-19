@@ -126,10 +126,15 @@ function AddAd() {
     }
 
     const isHorizontal = width > height * 1.25;
+    const isVeryWide = width >= height * 6;
 
     let warning = "";
 
-    if (["HEADER_BANNER", "TOP_BANNER", "SECTION_BANNER", "ARTICLE_ADVERTISEMENT"].includes(pos)) {
+    if (pos === "HEADER_BANNER") {
+      if (!isVeryWide) {
+        warning = `Warning: The selected image is horizontal but has a tall/thick aspect ratio (${width}x${height}px). The header banner has a limited height (100px) on the website, so tall images will render with a small width to prevent cropping (recommended size: 970x90 or 1000x90).`;
+      }
+    } else if (["TOP_BANNER", "SECTION_BANNER", "ARTICLE_ADVERTISEMENT"].includes(pos)) {
       if (!isHorizontal) {
         warning = `Warning: The selected image is vertical or square (${width}x${height}px). Horizontal banner positions (${pos}) display best with landscape images (recommended e.g., 970x250 or 728x90). The image will be letterboxed on the user site to prevent stretching.`;
       }
@@ -386,7 +391,7 @@ function AddAd() {
               <div style={{ marginTop: "15px", background: "var(--bg-light)", border: "1px solid var(--border-color)", padding: "12px", borderRadius: "6px" }}>
                 <h4 style={{ margin: "0 0 5px 0", color: "var(--accent-orange)", fontSize: "13px" }}>Recommended Dimensions:</h4>
                 <ul style={{ margin: 0, paddingLeft: "20px", color: "var(--text-muted)", fontSize: "12px" }}>
-                  <li><strong>HEADER_BANNER:</strong> 728 x 90 px</li>
+                  <li><strong>HEADER_BANNER:</strong> 970 x 90 px or 1000 x 90 px</li>
                   <li><strong>TOP_BANNER:</strong> 970 x 250 px</li>
                   <li><strong>SIDEBAR:</strong> 300 x 250 px</li>
                   <li><strong>SECTION_BANNER:</strong> 728 x 90 px or 970 x 90 px</li>
