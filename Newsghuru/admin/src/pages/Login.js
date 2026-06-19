@@ -70,8 +70,7 @@ function Login() {
       <div className="login-side-banner">
         <div className="banner-content">
           <div className="brand-logo-name">
-            <img src="/NEWS GHURU LOGO PNG.png" alt="NewsGhuru Logo" className="brand-logo-img" />
-            <h1>NewsGhuru</h1>
+            <img src="/NEWS GHURU LOGO English.png" alt="NewsGhuru Logo" className="brand-logo-img" />
           </div>
           <p className="brand-slogan-sub">Trusted News &bull; Verified Information &bull; Real-Time Updates</p>
           <div className="brand-underline"></div>
@@ -80,10 +79,6 @@ function Login() {
             Your <span className="highlight">News.</span><br />
             Your <span className="highlight-orange">Voice.</span>
           </h2>
-          
-          <p className="banner-description">
-            NewsGhuru is a professional digital news platform covering Tamil Nadu, India, World, Politics, Sports, Cinema, Technology, Business, Spiritual, and Breaking News. Stay informed with verified information and real-time updates.
-          </p>
           
           <div className="features-list">
             <div className="feature-item">
@@ -131,7 +126,7 @@ function Login() {
           
           <div className="avatar-header">
             <div className="login-logo-container">
-              <img src="/NEWS GHURU LOGO PNG.png" alt="NewsGhuru Logo" className="login-card-logo" />
+              <img src="/NEWS GHURU LOGO English.png" alt="NewsGhuru Logo" className="login-card-logo" />
             </div>
             <h2>Welcome Back!</h2>
             <p>To keep connected with us</p>
