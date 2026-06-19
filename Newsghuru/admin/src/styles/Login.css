@@ -2,10 +2,15 @@
    LOGIN SCREEN - SPLIT DESIGN
    ========================================= */
 
+body:has(.login-page-wrapper) {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
 .login-page-wrapper {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  min-height: 100vh;
+  height: 100vh;
   background: #07090e;
   color: #ffffff;
   overflow: hidden;
@@ -41,11 +46,11 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-bottom: 48px;
+  margin-bottom: 24px;
 }
 
 .brand-logo-img {
-  height: 180px;
+  height: 250px;
   object-fit: contain;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
   transition: transform 0.3s ease;
@@ -63,10 +68,7 @@
   color: #ffffff;
 }
 
-.banner-slogan .highlight {
-  color: #ffffff;
-}
-
+.banner-slogan .highlight,
 .banner-slogan .highlight-orange {
   background: linear-gradient(135deg, #ea580c, #ff9800);
   -webkit-background-clip: text;
@@ -224,7 +226,7 @@
   background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  padding: 45px 32px;
+  padding: 24px 32px;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
@@ -232,7 +234,7 @@
   max-width: 480px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   z-index: 10;
   animation: formEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -254,12 +256,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 18px;
+  margin-bottom: 8px;
 }
 
 .login-card-logo {
   max-width: 280px;
-  max-height: 120px;
+  max-height: 80px;
   object-fit: contain;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
 }
@@ -268,7 +270,10 @@
   font-size: 26px;
   font-weight: 800;
   margin: 0 0 6px 0;
-  color: #ffffff;
+  background: linear-gradient(135deg, #ff9800, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
 .avatar-header p {
@@ -310,7 +315,7 @@
   background: rgba(30, 41, 59, 0.2);
   border: 1.5px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
-  padding: 20px 8px 16px 8px;
+  padding: 12px 8px 10px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -356,17 +361,17 @@
 }
 
 .role-card-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.02);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   color: #64748b;
   border: 1px solid rgba(255, 255, 255, 0.04);
-  font-size: 16px;
+  font-size: 14px;
   transition: all 0.25s ease;
 }
 
