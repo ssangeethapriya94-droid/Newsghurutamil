@@ -18,6 +18,7 @@ import Topbar from "./components/Topbar";
 import Information from "./pages/Information";
 import Account from "./pages/Account";
 import WebsiteSettings from "./pages/WebsiteSettings";
+import Revenue from "./pages/Revenue";
 
 // Placeholder Reporter Pages
 import ReporterCreateNews from "./pages/ReporterCreateNews";
@@ -254,6 +255,7 @@ function App() {
         <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><Layout><UsersManagement /></Layout></ProtectedRoute>} />
         <Route path="/admin/contact-queries" element={<ProtectedRoute requiredRole="admin"><Layout><ContactQueries /></Layout></ProtectedRoute>} />
         <Route path="/admin/subscriptions" element={<ProtectedRoute requiredRole="admin"><Layout><SubscriptionPlans /></Layout></ProtectedRoute>} />
+        <Route path="/admin/revenue" element={<ProtectedRoute requiredRole="admin"><Layout><Revenue /></Layout></ProtectedRoute>} />
         <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
 
         {/* ADVERTISEMENT MANAGEMENT MODULE ROUTES */}

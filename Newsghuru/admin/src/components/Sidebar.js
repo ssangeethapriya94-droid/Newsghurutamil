@@ -149,6 +149,11 @@ function Sidebar({ isOpen }) {
           Subscription Plans
         </NavLink>
 
+        <NavLink className="sidebar-link" to="/admin/revenue">
+          <span className="link-icon"><FiBarChart2 /></span>
+          Revenue Details
+        </NavLink>
+
 
 
         <NavLink className="sidebar-link" to="/admin/contact-queries" style={{ position: "relative" }}>

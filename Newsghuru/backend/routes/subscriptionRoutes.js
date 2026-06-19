@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const Razorpay = require("razorpay");
 const SubscriptionPlan = require("../models/SubscriptionPlan");
 const User = require("../models/User");
+const Transaction = require("../models/Transaction");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -275,6 +276,16 @@ router.post("/verify-payment", verifyToken, async (req, res) => {
     user.premiumValidUntil = validUntil;
     await user.save();
 
+    // Record the transaction
+    await Transaction.create({
+      userId: user._id,
+      planId: plan._id,
+      amount: plan.price,
+      paymentId: razorpay_payment_id,
+      orderId: razorpay_order_id,
+      status: "Success"
+    });
+
     // Remove password and send
     const userObj = user.toObject();
     delete userObj.password;
@@ -331,6 +342,16 @@ router.post("/verify-mock-payment", verifyToken, async (req, res) => {
     user.premiumPlan = plan._id;
     user.premiumValidUntil = validUntil;
     await user.save();
+
+    // Record the transaction
+    await Transaction.create({
+      userId: user._id,
+      planId: plan._id,
+      amount: plan.price,
+      paymentId: `mock_pay_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      orderId: orderId,
+      status: "Success"
+    });
 
     // Remove password and send
     const userObj = user.toObject();
@@ -428,6 +449,19 @@ router.post("/webhook", express.raw({ type: "application/json" }), async (req, r
           user.premiumValidUntil = validUntil;
           await user.save();
 
+          // Record the transaction
+          const transactionExists = await Transaction.findOne({ paymentId: payment.id });
+          if (!transactionExists) {
+            await Transaction.create({
+              userId: user._id,
+              planId: plan._id,
+              amount: plan.price,
+              paymentId: payment.id,
+              orderId: orderId || `wh_order_${Date.now()}`,
+              status: "Success"
+            });
+          }
+
           console.log(`✅ Webhook: User ${user.email} upgraded to premium via payment.captured event. Valid until: ${validUntil.toISOString()}`);
         }
       } else {
@@ -439,6 +473,77 @@ router.post("/webhook", express.raw({ type: "application/json" }), async (req, r
   } catch (error) {
     console.error("Webhook handling error:", error);
     res.status(500).json({ success: false, message: "Webhook processing error" });
+  }
+});
+
+// GET /api/subscription/admin/revenue - Get revenue dashboard details (Admin only)
+router.get("/admin/revenue", verifyToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    // Fetch all successful transactions
+    const transactions = await Transaction.find({ status: "Success" })
+      .populate("userId", "name email")
+      .populate("planId", "name price")
+      .sort({ createdAt: -1 });
+
+    // Metrics calculation
+    const totalRevenue = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthlyRevenue = transactions
+      .filter(tx => new Date(tx.createdAt) >= startOfMonth)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+
+    const activeSubscriptions = await User.countDocuments({ isPremium: true });
+    const totalPlansSold = transactions.length;
+
+    // Plan distribution map
+    const planCounts = {};
+    transactions.forEach(tx => {
+      const planName = tx.planId ? tx.planId.name : "Unknown Plan";
+      planCounts[planName] = (planCounts[planName] || 0) + 1;
+    });
+    const planDistribution = Object.keys(planCounts).map(name => ({
+      name,
+      value: planCounts[name]
+    }));
+
+    // Monthly trends (last 6 months)
+    const monthlyTrendsMap = {};
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleString("en-US", { month: "short", year: "numeric" });
+      monthlyTrendsMap[label] = 0;
+    }
+
+    transactions.forEach(tx => {
+      const date = new Date(tx.createdAt);
+      const label = date.toLocaleString("en-US", { month: "short", year: "numeric" });
+      if (monthlyTrendsMap[label] !== undefined) {
+        monthlyTrendsMap[label] += tx.amount;
+      }
+    });
+
+    const monthlyTrends = Object.keys(monthlyTrendsMap).map(month => ({
+      month,
+      revenue: monthlyTrendsMap[month]
+    }));
+
+    res.json({
+      success: true,
+      metrics: {
+        totalRevenue,
+        monthlyRevenue,
+        activeSubscriptions,
+        totalPlansSold
+      },
+      planDistribution,
+      monthlyTrends,
+      transactions: transactions.slice(0, 50) // Return last 50 transactions for table
+    });
+  } catch (error) {
+    console.error("Admin revenue fetch error:", error);
+    res.status(500).json({ success: false, message: "Error fetching revenue details" });
   }
 });
 

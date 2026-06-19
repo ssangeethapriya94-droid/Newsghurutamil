@@ -22,12 +22,13 @@ const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const staticPageRoutes = require("./routes/staticPageRoutes");
 
 // Connect MongoDB
-connectDB().then(() => {
-  seedAdmin();
-  seedCategories();
-  seedAdSettings();
-  seedSubscriptionPlans();
-  seedStaticPages();
+connectDB().then(async () => {
+  await seedAdmin();
+  await seedCategories();
+  await seedAdSettings();
+  await seedSubscriptionPlans();
+  await seedTransactions();
+  await seedStaticPages();
 });
 
 const seedAdmin = async () => {
@@ -142,6 +143,86 @@ const seedSubscriptionPlans = async () => {
     console.log("✅ Default Subscription Plans seeded in MongoDB (no magazines/newspapers)");
   } catch (error) {
     console.error("❌ Seeding subscription plans failed:", error.message);
+  }
+};
+
+const seedTransactions = async () => {
+  try {
+    const Transaction = require("./models/Transaction");
+    const User = require("./models/User");
+    const SubscriptionPlan = require("./models/SubscriptionPlan");
+
+    // Clear existing records to ensure exactly 5 transaction samples
+    await Transaction.deleteMany({});
+
+    const transactionCount = await Transaction.countDocuments();
+    if (transactionCount === 0) {
+      console.log("🌱 Seeding mock transactions for revenue dashboard...");
+
+      // Get some plans
+      const plans = await SubscriptionPlan.find();
+      if (plans.length === 0) {
+        console.log("No subscription plans found. Skipping transaction seeding.");
+        return;
+      }
+
+      // Create/Get some users
+      let users = await User.find({ role: "reader" }).limit(10);
+      if (users.length === 0) {
+        // Create 5 reader users
+        const dummyUsers = [
+          { name: "கார்த்திக் ராஜ்", email: "karthik@gmail.com", password: "password123", role: "reader" },
+          { name: "பிரியா மோகன்", email: "priya@gmail.com", password: "password123", role: "reader" },
+          { name: "சரவணன் குமார்", email: "saravanan@gmail.com", password: "password123", role: "reader" },
+          { name: "திவ்யா சுந்தர்", email: "divya@gmail.com", password: "password123", role: "reader" },
+          { name: "அருண் பிரசாத்", email: "arun@gmail.com", password: "password123", role: "reader" }
+        ];
+        users = await User.insertMany(dummyUsers);
+        console.log("✅ Seeded 5 reader users for subscription transactions");
+      }
+
+      // Make some of these users premium in user collection to make it sync
+      const premiumUsers = users.slice(0, 3);
+      for (const u of premiumUsers) {
+        u.isPremium = true;
+        u.premiumPlan = plans[Math.floor(Math.random() * plans.length)]._id;
+        const validUntil = new Date();
+        validUntil.setMonth(validUntil.getMonth() + 6);
+        u.premiumValidUntil = validUntil;
+        await u.save();
+      }
+
+      // Now create mock transactions over the last 6 months
+      const mockTransactions = [];
+      const now = new Date();
+
+      // Create exactly 5 successful mock transactions
+      for (let i = 0; i < 5; i++) {
+        const randomUser = users[Math.floor(Math.random() * users.length)];
+        const randomPlan = plans[Math.floor(Math.random() * plans.length)];
+        
+        // Random date in the last 6 months
+        const txDate = new Date();
+        txDate.setMonth(now.getMonth() - Math.floor(Math.random() * 6));
+        txDate.setDate(Math.floor(Math.random() * 28) + 1);
+
+        mockTransactions.push({
+          userId: randomUser._id,
+          planId: randomPlan._id,
+          amount: randomPlan.price,
+          paymentId: `pay_mock_${Math.random().toString(36).substr(2, 9)}`,
+          orderId: `order_mock_${Math.random().toString(36).substr(2, 9)}`,
+          status: "Success",
+          createdAt: txDate,
+          updatedAt: txDate
+        });
+      }
+
+      await Transaction.insertMany(mockTransactions);
+      console.log(`✅ Seeded ${mockTransactions.length} transaction records`);
+    }
+  } catch (error) {
+    console.error("❌ Seeding transactions failed:", error.message);
   }
 };
 
