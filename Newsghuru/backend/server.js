@@ -20,6 +20,10 @@ const AdSettings = require("./models/AdSettings");
 const SubscriptionPlan = require("./models/SubscriptionPlan");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const staticPageRoutes = require("./routes/staticPageRoutes");
+const videoRoutes = require("./routes/videoRoutes");
+const shortsRoutes = require("./routes/shortsRoutes");
+const photoStoryRoutes = require("./routes/photoStoryRoutes");
+const homepageConfigRoutes = require("./routes/homepageConfigRoutes");
 
 // Connect MongoDB
 connectDB().then(async () => {
@@ -29,6 +33,10 @@ connectDB().then(async () => {
   await seedSubscriptionPlans();
   await seedTransactions();
   await seedStaticPages();
+  await seedVideos();
+  await seedShorts();
+  await seedPhotoStories();
+  await seedHomepageConfig();
 });
 
 const seedAdmin = async () => {
@@ -299,6 +307,193 @@ const seedStaticPages = async () => {
   }
 };
 
+const seedVideos = async () => {
+  try {
+    const Video = require("./models/Video");
+    const count = await Video.countDocuments();
+    if (count === 0) {
+      const defaultVideos = [
+        {
+          title: "தமிழக பட்ஜெட் 2026: கல்வி மற்றும் விவசாயத்திற்கு முக்கியத்துவம்!",
+          thumbnail: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=600&auto=format&fit=crop",
+          youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          description: "தமிழக பட்ஜெட் 2026 கூட்டத்தொடரில் அறிவிக்கப்பட்ட முக்கிய அம்சங்கள் மற்றும் மக்கள் நல திட்டங்கள் பற்றிய விரிவான அலசல்.",
+          category: "Politics",
+          isFeatured: true,
+          isTrending: true,
+          views: 1250
+        },
+        {
+          title: "IPL 2026: சென்னை சூப்பர் கிங்ஸ் அணியின் புதிய கேப்டன் யார்?",
+          thumbnail: "https://images.unsplash.com/photo-1540747737956-37872404a8de?w=600&auto=format&fit=crop",
+          youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          description: "இந்த ஆண்டின் ஐபிஎல் தொடருக்கான சென்னை சூப்பர் கிங்ஸ் அணியின் பயிற்சி மற்றும் புதிய வியூகங்கள் பற்றிய கள நிலவரம்.",
+          category: "Sports",
+          isFeatured: false,
+          isTrending: true,
+          views: 890
+        },
+        {
+          title: "தமிழ் சினிமாவில் இந்த வாரம் ஓடிடியில் வெளியாகும் திரைப்படங்கள்!",
+          thumbnail: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&auto=format&fit=crop",
+          youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          description: "திரையரங்குகள் மற்றும் முன்னணி ஓடிடி தளங்களில் வெளியாகும் புதிய தமிழ் திரைப்படங்கள் மற்றும் விமர்சனங்களின் தொகுப்பு.",
+          category: "Cinema",
+          isFeatured: false,
+          isTrending: false,
+          views: 450
+        },
+        {
+          title: "ஆர்டிபிஷியல் இன்டெலிஜென்ஸ் (AI): புதிய வேலைவாய்ப்புகள் மற்றும் சவால்கள்!",
+          thumbnail: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&auto=format&fit=crop",
+          youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          description: "தொழில்நுட்ப உலகில் ஏஐ ஏற்படுத்தி வரும் மாற்றங்கள் மற்றும் ஐடி துறையினருக்கான புதிய வாய்ப்புகள்.",
+          category: "Technology",
+          isFeatured: true,
+          isTrending: false,
+          views: 620
+        }
+      ];
+      await Video.insertMany(defaultVideos);
+      console.log("✅ Default Videos seeded in MongoDB");
+    }
+  } catch (error) {
+    console.error("❌ Seeding videos failed:", error.message);
+  }
+};
+
+const seedShorts = async () => {
+  try {
+    const Short = require("./models/Short");
+    const count = await Short.countDocuments();
+    if (count === 0) {
+      const defaultShorts = [
+        {
+          title: "இன்றைய தங்கம் மற்றும் வெள்ளி விலை நிலவரம்!",
+          thumbnail: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=600&auto=format&fit=crop",
+          videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          category: "Business",
+          description: "சென்னையில் இன்றைய ஆபரணத் தங்கத்தின் விலை நிலவரம்.",
+          isFeatured: true,
+          isEnabled: true
+        },
+        {
+          title: "5 நிமிடத்தில் இன்றைய முக்கிய செய்திகள்!",
+          thumbnail: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&auto=format&fit=crop",
+          videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          category: "General",
+          description: "தமிழகம் மற்றும் இந்தியாவின் முக்கிய தலைப்பு செய்திகள்.",
+          isFeatured: true,
+          isEnabled: true
+        },
+        {
+          title: "விம்பிள்டன் டென்னிஸ்: இறுதிப் போட்டிக்கு முன்னேறிய முன்னணி வீரர்!",
+          thumbnail: "https://images.unsplash.com/photo-1540747737956-37872404a8de?w=600&auto=format&fit=crop",
+          videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          category: "Sports",
+          description: "டென்னிஸ் உலகில் பரபரப்பான அரையிறுதிப் போட்டியின் முக்கிய தருணங்கள்.",
+          isFeatured: false,
+          isEnabled: true
+        }
+      ];
+      await Short.insertMany(defaultShorts);
+      console.log("✅ Default Shorts seeded in MongoDB");
+    }
+  } catch (error) {
+    console.error("❌ Seeding shorts failed:", error.message);
+  }
+};
+
+const seedPhotoStories = async () => {
+  try {
+    const PhotoStory = require("./models/PhotoStory");
+    const count = await PhotoStory.countDocuments();
+    if (count === 0) {
+      const defaultPhotoStories = [
+        {
+          title: "மதுரை சித்திரை திருவிழா 2026: பக்தி பெருவெள்ளத்தில் பக்தர்கள்!",
+          description: "அழகர் ஆற்றில் இறங்கும் உலகப் புகழ்பெற்ற சித்திரை திருவிழாவின் வண்ணமயமான மற்றும் தெய்வீக தருணங்கள்.",
+          coverImage: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=600&auto=format&fit=crop",
+          images: [
+            "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1608958416806-cf76fa1c1fa8?w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1621646733642-f78cfd2ffd37?w=600&auto=format&fit=crop"
+          ],
+          isFeatured: true
+        },
+        {
+          title: "ஊட்டி மலர் கண்காட்சி 2026: கண்கவர் மலர் அலங்காரங்கள்!",
+          description: "கோடை விழாவை முன்னிட்டு ஊட்டியில் நடைபெற்ற மலர் கண்காட்சியில் அமைக்கப்பட்டிருந்த அரிய வகை மலர் சிற்பங்கள்.",
+          coverImage: "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=600&auto=format&fit=crop",
+          images: [
+            "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1560717789-0ac7c58ac90a?w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=600&auto=format&fit=crop"
+          ],
+          isFeatured: false
+        },
+        {
+          title: "மேற்குத் தொடர்ச்சி மலையின் அழகிய வனவிலங்கு சரணாலயங்கள்!",
+          description: "தமிழ்நாட்டின் இயற்கை எழில் கொஞ்சும் காடுகள் மற்றும் அதில் வசிக்கும் அரிய வகை விலங்குகளின் புகைப்படங்கள்.",
+          coverImage: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=600&auto=format&fit=crop",
+          images: [
+            "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=600&auto=format&fit=crop"
+          ],
+          isFeatured: false
+        }
+      ];
+      await PhotoStory.insertMany(defaultPhotoStories);
+      console.log("✅ Default Photo Stories seeded in MongoDB");
+    }
+  } catch (error) {
+    console.error("❌ Seeding photo stories failed:", error.message);
+  }
+};
+
+const seedHomepageConfig = async () => {
+  try {
+    const HomepageConfig = require("./models/HomepageConfig");
+    const News = require("./models/News");
+    const Video = require("./models/Video");
+    const Short = require("./models/Short");
+    const count = await HomepageConfig.countDocuments();
+    if (count === 0) {
+      const sampleNews = await News.find().limit(5);
+      const sampleVideos = await Video.find().limit(3);
+      const sampleShorts = await Short.find().limit(3);
+
+      const defaultSections = [
+        { id: "breaking", titleTa: "முக்கிய செய்திகள்", titleEn: "Breaking News", isEnabled: true, order: 1 },
+        { id: "hero", titleTa: "தலைப்புச் செய்திகள்", titleEn: "Top Stories", isEnabled: true, order: 2 },
+        { id: "latest", titleTa: "சமீபத்திய செய்திகள்", titleEn: "Latest News", isEnabled: true, order: 3 },
+        { id: "politics", titleTa: "அரசியல்", titleEn: "Politics", isEnabled: true, order: 4 },
+        { id: "cinema", titleTa: "சினிமா", titleEn: "Cinema", isEnabled: true, order: 5 },
+        { id: "sports", titleTa: "விளையாட்டு", titleEn: "Sports", isEnabled: true, order: 6 },
+        { id: "tech", titleTa: "தொழில்நுட்பம்", titleEn: "Technology", isEnabled: true, order: 7 },
+        { id: "business", titleTa: "வணிகம் & வர்த்தகம்", titleEn: "Business & Markets", isEnabled: true, order: 8 },
+        { id: "videos", titleTa: "வீடியோக்கள்", titleEn: "Video News", isEnabled: true, order: 9 },
+        { id: "shorts", titleTa: "சார்ட்ஸ்", titleEn: "Shorts Reels", isEnabled: true, order: 10 },
+        { id: "photos", titleTa: "புகைப்படக் கதைகள்", titleEn: "Photo Stories", isEnabled: true, order: 11 },
+        { id: "editors", titleTa: "ஆசிரியர் தேர்வு", titleEn: "Editor's Picks", isEnabled: true, order: 12 }
+      ];
+
+      await HomepageConfig.create({
+        heroStory: sampleNews[0]?._id || null,
+        trendingStories: sampleNews.slice(1, 4).map(n => n._id),
+        editorPicks: sampleNews.slice(2, 5).map(n => n._id),
+        featuredVideos: sampleVideos.map(v => v._id),
+        featuredShorts: sampleShorts.map(s => s._id),
+        sections: defaultSections
+      });
+      console.log("✅ Default HomepageConfig seeded in MongoDB");
+    }
+  } catch (error) {
+    console.error("❌ Seeding homepage config failed:", error.message);
+  }
+};
+
 const app = express();
 
 // Trust proxy so req.protocol accurately reports https behind a load balancer (like Render)
@@ -321,6 +516,10 @@ app.use("/api/media", mediaRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/ads", adRoutes);
 app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/videos", videoRoutes);
+app.use("/api/shorts", shortsRoutes);
+app.use("/api/photo-stories", photoStoryRoutes);
+app.use("/api/homepage-config", homepageConfigRoutes);
 
 // Auth Routes
 app.use("/api", authRoutes);

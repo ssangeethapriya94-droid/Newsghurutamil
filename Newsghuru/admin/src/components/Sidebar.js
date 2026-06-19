@@ -6,7 +6,7 @@ import {
   FiZap, FiFolder, FiImage, FiUsers, FiMail, 
   FiBell, FiSettings, FiUser, FiLogOut,
   FiSliders, FiLayers, FiPlusCircle, FiInbox, FiBarChart2,
-  FiChevronDown, FiChevronUp
+  FiChevronDown, FiChevronUp, FiVideo, FiTv, FiCamera, FiLayout
 } from "react-icons/fi";
 import API from "../config/api";
 
@@ -103,6 +103,28 @@ function Sidebar({ isOpen }) {
         <NavLink className="sidebar-link" to="/admin/media">
           <span className="link-icon"><FiImage /></span>
           Media Library
+        </NavLink>
+
+        <div className="sidebar-section">PREMIUM CMS</div>
+
+        <NavLink className="sidebar-link" to="/admin/homepage-builder">
+          <span className="link-icon"><FiLayout /></span>
+          Homepage Builder
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/videos">
+          <span className="link-icon"><FiVideo /></span>
+          Videos
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/shorts">
+          <span className="link-icon"><FiTv /></span>
+          Shorts Reels
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/photo-stories">
+          <span className="link-icon"><FiCamera /></span>
+          Photo Stories
         </NavLink>
 
         <div className="sidebar-section">ADVERTISEMENTS</div>
