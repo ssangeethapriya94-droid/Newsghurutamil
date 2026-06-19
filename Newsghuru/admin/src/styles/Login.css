@@ -45,7 +45,7 @@
 }
 
 .brand-logo-img {
-  height: 120px;
+  height: 180px;
   object-fit: contain;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
   transition: transform 0.3s ease;
@@ -258,8 +258,8 @@
 }
 
 .login-card-logo {
-  max-width: 220px;
-  max-height: 65px;
+  max-width: 280px;
+  max-height: 120px;
   object-fit: contain;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
 }
