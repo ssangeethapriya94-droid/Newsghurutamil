@@ -70,18 +70,19 @@ function Login() {
       <div className="login-side-banner">
         <div className="banner-content">
           <div className="brand-logo-name">
-            <span className="brand-dot"></span>
+            <img src="/NEWS GHURU LOGO PNG.png" alt="NewsGhuru Logo" className="brand-logo-img" />
             <h1>NewsGhuru</h1>
           </div>
+          <p className="brand-slogan-sub">Trusted News &bull; Verified Information &bull; Real-Time Updates</p>
           <div className="brand-underline"></div>
           
           <h2 className="banner-slogan">
-            Stay <span className="highlight">Informed.</span><br />
-            Stay <span className="highlight-orange">Ahead.</span>
+            Your <span className="highlight">News.</span><br />
+            Your <span className="highlight-orange">Voice.</span>
           </h2>
           
           <p className="banner-description">
-            Your trusted source for news, latest stories and updates from around the world.
+            NewsGhuru is a professional digital news platform covering Tamil Nadu, India, World, Politics, Sports, Cinema, Technology, Business, Spiritual, and Breaking News. Stay informed with verified information and real-time updates.
           </p>
           
           <div className="features-list">
@@ -90,8 +91,8 @@ function Login() {
                 <FaBolt />
               </span>
               <div className="feature-text">
-                <h4>Stay Up-to-date</h4>
-                <p>Get instant access to breaking news.</p>
+                <h4>Breaking News Updates</h4>
+                <p>Stay updated with instant breaking news alerts.</p>
               </div>
             </div>
             
@@ -100,8 +101,8 @@ function Login() {
                 <FaShieldAlt />
               </span>
               <div className="feature-text">
-                <h4>Trusted Reporting</h4>
-                <p>We verify facts, you stay informed.</p>
+                <h4>Trusted Journalism</h4>
+                <p>Verified information from authentic sources.</p>
               </div>
             </div>
             
@@ -110,8 +111,8 @@ function Login() {
                 <FaGlobe />
               </span>
               <div className="feature-text">
-                <h4>Multi-category</h4>
-                <p>Sports, Politics, Tech & Entertainment.</p>
+                <h4>Multi-Category Coverage</h4>
+                <p>Politics, sports, cinema, technology, spiritual and business news.</p>
               </div>
             </div>
           </div>
@@ -129,10 +130,8 @@ function Login() {
         <form className="login-form-card" onSubmit={handleLogin}>
           
           <div className="avatar-header">
-            <div className="avatar-circle">
-              <span className="avatar-icon">
-                <FaLock />
-              </span>
+            <div className="login-logo-container">
+              <img src="/NEWS GHURU LOGO PNG.png" alt="NewsGhuru Logo" className="login-card-logo" />
             </div>
             <h2>Welcome Back!</h2>
             <p>To keep connected with us</p>

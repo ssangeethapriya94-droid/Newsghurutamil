@@ -40,16 +40,24 @@
 .brand-logo-name {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   margin-bottom: 12px;
 }
 
-.brand-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ff9800, #ef4444);
-  box-shadow: 0 0 12px rgba(255, 152, 0, 0.85);
+.brand-logo-img {
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+}
+
+.brand-slogan-sub {
+  font-size: 12.5px;
+  color: #ff9800;
+  font-weight: 600;
+  margin-top: 0px;
+  margin-bottom: 24px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .brand-logo-name h1 {
@@ -265,24 +273,18 @@
   margin-bottom: 4px;
 }
 
-.avatar-circle {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(234, 88, 12, 0.08), rgba(239, 68, 68, 0.08));
-  border: 1.5px solid rgba(234, 88, 12, 0.25);
+.login-logo-container {
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  align-items: center;
+  margin-bottom: 18px;
 }
 
-.avatar-circle svg {
-  width: 22px;
-  height: 22px;
-  color: #ff9800;
-  filter: drop-shadow(0 0 4px rgba(255, 152, 0, 0.6));
+.login-card-logo {
+  max-width: 220px;
+  max-height: 65px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
 }
 
 .avatar-header h2 {
