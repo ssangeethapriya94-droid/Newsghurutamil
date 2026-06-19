@@ -39,13 +39,13 @@
 
 .brand-logo-name {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .brand-logo-img {
-  height: 80px;
+  height: 100px;
   object-fit: contain;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
   transition: transform 0.3s ease;
@@ -56,30 +56,21 @@
 }
 
 .brand-slogan-sub {
-  font-size: 13px;
+  font-size: 13.5px;
   color: #ff9800;
   font-weight: 600;
   margin-top: 0px;
-  margin-bottom: 24px;
+  margin-bottom: 48px;
   letter-spacing: 0.8px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  text-align: center;
-  width: 100%;
-}
-
-.brand-underline {
-  width: 48px;
-  height: 3.5px;
-  background: linear-gradient(90deg, #ea580c, #ff9800);
-  border-radius: 2px;
-  margin: 0 auto 40px auto;
+  text-align: left;
 }
 
 .banner-slogan {
   font-size: 44px;
   font-weight: 850;
   line-height: 1.25;
-  margin-bottom: 24px;
+  margin-bottom: 36px;
   color: #ffffff;
 }
 
