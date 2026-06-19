@@ -1,27 +1,84 @@
 import React, { useState, useEffect, useRef } from "react";
 import { 
-  FaBars, FaSun, FaMoon, FaSearch, FaSignOutAlt,
+  FaBars, FaSun, FaMoon, FaSearch, FaTimes, FaBell, 
+  FaFacebookF, FaTwitter, FaYoutube, FaInstagram,
+  FaCalendarAlt, FaChevronDown, FaClock, FaSignOutAlt, FaUserCircle,
   FaHome, FaNewspaper, FaMapMarkerAlt, FaFlag, FaGlobe, FaBriefcase,
   FaFutbol, FaGraduationCap, FaLandmark, FaFilm, FaOm
 } from "react-icons/fa";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, useSearchParams, NavLink } from "react-router-dom";
 import API from "../config/api";
 import SearchOverlay from "./SearchOverlay";
 import DateBar from "./DateBar";
 import AdZone from "./AdZone";
 import "../styles/Header.css";
 
+/* =========================================
+   TAMIL CALENDAR UTILS
+ ========================================= */
+const thithis = [
+  "பிரதமை", "துவிதியை", "திருதியை", "சதுர்த்தி", "பஞ்சமி", "சஷ்டி", "சடுத்து", "அஷ்டமி", 
+  "நவமி", "தசமி", "ஏகாதசி", "துவாதசி", "திரயோதசி", "சதுர்தசி", "பௌர்ணமி", "அமாவாசை"
+];
+const natchathirams = [
+  "அசுவினி", "பரணி", "கார்த்திகை", "ரோகிணி", "மிருகசீரிடம்", "திருவாதிரை", "புனர்பூசம்", "பூசம்",
+  "ஆயில்யம்", "மகம்", "பூரம்", "உத்திரம்", "அஸ்தம்", "சித்திரை", "சுவாதி", "விசாகம்", "அனுஷம்",
+  "கேட்டை", "மூலம்", "பூராடம்", "உத்திராடம்", "திருவோணம்", "அவிட்டம்", "சதயம்", "பூரட்டாதி", "உத்திரட்டாதி", "ரேவதி"
+];
+const yogams = ["சித்த யோகம்", "அமிர்த யோகம்", "மரண யோகம்"];
+const karanams = ["பவம்", "பாலவம்", "கௌலவம்", "சைதுலை", "கரசை", "வனசை", "பத்திரை"];
+const dailyThoughts = [
+  "அன்பும் அறனும் உடைத்தாயின் இல்வாழ்க்கை பண்பும் பயனும் அது.",
+  "விரோதம் தவிர்ப்பதுவே வாழ்வின் அமைதிக்கு வழி.",
+  "கற்க கசடறக் கற்பவை கற்றபின் நிற்க அதற்குத் தக.",
+  "எப்பொருள் யார்யார்வாய்க் கேட்பினும் அப்பொருள் மெய்ப்பொருள் காண்ப தறிவு.",
+  "ஒழுக்கம் விழுப்பம் தரலான் ஒழுக்கம் உயிரினும் ஓம்பப் படும்.",
+  "இனிய உளவாக இன்னாத கூறல் கனிஇருப்பக் காய்கவர்ந் தற்று."
+];
+const dayOfWeekTimings = {
+  0: { nallaNeramMorning: "07:30 AM - 08:30 AM", nallaNeramEvening: "03:30 PM - 04:30 PM", raghuKalam: "04:30 PM - 06:00 PM", yamagandam: "12:00 PM - 01:30 PM", kuligai: "03:00 PM - 04:30 PM", soolam: "மேற்கு", parigaram: "வெல்லம்", chandrashtamam: "பூராடம்" },
+  1: { nallaNeramMorning: "06:30 AM - 07:30 AM", nallaNeramEvening: "04:30 PM - 05:30 PM", raghuKalam: "07:30 AM - 09:00 AM", yamagandam: "10:30 AM - 12:00 PM", kuligai: "01:30 PM - 03:00 PM", soolam: "கிழக்கு", parigaram: "தயிர்", chandrashtamam: "உத்திராடம்" },
+  2: { nallaNeramMorning: "07:30 AM - 08:30 AM", nallaNeramEvening: "04:30 PM - 05:30 PM", raghuKalam: "03:00 PM - 04:30 PM", yamagandam: "09:00 AM - 10:30 AM", kuligai: "12:00 PM - 01:30 PM", soolam: "வடக்கு", parigaram: "பால்", chandrashtamam: "திருவோணம்" },
+  3: { nallaNeramMorning: "09:00 AM - 10:30 AM", nallaNeramEvening: "04:30 PM - 05:30 PM", raghuKalam: "12:00 PM - 01:30 PM", yamagandam: "07:30 AM - 09:00 AM", kuligai: "10:30 AM - 12:00 PM", soolam: "வடக்கு", parigaram: "புளிதண்ணீர்", chandrashtamam: "அவிட்டம்" },
+  4: { nallaNeramMorning: "09:00 AM - 10:30 AM", nallaNeramEvening: "04:30 PM - 05:30 PM", raghuKalam: "01:30 PM - 03:00 PM", yamagandam: "06:00 AM - 07:30 AM", kuligai: "09:00 AM - 10:30 AM", soolam: "தெற்கு", parigaram: "தயிர்", chandrashtamam: "சதயம்" },
+  5: { nallaNeramMorning: "09:00 AM - 10:30 AM", nallaNeramEvening: "04:30 PM - 05:30 PM", raghuKalam: "10:30 AM - 12:00 PM", yamagandam: "03:00 PM - 04:30 PM", kuligai: "07:30 AM - 09:00 AM", soolam: "மேற்கு", parigaram: "சர்க்கரை", chandrashtamam: "பூரட்டாதி" },
+  6: { nallaNeramMorning: "07:30 AM - 08:30 AM", nallaNeramEvening: "05:00 PM - 06:00 PM", raghuKalam: "09:00 AM - 10:30 AM", yamagandam: "01:30 PM - 03:00 PM", kuligai: "06:00 AM - 07:30 AM", soolam: "கிழக்கு", parigaram: "எண்ணெய்", chandrashtamam: "உத்திரட்டாதி" }
+};
+
+const getDynamicCalendarInfo = (targetDate) => {
+  const dVal = targetDate.getDate();
+  const dayVal = targetDate.getDay();
+  const timings = dayOfWeekTimings[dayVal] || dayOfWeekTimings[0];
+  return {
+    ...timings,
+    thithi: thithis[(dVal - 1) % thithis.length],
+    natchathiram: natchathirams[(dVal - 1) % natchathirams.length],
+    yogam: yogams[(dVal + dayVal) % yogams.length],
+    karanam: karanams[(dVal * 2) % karanams.length],
+    thought: dailyThoughts[(dVal - 1) % dailyThoughts.length]
+  };
+};
+
 const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, currentUser }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // Search & Navigation states
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
+  // Date / Time states
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
+
   // Mega dropdown content cache
   const [megaMenuData, setMegaMenuData] = useState({});
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
+  // Breaking updates loop in top strip
+  const [topBreakingText, setTopBreakingText] = useState("சமீபத்திய செய்திகள்...");
+
+  const dropdownRef = useRef(null);
   const profileRef = useRef(null);
 
   const token = localStorage.getItem("readerToken");
@@ -35,9 +92,49 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     }
   })();
 
+  // Get active query date
+  const getUrlDate = () => {
+    try {
+      const dateParam = searchParams.get('date');
+      if (dateParam) {
+        const d = new Date(dateParam);
+        if (!isNaN(d.getTime())) return d;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  };
+
+  const urlDate = getUrlDate();
+  const displayDate = urlDate || currentTime;
+  const calendarInfo = getDynamicCalendarInfo(displayDate);
+
+  // Sync clock
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Fetch top strip breaking news
+  useEffect(() => {
+    API.get("/api/news/category/breaking")
+      .then(res => {
+        if (res.data && res.data.length > 0) {
+          setTopBreakingText(res.data[0].titleTa || res.data[0].title);
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
+
   // Handle outside clicks
   useEffect(() => {
     const handleOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowCalendarDropdown(false);
+      }
       if (profileRef.current && !profileRef.current.contains(e.target)) {
         setShowProfileMenu(false);
       }
@@ -54,6 +151,8 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     if (onLogout) onLogout();
     navigate("/", { replace: true });
   };
+
+
 
   // Mega Navigation hover prefetcher
   const handleCategoryHover = (categorySlug) => {
@@ -77,6 +176,34 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     }
   };
 
+  // Date Navigators
+  const navigateToDate = (newDate) => {
+    const dateString = newDate.toISOString().split('T')[0];
+    navigate(`?date=${dateString}`, { replace: true });
+    setShowCalendarDropdown(false);
+  };
+
+  const handlePrevDay = () => {
+    const d = new Date(displayDate);
+    d.setDate(d.getDate() - 1);
+    navigateToDate(d);
+  };
+
+  const handleNextDay = () => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const d = new Date(displayDate);
+    d.setDate(d.getDate() + 1);
+    if (d <= today) navigateToDate(d);
+  };
+
+  const triggerPushPermission = async () => {
+    if ("Notification" in window) {
+      const permission = await Notification.requestPermission();
+      alert(`அறிவிப்புகள் அனுமதி நிலை: ${permission === "granted" ? "செயல்படுத்தப்பட்டது" : "நிராகரிக்கப்பட்டது"}`);
+    }
+  };
+
   const categories = [
     { name: "முகப்பு",          slug: "/",             icon: <FaHome /> },
     { name: "தற்போதைய செய்தி", slug: "/latest-news",   icon: <FaNewspaper /> },
@@ -91,8 +218,91 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     { name: "ஆன்மீகம்",         slug: "/category/spiritual", icon: <FaOm /> },
   ];
 
+
+  const tamilWeekDays = ["ஞாயிறு", "திங்கள்", "செவ்வாய்", "புதன்", "வியாழன்", "வெள்ளி", "சனி"];
+  const formattedDate = `${displayDate.getDate()} ${displayDate.toLocaleString("ta-IN", { month: "long" })} ${displayDate.getFullYear()}`;
+  const dayName = tamilWeekDays[displayDate.getDay()];
+
   return (
     <div className="premium-header-container glass-panel">
+      {/* LAYER 1: TOP STRIP */}
+      <div className="header-top-strip">
+        <div className="top-strip-left">
+          <div className="live-indicator">
+            <span className="live-dot"></span>
+            <span>நேரலை</span>
+          </div>
+          <span>|</span>
+          <span>சென்னை: 31°C ☀️</span>
+          <span>|</span>
+          {/* Detailed Calendar Popover Trigger */}
+          <div style={{ position: "relative" }} ref={dropdownRef}>
+            <span 
+              className="top-strip-link" 
+              onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
+              style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "600" }}
+            >
+              <FaCalendarAlt /> {formattedDate} ({dayName}) <FaChevronDown size={10} />
+            </span>
+
+            {showCalendarDropdown && (
+              <div className="date-dropdown-menu" style={{ position: "absolute", top: "30px", left: 0, zIndex: 1100 }}>
+                <div className="dinamalar-calendar-panel" style={{ width: "320px", padding: "16px", background: "var(--bg-secondary)", border: "1px solid var(--border-color)", borderRadius: "var(--border-radius-md)" }}>
+                  <div className="dc-header" style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+                    <button className="dc-nav-btn" onClick={handlePrevDay} style={{ background: "none", border: "none", color: "var(--accent-orange)", cursor: "pointer", fontWeight: "700" }}>&lt; முந்தைய</button>
+                    <span style={{ fontWeight: "700" }}>{displayDate.toLocaleDateString("en-GB")}</span>
+                    <button className="dc-nav-btn" onClick={handleNextDay} style={{ background: "none", border: "none", color: "var(--accent-orange)", cursor: "pointer", fontWeight: "700" }}>அடுத்த &gt;</button>
+                  </div>
+                  
+                  <div className="dc-timings-section" style={{ display: "flex", flexDirection: "column", gap: "8px", borderTop: "1px solid var(--border-color)", paddingTop: "10px", fontSize: "0.8rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>நல்ல நேரம் (காலை):</span>
+                      <span style={{ fontWeight: "600" }}>{calendarInfo.nallaNeramMorning}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>நல்ல நேரம் (மாலை):</span>
+                      <span style={{ fontWeight: "600" }}>{calendarInfo.nallaNeramEvening}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>இராகு காலம்:</span>
+                      <span style={{ fontWeight: "600" }}>{calendarInfo.raghuKalam}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>எமகண்டம்:</span>
+                      <span style={{ fontWeight: "600" }}>{calendarInfo.yamagandam}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>திதி:</span>
+                      <span style={{ color: "var(--accent-orange)", fontWeight: "600" }}>{calendarInfo.thithi}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>நட்சத்திரம்:</span>
+                      <span style={{ color: "var(--accent-orange)", fontWeight: "600" }}>{calendarInfo.natchathiram}</span>
+                    </div>
+                    <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "8px", fontStyle: "italic", textAlign: "center", color: "var(--text-secondary)" }}>
+                      "{calendarInfo.thought}"
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="top-strip-center">
+          ⚡ {topBreakingText}
+        </div>
+
+        <div className="top-strip-right">
+          <a href="https://facebook.com" target="_blank" rel="noreferrer" className="top-strip-link"><FaFacebookF /></a>
+          <a href="https://twitter.com" target="_blank" rel="noreferrer" className="top-strip-link"><FaTwitter /></a>
+          <a href="https://youtube.com" target="_blank" rel="noreferrer" className="top-strip-link"><FaYoutube /></a>
+          <a href="https://instagram.com" target="_blank" rel="noreferrer" className="top-strip-link"><FaInstagram /></a>
+          <span>|</span>
+          <span className="top-strip-link" onClick={() => triggerPushPermission()}><FaBell /> அறிவிப்புகள்</span>
+        </div>
+      </div>
+
       {/* LAYER 2: MAIN HEADER BAR */}
       <div className="header-main-bar">
         <div className="brand-section" onClick={() => navigate("/")}>
@@ -117,6 +327,8 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
           <button className="header-icon-btn" onClick={() => setShowSearchOverlay(true)} title="தேடுக">
             <FaSearch />
           </button>
+
+
 
           {/* DARK MODE TOGGLE */}
           <button className="header-icon-btn" onClick={() => setDarkMode(!darkMode)} title="தீம் மாற்றுக">
