@@ -65,6 +65,70 @@ runDiagnostic().catch((err) => {
   console.error("❌ [EMAIL SERVICE] Unexpected error during startup SMTP diagnostics:", err);
 });
 
+const FALLBACK_NEWS_IMAGE = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=800&q=80";
+
+const getPublicImageUrl = (imageUrl) => {
+  if (!imageUrl || typeof imageUrl !== "string" || !imageUrl.trim()) {
+    return FALLBACK_NEWS_IMAGE;
+  }
+
+  const trimmedUrl = imageUrl.trim();
+
+  // If it's already a public absolute URL (not localhost), return it
+  if (/^https?:\/\//i.test(trimmedUrl) && !trimmedUrl.includes("localhost") && !trimmedUrl.includes("127.0.0.1")) {
+    return trimmedUrl;
+  }
+
+  // Determine base URLs
+  const frontendUrl = process.env.FRONTEND_URL || "https://newsghuru.com";
+  const backendUrl = process.env.BACKEND_URL || process.env.REACT_APP_API_URL || "https://api.newsghuru.com";
+
+  let resolvedUrl = trimmedUrl;
+
+  // Handle relative paths
+  if (resolvedUrl.startsWith("/")) {
+    if (resolvedUrl.includes("/uploads/")) {
+      resolvedUrl = `${backendUrl.replace(/\/$/, "")}${resolvedUrl}`;
+    } else {
+      resolvedUrl = `${frontendUrl.replace(/\/$/, "")}${resolvedUrl}`;
+    }
+  }
+
+  // Replace localhost or 127.0.0.1 with the configured public backendUrl/frontendUrl if they are defined
+  if (resolvedUrl.includes("localhost") || resolvedUrl.includes("127.0.0.1")) {
+    const localhostPattern = /https?:\/\/localhost:\d+/gi;
+    const loopbackPattern = /https?:\/\/127\.0\.0\.1:\d+/gi;
+
+    if (resolvedUrl.includes("/uploads/")) {
+      const targetBackend = (backendUrl && !backendUrl.includes("localhost") && !backendUrl.includes("127.0.0.1")) 
+        ? backendUrl 
+        : "https://api.newsghuru.com";
+      resolvedUrl = resolvedUrl.replace(localhostPattern, targetBackend).replace(loopbackPattern, targetBackend);
+    } else {
+      const targetFrontend = (frontendUrl && !frontendUrl.includes("localhost") && !frontendUrl.includes("127.0.0.1")) 
+        ? frontendUrl 
+        : "https://newsghuru.com";
+      resolvedUrl = resolvedUrl.replace(localhostPattern, targetFrontend).replace(loopbackPattern, targetFrontend);
+    }
+  }
+
+  // If after all processing, it's still a localhost or invalid URL, return the fallback
+  if (resolvedUrl.includes("localhost") || resolvedUrl.includes("127.0.0.1") || !/^https?:\/\//i.test(resolvedUrl)) {
+    console.warn(`⚠️ [EMAIL SERVICE] Localhost/invalid image URL detected: "${imageUrl}". Falling back to public placeholder for email client compatibility.`);
+    return FALLBACK_NEWS_IMAGE;
+  }
+
+  return resolvedUrl;
+};
+
+const getLogoUrl = () => {
+  const frontendUrl = process.env.FRONTEND_URL;
+  if (frontendUrl && !frontendUrl.includes("localhost") && !frontendUrl.includes("127.0.0.1")) {
+    return `${frontendUrl.replace(/\/$/, "")}/NEWS%20GHURU%20LOGO%20PNG.png`;
+  }
+  return "https://raw.githubusercontent.com/ssangeethapriya94-droid/Newsghurutamil/main/Newsghuru/users/public/NEWS%20GHURU%20LOGO%20PNG.png";
+};
+
 const sendNewsPublishEmail = async (userEmails, news) => {
   if (!userEmails || userEmails.length === 0) {
     console.log("ℹ️ [EMAIL] No subscribed users found to send notifications to.");
@@ -79,24 +143,14 @@ const sendNewsPublishEmail = async (userEmails, news) => {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  // Ensure the news image is an absolute URL for email clients
-  const rawImage = news.image || news.coverImage;
-  const absoluteImageUrl = rawImage && rawImage.startsWith('/') 
-    ? `${frontendUrl}${rawImage}` 
-    : rawImage;
+  const finalImageUrl = getPublicImageUrl(news.coverImage || news.image);
+  const logoUrl = getLogoUrl();
 
   const mailOptions = {
     from: `"NewsGhuru" <${process.env.SMTP_EMAIL}>`,
     to: process.env.SMTP_EMAIL,
     bcc: userEmails, // Use BCC to hide user emails from each other
     subject: `📰 NewsGhuru Breaking News: ${news.title}`,
-    attachments: [
-      {
-        filename: 'NEWS_GHURU_LOGO.png',
-        path: LOGO_PATH,
-        cid: 'newsghurulogo' // same cid value as in the html img src
-      }
-    ],
     html: `<!DOCTYPE html>
 <html lang="ta">
 <head>
@@ -134,10 +188,10 @@ const sendNewsPublishEmail = async (userEmails, news) => {
                   <td align="center" style="padding:22px 20px 18px;">
                     <!-- Logo image -->
                     <img
-                      src="cid:newsghurulogo"
+                      src="${logoUrl}"
                       alt="நியூஸ் குரு Logo"
                       width="90"
-                      style="display:block;margin:0 auto 10px;border:0;height:auto;"
+                      style="display:block;margin:0 auto 10px;border:0;height:auto;width:90px;"
                     />
                     <!-- Tamil brand name -->
                     <div style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:1px;line-height:1.1;margin-bottom:4px;">
@@ -175,18 +229,16 @@ const sendNewsPublishEmail = async (userEmails, news) => {
           </tr>
 
           <!-- ═══════════════ FEATURED IMAGE ═══════════════ -->
-          ${absoluteImageUrl ? `
           <tr>
             <td style="padding:0 20px;">
               <img
-                src="${absoluteImageUrl}"
+                src="${finalImageUrl}"
                 alt="${news.title}"
                 width="560"
-                style="display:block;width:100%;max-width:560px;height:auto;border-radius:10px;object-fit:cover;"
+                style="display:block;width:560px;max-width:100%;height:auto;border-radius:10px;object-fit:cover;"
               />
             </td>
           </tr>
-          ` : ''}
 
           <!-- ═══════════════ CONTENT BODY ═══════════════ -->
           <tr>
@@ -290,55 +342,27 @@ const sendNewsPublishEmail = async (userEmails, news) => {
               <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
                 <tr>
                   <!-- Facebook -->
-                  <td style="padding:0 8px;">
-                    <a href="https://www.facebook.com/share/1JWbyTwjG3/" style="text-decoration:none;">
-                      <table cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                          <td align="center" valign="middle"
-                              style="width:42px;height:42px;background-color:#1877f2;border-radius:50%;">
-                            <span style="color:#ffffff;font-size:20px;font-weight:900;line-height:1;font-family:Arial,sans-serif;">f</span>
-                          </td>
-                        </tr>
-                      </table>
+                  <td style="padding:0 10px;">
+                    <a href="https://www.facebook.com/share/1JWbyTwjG3/" target="_blank" style="text-decoration:none; display:block;">
+                      <img src="https://img.icons8.com/color/48/facebook-new.png" alt="Facebook" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
                     </a>
                   </td>
-                  <!-- X / Twitter -->
-                  <td style="padding:0 8px;">
-                    <a href="https://x.com/news_ghuruTamil" style="text-decoration:none;">
-                      <table cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                          <td align="center" valign="middle"
-                              style="width:42px;height:42px;background-color:#000000;border-radius:50%;">
-                            <span style="color:#ffffff;font-size:17px;font-weight:900;line-height:1;font-family:Arial,sans-serif;">&#120143;</span>
-                          </td>
-                        </tr>
-                      </table>
+                  <!-- X (Twitter) -->
+                  <td style="padding:0 10px;">
+                    <a href="https://x.com/news_ghuruTamil" target="_blank" style="text-decoration:none; display:block;">
+                      <img src="https://img.icons8.com/color/48/twitterx.png" alt="X (Twitter)" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
                     </a>
                   </td>
                   <!-- Instagram -->
-                  <td style="padding:0 8px;">
-                    <a href="https://www.instagram.com/newsghuru_tamil/" style="text-decoration:none;">
-                      <table cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                          <td align="center" valign="middle"
-                              style="width:42px;height:42px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border-radius:50%;">
-                            <span style="color:#ffffff;font-size:20px;line-height:1;">&#128247;</span>
-                          </td>
-                        </tr>
-                      </table>
+                  <td style="padding:0 10px;">
+                    <a href="https://www.instagram.com/newsghuru_tamil/" target="_blank" style="text-decoration:none; display:block;">
+                      <img src="https://img.icons8.com/color/48/instagram-new.png" alt="Instagram" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
                     </a>
                   </td>
                   <!-- YouTube -->
-                  <td style="padding:0 8px;">
-                    <a href="https://youtube.com/@newsghurutamil" style="text-decoration:none;">
-                      <table cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                          <td align="center" valign="middle"
-                              style="width:42px;height:42px;background-color:#ff0000;border-radius:50%;">
-                            <span style="color:#ffffff;font-size:17px;line-height:1;">&#9654;</span>
-                          </td>
-                        </tr>
-                      </table>
+                  <td style="padding:0 10px;">
+                    <a href="https://youtube.com/@newsghurutamil" target="_blank" style="text-decoration:none; display:block;">
+                      <img src="https://img.icons8.com/color/48/youtube-play.png" alt="YouTube" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
                     </a>
                   </td>
                 </tr>
