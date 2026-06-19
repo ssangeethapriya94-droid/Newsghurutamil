@@ -72,7 +72,6 @@ function Login() {
           <div className="brand-logo-name">
             <img src="/NEWS GHURU LOGO English.png" alt="NewsGhuru Logo" className="brand-logo-img" />
           </div>
-          <p className="brand-slogan-sub">Trusted News &bull; Verified Information &bull; Real-Time Updates</p>
           
           <h2 className="banner-slogan">
             Your <span className="highlight">News.</span><br />
