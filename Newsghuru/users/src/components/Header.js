@@ -88,7 +88,6 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     { name: "கல்வி",            slug: "/education",     icon: <FaGraduationCap /> },
     { name: "அரசியல்",          slug: "/politics",      icon: <FaLandmark /> },
     { name: "சினிமா",           slug: "/cinema",        icon: <FaFilm /> },
-    { name: "ஆன்மீகம்",         slug: "/category/spiritual", icon: <FaOm /> },
   ];
 
   return (

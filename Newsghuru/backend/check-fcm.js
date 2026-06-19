@@ -2,6 +2,11 @@
  * FCM Token & Subscription Diagnostics
  * Run: node check-fcm.js
  */
+const dns = require("dns");
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
+
 require("dotenv").config();
 const mongoose = require("mongoose");
 

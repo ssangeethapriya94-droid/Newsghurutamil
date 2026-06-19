@@ -112,11 +112,6 @@ function Sidebar({ isOpen }) {
           Homepage Builder
         </NavLink>
 
-        <NavLink className="sidebar-link" to="/admin/videos">
-          <span className="link-icon"><FiVideo /></span>
-          Videos
-        </NavLink>
-
         <NavLink className="sidebar-link" to="/admin/shorts">
           <span className="link-icon"><FiTv /></span>
           Shorts Reels

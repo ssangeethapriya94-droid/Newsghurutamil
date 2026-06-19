@@ -41,7 +41,7 @@ function HomepageBuilder() {
       setSelectedShorts((currentConfig.featuredShorts || []).map(s => s._id));
       
       // Sort sections by order
-      const sortedSections = [...(currentConfig.sections || [])].sort((a, b) => a.order - b.order);
+      const sortedSections = [...(currentConfig.sections || [])].filter(s => s.id !== "videos").sort((a, b) => a.order - b.order);
       setSections(sortedSections);
 
       // Fetch news, videos, shorts
@@ -95,7 +95,7 @@ function HomepageBuilder() {
       setSelectedVideos((newConfig.featuredVideos || []).map(v => v._id));
       setSelectedShorts((newConfig.featuredShorts || []).map(s => s._id));
       
-      const sortedSections = [...(newConfig.sections || [])].sort((a, b) => a.order - b.order);
+      const sortedSections = [...(newConfig.sections || [])].filter(s => s.id !== "videos").sort((a, b) => a.order - b.order);
       setSections(sortedSections);
     } catch (error) {
       console.error("Save config error:", error);
@@ -372,27 +372,6 @@ function HomepageBuilder() {
 
           {/* VIDEOS & SHORTS CMS PICKERS */}
           <div style={{ background: "rgba(255,255,255,0.02)", padding: "20px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
-            <h3 style={{ margin: "0 0 10px 0", color: "var(--text-main)" }}>📹 Featured Video News Track</h3>
-            <input 
-              type="text" 
-              placeholder="Search videos..." 
-              value={videoSearch} 
-              onChange={(e) => setVideoSearch(e.target.value)}
-              style={{ width: "100%", padding: "10px 14px", borderRadius: "6px", border: "1px solid var(--border-color)", marginBottom: "15px", boxSizing: "border-box" }}
-            />
-            <div style={{ maxHeight: "150px", overflowY: "auto", border: "1px solid var(--border-color)", borderRadius: "6px", padding: "10px", marginBottom: "20px" }}>
-              {filteredVideos.map(v => (
-                <label key={v._id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "6px 0", cursor: "pointer", fontSize: "14px" }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedVideos.includes(v._id)}
-                    onChange={() => toggleSelection(v._id, selectedVideos, setSelectedVideos)}
-                  />
-                  <span>[{v.category}] {v.title}</span>
-                </label>
-              ))}
-            </div>
-
             <h3 style={{ margin: "0 0 10px 0", color: "var(--text-main)" }}>📱 Featured Shorts Reels</h3>
             <input 
               type="text" 

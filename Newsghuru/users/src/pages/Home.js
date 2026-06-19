@@ -820,83 +820,6 @@ const Home = () => {
     );
   };
 
-  const renderVideosSection = (titleTa) => {
-    if (resolvedFeaturedVideos.length === 0) return null;
-
-    return (
-      <div style={{ marginBottom: "40px" }}>
-        <div className="section-headline-bar" style={{ borderColor: "var(--accent-red)" }}>
-          <h2 className="section-title-premium" style={{ color: "var(--accent-red)" }}>
-            <FaPlay style={{ color: "var(--accent-red)", marginRight: "8px" }} /> {titleTa || "வீடியோ செய்திகள்"}
-          </h2>
-        </div>
-
-        {/* Large Video Box & Selector Track */}
-        <div style={{ display: "grid", gridTemplateColumns: isLargeScreen ? "1.6fr 1fr" : "1fr", gap: "25px" }}>
-          {/* Main Video Box */}
-          {activeVideoUrl ? (
-            <div style={{ background: "#000", borderRadius: "10px", overflow: "hidden", position: "relative", height: "350px", border: "1px solid var(--border-color)" }}>
-              {activeVideoUrl.includes("youtube.com") || activeVideoUrl.includes("youtu.be") || activeVideoUrl.includes("embed") ? (
-                <iframe
-                  src={activeVideoUrl}
-                  title={activeVideoTitle}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  style={{ width: "100%", height: "100%" }}
-                ></iframe>
-              ) : (
-                <video
-                  src={activeVideoUrl}
-                  controls
-                  style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                ></video>
-              )}
-            </div>
-          ) : (
-            <div style={{ background: "#000", borderRadius: "10px", height: "350px" }}></div>
-          )}
-
-          {/* Selector track */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", overflowY: "auto", maxHeight: "350px", paddingRight: "5px" }}>
-            <span style={{ fontSize: "12px", fontWeight: "bold", color: "var(--text-muted)" }}>விளையாட வீடியோவை தேர்வு செய்யுக:</span>
-            {resolvedFeaturedVideos.map((video) => {
-              const isActive = video.youtubeUrl === activeVideoUrl;
-              return (
-                <div 
-                  key={video._id}
-                  onClick={() => {
-                    setActiveVideoUrl(video.youtubeUrl);
-                    setActiveVideoTitle(video.title);
-                  }}
-                  style={{
-                    display: "flex",
-                    gap: "12px",
-                    cursor: "pointer",
-                    padding: "8px",
-                    borderRadius: "8px",
-                    border: `1px solid ${isActive ? "var(--accent-red)" : "var(--border-color)"}`,
-                    background: isActive ? "rgba(239, 68, 68, 0.05)" : "var(--bg-secondary)",
-                    transition: "0.2s"
-                  }}
-                >
-                  <div style={{ position: "relative", width: "90px", height: "55px", flexShrink: 0 }}>
-                    <img src={video.thumbnail} alt={video.title} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px" }} />
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.3)", borderRadius: "4px" }}>
-                      <FaPlay size={12} color="white" />
-                    </div>
-                  </div>
-                  <h4 style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: "2", WebkitBoxOrient: "vertical", overflow: "hidden", margin: 0 }}>
-                    {video.title}
-                  </h4>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const renderShortsSection = (titleTa) => {
     if (resolvedFeaturedShorts.length === 0) return null;
@@ -1088,7 +1011,7 @@ const Home = () => {
       case "business":
         return renderBusinessSection(titleTa);
       case "videos":
-        return renderVideosSection(titleTa);
+        return null;
       case "shorts":
         return renderShortsSection(titleTa);
       case "photos":
@@ -1190,19 +1113,6 @@ const Home = () => {
               </div>
             </div>
           </div>
-
-          {/* Weather Widget */}
-          <div className="premium-widget" style={{ padding: "16px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-secondary)" }}>
-            <h3 className="widget-title-serif" style={{ fontSize: "1.05rem", fontWeight: "700", borderBottom: "2px solid var(--border-color)", paddingBottom: "8px", marginTop: 0 }}>வானிலை அறிக்கை <FaCloudSun /></h3>
-            <div style={{ display: "flex", alignItems: "center", gap: "20px", marginTop: "12px" }}>
-              <span style={{ fontSize: "2.5rem" }}>☀️</span>
-              <div>
-                <span style={{ fontSize: "1.4rem", fontWeight: "800", display: "block" }}>31°C</span>
-                <span style={{ color: "var(--text-muted)", fontSize: "0.82rem", display: "block" }}>சென்னை, தமிழ்நாடு</span>
-              </div>
-            </div>
-          </div>
-
           <AdZone position="SIDEBAR" />
 
           {/* Reader Poll Widget */}

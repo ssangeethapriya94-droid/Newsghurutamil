@@ -39,7 +39,6 @@ import UsersManagement from "./pages/UsersManagement";
 import MediaLibrary from "./pages/MediaLibrary";
 import ContactQueries from "./pages/ContactQueries";
 import SubscriptionPlans from "./pages/SubscriptionPlans";
-import Videos from "./pages/Videos";
 import Shorts from "./pages/Shorts";
 import PhotoStories from "./pages/PhotoStories";
 import HomepageBuilder from "./pages/HomepageBuilder";
@@ -261,7 +260,6 @@ function App() {
         <Route path="/admin/subscriptions" element={<ProtectedRoute requiredRole="admin"><Layout><SubscriptionPlans /></Layout></ProtectedRoute>} />
         <Route path="/admin/revenue" element={<ProtectedRoute requiredRole="admin"><Layout><Revenue /></Layout></ProtectedRoute>} />
         <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
-        <Route path="/admin/videos" element={<ProtectedRoute requiredRole="admin"><Layout><Videos /></Layout></ProtectedRoute>} />
         <Route path="/admin/shorts" element={<ProtectedRoute requiredRole="admin"><Layout><Shorts /></Layout></ProtectedRoute>} />
         <Route path="/admin/photo-stories" element={<ProtectedRoute requiredRole="admin"><Layout><PhotoStories /></Layout></ProtectedRoute>} />
         <Route path="/admin/homepage-builder" element={<ProtectedRoute requiredRole="admin"><Layout><HomepageBuilder /></Layout></ProtectedRoute>} />
