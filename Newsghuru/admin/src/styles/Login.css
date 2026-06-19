@@ -39,43 +39,40 @@
 
 .brand-logo-name {
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .brand-logo-img {
-  height: 56px;
+  height: 80px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+  transition: transform 0.3s ease;
+}
+
+.brand-logo-img:hover {
+  transform: scale(1.03);
 }
 
 .brand-slogan-sub {
-  font-size: 12.5px;
+  font-size: 13px;
   color: #ff9800;
   font-weight: 600;
   margin-top: 0px;
   margin-bottom: 24px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.brand-logo-name h1 {
-  font-size: 28px;
-  font-weight: 850;
-  margin: 0;
-  background: linear-gradient(to right, #ffffff 45%, #ea580c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: 0.5px;
+  text-align: center;
+  width: 100%;
 }
 
 .brand-underline {
-  width: 32px;
+  width: 48px;
   height: 3.5px;
   background: linear-gradient(90deg, #ea580c, #ff9800);
   border-radius: 2px;
-  margin-bottom: 40px;
+  margin: 0 auto 40px auto;
 }
 
 .banner-slogan {
