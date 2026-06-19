@@ -234,7 +234,7 @@ function AdZone({ position }) {
       case "HEADER_BANNER":
         return {
           ...baseImageStyle,
-          maxHeight: "80px",
+          maxHeight: "100px",
           objectFit: "contain"
         };
       case "TOP_BANNER":
@@ -297,7 +297,7 @@ function AdZone({ position }) {
       case "HEADER_BANNER":
         return {
           ...baseStyle,
-          maxWidth: "728px",
+          maxWidth: "1150px",
           margin: "0",
           background: "transparent",
           border: "none",
