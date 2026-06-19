@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
+import "../styles/Home.css";
 
 const stripHtml = (html) => {
   if (!html) return "";
@@ -923,7 +924,7 @@ const Home = () => {
         </div>
 
         {/* Horizontal scroll of vertical reels */}
-        <div style={{ display: "flex", gap: "15px", overflowX: "auto", paddingBottom: "15px", scrollSnapType: "x mandatory" }}>
+        <div className="shorts-scroll-container" style={{ display: "flex", gap: "15px", overflowX: "auto", paddingBottom: "15px", scrollSnapType: "x mandatory" }}>
           {resolvedFeaturedShorts.map(sh => (
             <motion.div 
               key={sh._id}
