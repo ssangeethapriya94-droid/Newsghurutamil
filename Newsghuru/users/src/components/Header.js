@@ -11,7 +11,7 @@ import DateBar from "./DateBar";
 import AdZone from "./AdZone";
 import "../styles/Header.css";
 
-const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, currentUser }) => {
+const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, currentUser, visitorCount }) => {
   const navigate = useNavigate();
 
   // Search & Navigation states
@@ -208,7 +208,7 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
       </div>
 
       {/* LAYER 2.5: DATE BAR */}
-      <DateBar />
+      <DateBar visitorCount={visitorCount} />
 
       {/* LAYER 3: MEGA MENU NAVBAR */}
       <nav className="mega-nav-bar">

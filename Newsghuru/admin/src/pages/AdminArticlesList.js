@@ -110,6 +110,7 @@ function AdminArticlesList({ defaultFilter = "pending" }) {
                 <th>Editor</th>
                 <th>Category</th>
                 <th>Date</th>
+                <th>Views</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -122,6 +123,11 @@ function AdminArticlesList({ defaultFilter = "pending" }) {
                   <td><span className="reporter-name" style={{fontWeight: 600, color: 'var(--accent-orange)', background: 'rgba(244, 180, 0, 0.15)'}}>{article.editor || "Editor"}</span></td>
                   <td><span className="category-tag">{article.category}</span></td>
                   <td>{article.date}</td>
+                  <td>
+                    <span style={{ fontWeight: 600, color: 'var(--accent-orange)' }}>
+                      👁 {(article.views || 0).toLocaleString()}
+                    </span>
+                  </td>
                   <td>
                     <span className={`status-badge ${getStatusClass(article.status)}`}>
                       {article.status === "Pending Admin Verification" ? "Pending Approval" : article.status}

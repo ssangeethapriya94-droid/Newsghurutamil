@@ -6,7 +6,7 @@ import {
 import { 
   FiFileText, FiClock, FiCheckCircle, FiXCircle, 
   FiUsers, FiZap, FiPlusSquare, FiEye, FiMoreVertical, 
-  FiArrowRight, FiList, FiSliders, FiTv
+  FiArrowRight, FiList, FiSliders, FiTv, FiHeart, FiActivity
 } from "react-icons/fi";
 import "../styles/AdminDashboard.css";
 import { useNavigate } from "react-router-dom";
@@ -260,6 +260,39 @@ function AdminDashboard() {
           </div>
         </div>
 
+        <div className="metric-card orange-glow">
+          <div className="metric-icon-bg bg-orange">
+            <FiEye />
+          </div>
+          <div className="metric-details">
+            <h3>Total Viewers</h3>
+            <p className="value">{(stats.totalViewers || 0).toLocaleString()}</p>
+            <span className="trend-text green-trend">Website visitors</span>
+          </div>
+        </div>
+
+        <div className="metric-card green-glow">
+          <div className="metric-icon-bg bg-green">
+            <FiActivity />
+          </div>
+          <div className="metric-details">
+            <h3>Login Users</h3>
+            <p className="value">{stats.loginUsers || 0}</p>
+            <span className="trend-text green-trend">Active last 15 mins</span>
+          </div>
+        </div>
+
+        <div className="metric-card yellow-glow">
+          <div className="metric-icon-bg bg-yellow">
+            <FiHeart />
+          </div>
+          <div className="metric-details">
+            <h3>Subscribers</h3>
+            <p className="value">{stats.subscribersCount || 0}</p>
+            <span className="trend-text green-trend">Subscribed users</span>
+          </div>
+        </div>
+
       </div>
 
       {/* Redesigned Grid Layout with Charts on the Left to fill the Empty Space */}
@@ -377,6 +410,7 @@ function AdminDashboard() {
                     <th>Reporter</th>
                     <th>Category</th>
                     <th>Date</th>
+                    <th>Views</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -397,6 +431,11 @@ function AdminDashboard() {
                           <span className="category-label">{article.category}</span>
                         </td>
                         <td className="date-cell">{article.date}</td>
+                        <td>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontWeight: 600, color: "var(--accent-orange)" }}>
+                            <FiEye size={13} /> {(article.views || 0).toLocaleString()}
+                          </span>
+                        </td>
                         <td>
                           <span className={`status-pill ${getStatusBadgeClass(article.status)}`}>
                             {article.status && article.status.includes("Pending") ? "Pending Approval" : article.status}

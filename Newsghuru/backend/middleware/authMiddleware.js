@@ -26,6 +26,12 @@ const verifyToken = async (req, res, next) => {
 
     // Grant access to protected route
     req.user = currentUser;
+
+    // Update lastActiveAt in the background (non-blocking) for "Login Users" tracking
+    User.findByIdAndUpdate(decoded.userId, { lastActiveAt: new Date() }).catch(
+      (err) => console.error("Failed to update lastActiveAt:", err)
+    );
+
     next();
   } catch (error) {
     console.error("Auth middleware error:", error);

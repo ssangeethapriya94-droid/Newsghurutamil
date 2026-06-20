@@ -32,14 +32,16 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: 17px;
   color: var(--text-secondary, #cbd5e1);
 }
 
 .date-icon {
   color: var(--accent-orange);
-  font-size: 16px;
+  font-size: 18px;
 }
+
+
 
 .time-section span {
   background: var(--bg-card, var(--bg-primary));

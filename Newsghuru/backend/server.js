@@ -29,6 +29,7 @@ const videoRoutes = require("./routes/videoRoutes");
 const shortsRoutes = require("./routes/shortsRoutes");
 const photoStoryRoutes = require("./routes/photoStoryRoutes");
 const homepageConfigRoutes = require("./routes/homepageConfigRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 
 // Connect MongoDB
 connectDB().then(async () => {
@@ -532,6 +533,7 @@ app.use("/api/videos", videoRoutes);
 app.use("/api/shorts", shortsRoutes);
 app.use("/api/photo-stories", photoStoryRoutes);
 app.use("/api/homepage-config", homepageConfigRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // Auth Routes
 app.use("/api", authRoutes);

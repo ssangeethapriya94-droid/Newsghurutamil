@@ -3,8 +3,51 @@ import API from "../config/api";
 import RelativeTime from "../components/RelativeTime";
 import AdZone from "../components/AdZone";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { FaArrowRight, FaClock, FaFire } from "react-icons/fa";
+import { 
+  FaArrowRight, FaClock, FaFire, FaGlobe, FaFutbol, FaBriefcase, FaFilm, 
+  FaGraduationCap, FaLandmark, FaMobileAlt, FaMapMarkerAlt, FaFlag, FaNewspaper 
+} from "react-icons/fa";
 import "../styles/CategoryPage.css";
+
+const getProfessionalIcon = (iconStr, slug) => {
+  switch (iconStr) {
+    case "🏆":
+      return <FaFutbol />;
+    case "💼":
+      return <FaBriefcase />;
+    case "📚":
+      return <FaGraduationCap />;
+    case "🏛":
+      return <FaLandmark />;
+    case "🎬":
+      return <FaFilm />;
+    case "💻":
+    case "📱":
+      return <FaMobileAlt />;
+    case "🏔":
+    case "🗺":
+      return <FaMapMarkerAlt />;
+    case "🇮🇳":
+    case "🚩":
+      return <FaFlag />;
+    case "🌍":
+    case "🌎":
+    case "🌏":
+      return <FaGlobe />;
+    default:
+      const lowerSlug = slug?.toLowerCase() || "";
+      if (lowerSlug.includes("sport")) return <FaFutbol />;
+      if (lowerSlug.includes("business")) return <FaBriefcase />;
+      if (lowerSlug.includes("education")) return <FaGraduationCap />;
+      if (lowerSlug.includes("politics")) return <FaLandmark />;
+      if (lowerSlug.includes("cinema")) return <FaFilm />;
+      if (lowerSlug.includes("tech")) return <FaMobileAlt />;
+      if (lowerSlug.includes("tamil")) return <FaMapMarkerAlt />;
+      if (lowerSlug.includes("india")) return <FaFlag />;
+      if (lowerSlug.includes("world")) return <FaGlobe />;
+      return <FaNewspaper />;
+  }
+};
 
 // A generic, beautiful category page used by all section pages
 const CategoryPage = ({
@@ -96,10 +139,12 @@ const CategoryPage = ({
     <div className="cat-page-wrapper">
 
       {/* ── HERO SECTION HEADER ── */}
-      <div className="cat-hero-header" style={{ "--cat-color": headerColor || "linear-gradient(135deg, #ea580c, #f59e0b)" }}>
+      <div className="cat-hero-header" style={{ "--cat-color": "var(--brand-gradient)" }}>
         <div className="cat-hero-accent"></div>
         <div className="cat-hero-content">
-          <span className="cat-hero-icon">{icon || "📰"}</span>
+          <span className="cat-hero-icon">
+            {getProfessionalIcon(icon, resolvedSlug)}
+          </span>
           <div>
             <h1 className="cat-hero-title">{title || resolvedSlug}</h1>
             <p className="cat-hero-sub">{subtitle || `${title} குறித்த உடனடி செய்திகள் மற்றும் புதிய தகவல்கள்`}</p>

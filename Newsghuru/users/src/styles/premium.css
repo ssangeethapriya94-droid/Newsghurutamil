@@ -152,7 +152,7 @@
 
 .brand-name-serif {
   font-family: var(--font-serif);
-  font-size: 2.1rem;
+  font-size: 2.4rem;
   font-weight: 800;
   letter-spacing: -0.5px;
   background: var(--brand-gradient);
@@ -265,8 +265,8 @@
   height: 100%;
   display: inline-flex;
   align-items: center;
-  padding: 0 18px;
-  font-size: 0.9rem;
+  padding: 0 14px;
+  font-size: 0.92rem;
   font-weight: 700;
   color: rgba(255,255,255,0.95);
   text-decoration: none;
@@ -353,7 +353,7 @@
 
 .mega-dropdown-title {
   font-family: var(--font-serif);
-  font-size: 0.88rem;
+  font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.3;
   color: var(--text-primary);
@@ -1264,4 +1264,106 @@
   box-sizing: border-box;
   width: 100%;
 }
+
+/* =========================================
+   RESPONSIVE OVERRIDES FOR HEADER
+========================================= */
+
+@media (max-width: 768px) {
+  .header-main-bar {
+    height: 75px !important;
+    padding: 0 16px !important;
+  }
+  
+  .brand-logo-img {
+    height: 48px !important;
+  }
+  
+  .brand-name-serif {
+    font-size: 1.5rem !important;
+  }
+  
+  .brand-section {
+    gap: 8px !important;
+  }
+  
+  .main-bar-actions {
+    gap: 10px !important;
+  }
+  
+  .header-icon-btn {
+    font-size: 1.05rem !important;
+    padding: 6px !important;
+  }
+  
+  .subscribe-header-btn, .login-btn {
+    padding: 6px 12px !important;
+    font-size: 0.78rem !important;
+    margin-right: 4px !important;
+  }
+
+  .premium-badge-header {
+    padding: 5px 10px !important;
+    font-size: 0.72rem !important;
+    margin-right: 4px !important;
+  }
+  
+  .user-avatar {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0.95rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-main-bar {
+    height: 65px !important;
+    padding: 0 8px !important;
+  }
+  
+  .brand-logo-img {
+    height: 38px !important;
+  }
+  
+  .brand-name-serif {
+    font-size: 1.25rem !important;
+  }
+  
+  .brand-section {
+    gap: 4px !important;
+  }
+
+  .brand-section .menu-icon {
+    font-size: 1.15rem !important;
+    margin-right: 6px !important;
+  }
+  
+  .main-bar-actions {
+    gap: 6px !important;
+  }
+  
+  .header-icon-btn {
+    font-size: 0.95rem !important;
+    padding: 4px !important;
+  }
+  
+  .subscribe-header-btn, .login-btn {
+    padding: 4px 8px !important;
+    font-size: 0.72rem !important;
+    margin-right: 2px !important;
+  }
+
+  .premium-badge-header {
+    padding: 4px 8px !important;
+    font-size: 0.68rem !important;
+    margin-right: 2px !important;
+  }
+  
+  .user-avatar {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.85rem !important;
+  }
+}
+
 

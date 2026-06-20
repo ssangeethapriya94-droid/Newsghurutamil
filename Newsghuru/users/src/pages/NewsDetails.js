@@ -45,7 +45,11 @@ const NewsDetails = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [likeCount, setLikeCount] = useState(24);
-  const [viewCount, setViewCount] = useState(120);
+  const [viewCount, setViewCount] = useState(() => {
+    // Initialize from state (article passed from navigation) if available
+    const stateViews = location.state?.views;
+    return stateViews ? parseInt(stateViews) || 0 : 0;
+  });
 
   // Comments state
   const [comments, setComments] = useState([]);
@@ -111,8 +115,20 @@ const NewsDetails = () => {
       })
       .catch(err => console.error("Error fetching related news", err));
 
-    // Views calculation
-    setViewCount(news.views && news.views !== "0" ? parseInt(news.views) : Math.floor(180 + (news.title.length * 5)));
+    // Increment and fetch real views from backend
+    API.put(`/api/news/${news._id}/view`)
+      .then(res => {
+        if (res.data && res.data.success) {
+          setViewCount(res.data.views);
+        } else {
+          // Fallback to existing views value
+          setViewCount(news.views ? parseInt(news.views) || 0 : 0);
+        }
+      })
+      .catch(() => {
+        // Fallback on error
+        setViewCount(news.views ? parseInt(news.views) || 0 : 0);
+      });
 
     // Likes count state
     setLikeCount(Math.floor(25 + (news.title.length % 7) * 4));

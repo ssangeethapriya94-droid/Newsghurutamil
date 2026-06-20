@@ -5,6 +5,7 @@ const multer = require("multer");
 const News = require("../models/News");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
+const VisitorStats = require("../models/VisitorStats");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 const messaging = require("../config/firebaseAdmin");
 const { sendNewsPublishEmail, getTransporter } = require("../utils/emailService");
@@ -401,6 +402,23 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// PUT /api/news/:id/view - Increment news article view count (public)
+router.put("/:id/view", async (req, res) => {
+  try {
+    const news = await News.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    if (!news) {
+      return res.status(404).json({ message: "News not found" });
+    }
+    res.json({ success: true, views: news.views });
+  } catch (error) {
+    console.error("Error incrementing views:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // 🗑️ DELETE NEWS BY DATE
 router.delete("/date/:dateString", verifyToken, authorizeRoles("admin"), async (req, res) => {
@@ -810,6 +828,21 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
       })
     }));
 
+    // Total viewers from VisitorStats
+    const visitorDoc = await VisitorStats.findOne();
+    const totalViewers = visitorDoc ? visitorDoc.count : 0;
+
+    // Login users: active in last 15 minutes
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+    const loginUsers = await User.countDocuments({
+      lastActiveAt: { $gte: fifteenMinutesAgo },
+    });
+
+    // Subscribers count
+    const subscribersCount = await User.countDocuments({
+      $or: [{ isSubscribed: true }, { isPremium: true }],
+    });
+
     res.json({
       success: true,
       totalNews,
@@ -819,6 +852,9 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
       totalReporters,
       totalEditors,
       totalUsers,
+      totalViewers,
+      loginUsers,
+      subscribersCount,
       pendingAdvertisementsCount,
       pendingNewsShortsCount,
       breakingNewsCount,
@@ -865,6 +901,7 @@ router.get("/admin/articles", verifyToken, authorizeRoles("admin"), async (req, 
       seoKeywords: art.seoKeywords,
       reporter: art.reporterId ? art.reporterId.name : "-",
       editor: art.editorId ? art.editorId.name : "-",
+      views: art.views || 0,
       status: art.status === "pending_admin_verification" ? "Pending Admin Verification" :
               art.status === "published" ? "Published" :
               art.status === "rejected" ? "Rejected" :

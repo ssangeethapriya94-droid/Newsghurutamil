@@ -364,7 +364,7 @@ const Home = () => {
     if (!article) return null;
     const isLiked = likedArticles[article._id];
     const isBookmarked = bookmarkedArticles[article._id];
-    const viewCount = article.views && article.views !== "0" ? article.views : Math.floor(180 + (article.title.length * 6));
+    const viewCount = parseInt(article.views) || 0;
 
     return (
       <motion.div 
@@ -387,7 +387,7 @@ const Home = () => {
           <div className="card-gradient-overlay"></div>
           <span className="card-cat-badge">{getCategoryLabel(article.category)}</span>
           <div className="card-info-overlay">
-            <span>👁 {viewCount} வியூஸ்</span>
+            {viewCount > 0 && <span>👁 {viewCount.toLocaleString()} வியூஸ்</span>}
             <span>⏱ {getReadingTime(article.description)}</span>
           </div>
         </div>
@@ -459,7 +459,9 @@ const Home = () => {
                 </p>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.82rem", opacity: "0.8" }}>
                   <span>⏱ {getReadingTime(resolvedHeroStory.description)}  •  <RelativeTime createdAt={resolvedHeroStory.createdAt} fallback={resolvedHeroStory.time} /></span>
-                  <span>👁 {resolvedHeroStory.views || "1420"} வியூஸ்</span>
+                  {parseInt(resolvedHeroStory.views) > 0 && (
+                    <span>👁 {parseInt(resolvedHeroStory.views).toLocaleString()} வியூஸ்</span>
+                  )}
                 </div>
               </div>
             </div>

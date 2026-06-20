@@ -22,7 +22,7 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const Footer = () => {
+const Footer = ({ visitorCount }) => {
   return (
     <footer className="footer">
       <div className="footer-top">
@@ -97,6 +97,11 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="footer-bottom-container">
           <p>© 2026 நியூஸ் குரு. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</p>
+          {visitorCount > 0 && (
+            <p className="visitor-count-display" style={{ fontSize: "0.8rem", opacity: 0.75, marginTop: "4px" }}>
+              🌐 மொத்த இணையதள பார்வையாளர்கள்: <strong>{visitorCount.toLocaleString()}</strong>
+            </p>
+          )}
           <div className="footer-bottom-links">
             <Link to="/privacy">தனியுரிமைக் கொள்கை</Link>
             <Link to="/terms">விதிமுறைகள் மற்றும் நிபந்தனைகள்</Link>

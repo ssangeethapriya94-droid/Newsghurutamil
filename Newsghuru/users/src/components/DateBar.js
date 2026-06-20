@@ -145,7 +145,7 @@ const getDynamicCalendarInfo = (targetDate) => {
   };
 };
 
-const DateBar = () => {
+const DateBar = ({ visitorCount }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -371,9 +371,28 @@ const DateBar = () => {
         </div>
 
         <div className="time-section">
-          <TimeIcon className="time-icon" />
           <span className="time-text">{time}</span>
-          <FaClock className="clock-icon" />
+          {visitorCount > 0 && (
+            <span
+              style={{
+                marginLeft: "14px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                background: "linear-gradient(135deg, #f97316, #ea580c)",
+                color: "#fff",
+                padding: "3px 10px",
+                borderRadius: "20px",
+                fontSize: "0.95rem",
+                fontWeight: "700",
+                letterSpacing: "0.02em",
+                boxShadow: "0 2px 8px rgba(249, 115, 22, 0.35)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              🌐 {visitorCount.toLocaleString()} பார்வையாளர்கள்
+            </span>
+          )}
         </div>
       </div>
 
@@ -554,7 +573,7 @@ const DateBar = () => {
             <div className="dc-info-box" onClick={(e) => e.stopPropagation()}>
               <div className="dc-info-text">
                 <p style={{ margin: "0 0 5px 0", color: "var(--text-primary)", fontWeight: "700" }}>இன்றைய சிந்தனை:</p>
-                <p style={{ fontSize: "14.5px", color: "var(--accent-orange)", fontStyle: "italic", fontWeight: "600", margin: 0 }}>
+                <p style={{ fontSize: "16.5px", color: "var(--accent-orange)", fontStyle: "italic", fontWeight: "600", margin: 0 }}>
                   "{info.thought}"
                 </p>
               </div>

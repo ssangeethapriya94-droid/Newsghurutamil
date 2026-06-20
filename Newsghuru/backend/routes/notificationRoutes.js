@@ -3,13 +3,35 @@ const router = express.Router();
 const Notification = require("../models/Notification");
 const { verifyToken } = require("../middleware/authMiddleware");
 
-// GET /api/notifications - Get current user's notifications
+// GET /api/notifications - Get current user's notifications (with optional pagination)
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const notifications = await Notification.find({ recipientId: req.user._id })
-      .sort({ createdAt: -1 })
-      .limit(50);
-    res.json(notifications);
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit) || 10;
+
+    if (page) {
+      const skip = (page - 1) * limit;
+      const total = await Notification.countDocuments({ recipientId: req.user._id });
+      const notifications = await Notification.find({ recipientId: req.user._id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+      res.json({
+        notifications,
+        pagination: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit)
+        }
+      });
+    } else {
+      const notifications = await Notification.find({ recipientId: req.user._id })
+        .sort({ createdAt: -1 })
+        .limit(50);
+      res.json(notifications);
+    }
   } catch (error) {
     console.error("Error fetching notifications:", error);
     res.status(500).json({ message: "Server error fetching notifications" });
@@ -27,6 +49,26 @@ router.put("/mark-read", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Error marking notifications read:", error);
     res.status(500).json({ message: "Server error marking notifications read" });
+  }
+});
+
+// DELETE /api/notifications/:id - Delete a specific notification
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    const notification = await Notification.findOne({
+      _id: req.params.id,
+      recipientId: req.user._id
+    });
+
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    await Notification.deleteOne({ _id: req.params.id });
+    res.json({ success: true, message: "Notification deleted" });
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    res.status(500).json({ message: "Server error deleting notification" });
   }
 });
 

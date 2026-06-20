@@ -6,7 +6,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
-  z-index: 998;
+  z-index: 2500;
   backdrop-filter: blur(3px);
   animation: fadeIn 0.3s ease;
 }
@@ -21,7 +21,7 @@
   left: -340px;
   width: 320px;
   height: 100vh;
-  z-index: 999;
+  z-index: 2501;
   transition: 0.35s ease;
   display: flex;
   flex-direction: column;
