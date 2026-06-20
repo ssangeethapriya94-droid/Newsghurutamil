@@ -200,7 +200,7 @@ function Categories() {
                         </button>
                       </div>
                     ) : (
-                      <div style={{ display: "flex", gap: "15px" }}>
+                      <div style={{ display: "flex", gap: "15px", flexWrap: "nowrap", whiteSpace: "nowrap" }}>
                         <button
                           className="action-btn edit"
                           onClick={() => startEdit(cat)}

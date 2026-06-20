@@ -64,6 +64,50 @@ function Shorts() {
   // Preview Modal state
   const [previewShort, setPreviewShort] = useState(null);
 
+  // Bulk selection states
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  // Reset selected IDs when filter status changes
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [statusFilter]);
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(filteredShorts.map((sh) => sh._id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (id) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete the ${selectedIds.length} selected shorts? This action cannot be undone.`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await API.post("/api/shorts/bulk-delete", { ids: selectedIds });
+      alert("Selected shorts deleted successfully");
+      setSelectedIds([]);
+      fetchShorts();
+    } catch (error) {
+      console.error("Bulk delete shorts error:", error);
+      alert(error.response?.data?.message || "Failed to delete selected shorts");
+    }
+  };
+
   const fetchShorts = async () => {
     try {
       setLoading(true);
@@ -516,24 +560,49 @@ function Shorts() {
       </form>
       )}
 
-      {/* FILTER CONTROL BAR */}
-      <div style={{ display: "flex", gap: "10px", margin: "20px 0 0 0", alignItems: "center" }}>
-        <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "5px" }}>
-          <FiSliders /> Filter Status:
-        </span>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="dropdown-field"
-          style={{ padding: "8px 12px", borderRadius: "8px", fontSize: "14px" }}
-        >
-          <option value="all">All Statuses</option>
-          <option value="Draft">Draft</option>
-          <option value="Pending Approval">Pending Approval</option>
-          <option value="Approved">Approved</option>
-          <option value="Published">Published</option>
-          <option value="Rejected">Rejected</option>
-        </select>
+      {/* FILTER & BULK ACTIONS BAR */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "20px 0 0 0", flexWrap: "wrap", gap: "10px" }}>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "5px" }}>
+            <FiSliders /> Filter Status:
+          </span>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="dropdown-field"
+            style={{ padding: "8px 12px", borderRadius: "8px", fontSize: "14px" }}
+          >
+            <option value="all">All Statuses</option>
+            <option value="Draft">Draft</option>
+            <option value="Pending Approval">Pending Approval</option>
+            <option value="Approved">Approved</option>
+            <option value="Published">Published</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+
+        {selectedIds.length > 0 && (
+          <button
+            onClick={handleBulkDelete}
+            style={{
+              background: "#ef4444",
+              color: "white",
+              padding: "8px 16px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 2px 4px rgba(239, 68, 68, 0.2)",
+              transition: "all 0.2s"
+            }}
+          >
+            🗑️ Delete Selected ({selectedIds.length})
+          </button>
+        )}
       </div>
 
       {/* LIST TABLE */}
@@ -546,12 +615,20 @@ function Shorts() {
           <table className="articles-table">
             <thead>
               <tr>
+                <th style={{ width: "40px", textAlign: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={filteredShorts.length > 0 && selectedIds.length === filteredShorts.length}
+                    onChange={handleSelectAll}
+                    style={{ width: "16px", height: "16px", cursor: "pointer" }}
+                  />
+                </th>
                 <th style={{ width: "100px" }}>Cover Image</th>
                 <th>Short Details</th>
                 <th>Category</th>
                 <th>Flags</th>
                 <th>Status</th>
-                <th style={{ width: "220px" }}>Actions</th>
+                <th style={{ width: "300px" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -560,11 +637,19 @@ function Shorts() {
                 const isOwnShort = role === "editor" && createdByStr === userId;
                 const resolvedStatus = sh.status || (sh.isEnabled ? "Published" : "Draft");
 
-                const canEdit = role === "editor" && isOwnShort && (resolvedStatus === "Draft" || resolvedStatus === "Rejected");
-                const canDelete = role === "editor" && isOwnShort && resolvedStatus === "Draft";
+                const canEdit = role === "admin" || (role === "editor" && isOwnShort && (resolvedStatus === "Draft" || resolvedStatus === "Rejected"));
+                const canDelete = role === "admin" || (role === "editor" && isOwnShort && resolvedStatus === "Draft");
 
                 return (
                   <tr key={sh._id}>
+                    <td style={{ textAlign: "center" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(sh._id)}
+                        onChange={() => handleSelectOne(sh._id)}
+                        style={{ width: "16px", height: "16px", cursor: "pointer" }}
+                      />
+                    </td>
                     <td>
                       {sh.thumbnail && isVideoUrl(sh.thumbnail) ? (
                         <video 
@@ -710,7 +795,7 @@ function Shorts() {
                           </button>
                         </div>
                       ) : (
-                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap", whiteSpace: "nowrap" }}>
                           
                           {/* Toggle Active state (Admin only) */}
                           {role === "admin" && (
@@ -863,17 +948,18 @@ function Shorts() {
           padding: "20px"
         }}>
           <div style={{
-            background: "var(--bg-secondary, #1e1e24)",
+            background: "var(--card-bg, #ffffff)",
             padding: "20px", borderRadius: "12px",
             width: "100%", maxWidth: "380px",
-            border: "1px solid var(--border-color)",
-            position: "relative"
+            border: "1px solid var(--border-color, #cbd5e1)",
+            position: "relative",
+            color: "var(--text-main, #000000)"
           }}>
             <button
               onClick={() => setPreviewShort(null)}
               style={{
                 position: "absolute", top: "10px", right: "15px",
-                background: "none", border: "none", color: "var(--text-main, #fff)",
+                background: "none", border: "none", color: "var(--text-main, #000000)",
                 fontSize: "20px", cursor: "pointer"
               }}
             >

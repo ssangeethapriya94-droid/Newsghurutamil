@@ -39,7 +39,21 @@ const homepageConfigSchema = new mongoose.Schema(
         isEnabled: { type: Boolean, default: true },
         order: { type: Number, default: 0 }
       }
-    ]
+    ],
+    sidebarWidgets: [
+      {
+        id: { type: String, required: true },
+        titleTa: { type: String, required: true },
+        titleEn: { type: String, required: true },
+        isEnabled: { type: Boolean, default: true },
+        order: { type: Number, default: 0 }
+      }
+    ],
+    mostReadSettings: {
+      limit: { type: Number, default: 5 },
+      showViews: { type: Boolean, default: true },
+      minViews: { type: Number, default: 0 }
+    }
   },
   {
     timestamps: true

@@ -1253,3 +1253,15 @@
     display: none; /* Hide desktop nav bar on mobile */
   }
 }
+
+/* Premium Sidebar Widget Card Style */
+.premium-widget-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  width: 100%;
+}
+

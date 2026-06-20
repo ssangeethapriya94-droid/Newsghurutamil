@@ -28,7 +28,7 @@
   background: #ef5350; /* Lighter red as requested */
   color: #fff;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0 15px;
   height: 100%;
   white-space: nowrap;
@@ -61,7 +61,7 @@
 .ticker-title {
   cursor: pointer;
   padding: 0 15px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .ticker-title:hover {
@@ -71,7 +71,7 @@
 
 .ticker-separator {
   color: #666;
-  font-size: 14px;
+  font-size: 16px;
   user-select: none;
 }
 

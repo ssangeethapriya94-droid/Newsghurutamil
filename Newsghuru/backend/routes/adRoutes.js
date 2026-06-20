@@ -751,7 +751,7 @@ router.put("/:id/publish", verifyToken, authorizeRoles("admin"), async (req, res
   }
 });
 
-// PUT /api/ads/:id/unpublish - Admin Unpublish Advertisement
+// PUT /api/ads/:id/unpublish - Admin Unpublish Advertisement (deletes/removes ad from DB)
 router.put("/:id/unpublish", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
     const ad = await Advertisement.findById(req.params.id);
@@ -759,11 +759,10 @@ router.put("/:id/unpublish", verifyToken, authorizeRoles("admin"), async (req, r
       return res.status(404).json({ success: false, message: "Advertisement not found" });
     }
 
-    ad.status = "Draft";
-    ad.isActive = false;
-    await ad.save();
+    await Advertisement.findByIdAndDelete(req.params.id);
+    await AdEvent.deleteMany({ adId: req.params.id });
 
-    res.json({ success: true, message: "Advertisement unpublished successfully", ad });
+    res.json({ success: true, message: "Advertisement unpublished and removed from database successfully" });
   } catch (error) {
     console.error("Unpublish ad error:", error);
     res.status(500).json({ success: false, message: "Server error unpublishing advertisement" });

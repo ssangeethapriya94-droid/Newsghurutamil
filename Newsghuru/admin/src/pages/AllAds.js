@@ -151,7 +151,7 @@ function AllAds() {
     try {
       const res = await API.put(`/api/ads/${id}/unpublish`);
       if (res.data.success) {
-        alert("Advertisement unpublished successfully.");
+        alert("Advertisement unpublished and removed from panel successfully.");
         fetchAds();
       }
     } catch (err) {
@@ -361,7 +361,7 @@ function AllAds() {
                     <td style={{ textAlign: "center", fontWeight: 600 }}>{ad.impressions}</td>
                     <td style={{ textAlign: "center", fontWeight: 700, color: "#10b981" }}>{ad.ctr}%</td>
                     <td>
-                      <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap", whiteSpace: "nowrap" }}>
                         
                         {/* Toggle active state (Admin only) */}
                         {role === "admin" && (
@@ -543,12 +543,12 @@ function AllAds() {
           padding: "20px"
         }}>
           <div style={{
-            background: "var(--bg-secondary, #1e1e24)",
+            background: "var(--card-bg, #ffffff)",
             padding: "25px", borderRadius: "12px",
             width: "100%", maxWidth: "550px",
-            border: "1px solid var(--border-color)",
+            border: "1px solid var(--border-color, #cbd5e1)",
             position: "relative",
-            color: "var(--text-main, #fff)",
+            color: "var(--text-main, #000000)",
             maxHeight: "90vh",
             overflowY: "auto"
           }}>
@@ -556,7 +556,7 @@ function AllAds() {
               onClick={() => setPreviewAd(null)}
               style={{
                 position: "absolute", top: "15px", right: "15px",
-                background: "none", border: "none", color: "var(--text-main, #fff)",
+                background: "none", border: "none", color: "var(--text-main, #000000)",
                 fontSize: "20px", cursor: "pointer", zIndex: 10
               }}
             >

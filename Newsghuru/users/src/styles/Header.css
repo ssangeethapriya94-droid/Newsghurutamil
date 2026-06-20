@@ -85,7 +85,7 @@
   margin: 0;
   letter-spacing: 0.5px;
   white-space: nowrap;
-  font-family: "Noto Sans Tamil", sans-serif;
+  font-family: var(--font-sans);
 }
 
 /* =========================================

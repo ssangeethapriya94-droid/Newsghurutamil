@@ -173,6 +173,33 @@ router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, r
   }
 });
 
+// POST /api/shorts/bulk-delete - Bulk delete shorts (Admin and Editor)
+router.post("/bulk-delete", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "No IDs provided for deletion" });
+    }
+
+    if (req.user.role === "editor") {
+      // Editors can only delete their own Draft shorts
+      const shortsToDelete = await Short.find({ _id: { $in: ids } });
+      for (const short of shortsToDelete) {
+        const createdByStr = short.createdBy ? short.createdBy.toString() : "";
+        if (short.status !== "Draft" || createdByStr !== req.user._id.toString()) {
+          return res.status(403).json({ message: "Not authorized. Editors can only delete their own Draft shorts." });
+        }
+      }
+    }
+
+    await Short.deleteMany({ _id: { $in: ids } });
+    res.json({ message: "Shorts deleted successfully" });
+  } catch (error) {
+    console.error("Error bulk deleting shorts:", error);
+    res.status(500).json({ message: "Server error bulk deleting shorts" });
+  }
+});
+
 // DELETE /api/shorts/:id - Delete a short (Admin and Editor)
 router.delete("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {

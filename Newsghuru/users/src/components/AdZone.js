@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../config/api";
 
 // Module-level cache to share a single API promise across all mounted ad zones on a page load
 let activeAdsPromise = null;
 let adSettingsPromise = null;
-const activeInstances = {};
+const activeInstancesByPosition = {};
 
 const fetchActiveAdsCached = () => {
   if (!activeAdsPromise) {
@@ -79,49 +79,19 @@ function AdZone({ position }) {
   // Clean up global instance registry on unmount
   useEffect(() => {
     const currentId = instanceId.current;
-    return () => {
-      delete activeInstances[currentId];
-    };
-  }, []);
-
-  // Helper to select a random weighted ad for this position,
-  // avoiding ad IDs currently displayed in other AdZone instances for the same position.
-  const selectAd = useCallback((filteredAds) => {
-    if (!filteredAds || filteredAds.length === 0) return null;
-
-    // Get ad IDs currently shown in other active AdZone instances for the same position
-    const otherSelectedIds = Object.keys(activeInstances)
-      .filter(id => id !== instanceId.current && activeInstances[id].position === position)
-      .map(id => activeInstances[id].adId);
-
-    // Filter available ads to exclude ones shown elsewhere
-    let available = filteredAds.filter(ad => !otherSelectedIds.includes(ad._id));
-
-    // Fallback if we have fewer ads than active slots: use all filtered ads
-    if (available.length === 0) {
-      available = filteredAds;
+    if (!activeInstancesByPosition[position]) {
+      activeInstancesByPosition[position] = [];
     }
-
-    // Build weighted pool
-    const pool = [];
-    available.forEach(ad => {
-      let weight = 2; // Medium default
-      if (ad.priority === "High") weight = 3;
-      if (ad.priority === "Low") weight = 1;
-      for (let i = 0; i < weight; i++) {
-        pool.push(ad);
+    // Add if not already present
+    if (!activeInstancesByPosition[position].includes(currentId)) {
+      activeInstancesByPosition[position].push(currentId);
+    }
+    
+    return () => {
+      if (activeInstancesByPosition[position]) {
+        activeInstancesByPosition[position] = activeInstancesByPosition[position].filter(id => id !== currentId);
       }
-    });
-
-    if (pool.length === 0) return null;
-
-    const randomIndex = Math.floor(Math.random() * pool.length);
-    const selected = pool[randomIndex];
-
-    // Update global registry
-    activeInstances[instanceId.current] = { position, adId: selected._id };
-
-    return selected;
+    };
   }, [position]);
 
   // Fetch ads and settings
@@ -141,9 +111,20 @@ function AdZone({ position }) {
       setAds(filtered);
 
       if (filtered.length > 0) {
-        const selectedAd = selectAd(filtered);
+        // Calculate the slot index dynamically based on mount order
+        if (!activeInstancesByPosition[position]) {
+          activeInstancesByPosition[position] = [];
+        }
+        const currentId = instanceId.current;
+        if (!activeInstancesByPosition[position].includes(currentId)) {
+          activeInstancesByPosition[position].push(currentId);
+        }
+        const slotIndex = activeInstancesByPosition[position].indexOf(currentId);
+        
+        // Select initial ad using modulo
+        const selectedAd = filtered[slotIndex % filtered.length];
         if (selectedAd) {
-          console.log(`[AdZone - ${position}] Selected initial ad:`, selectedAd.title);
+          console.log(`[AdZone - ${position}] Selected initial ad (slot ${slotIndex}):`, selectedAd.title);
           setCurrentAd(selectedAd);
         }
       }
@@ -152,7 +133,7 @@ function AdZone({ position }) {
     return () => {
       isMounted = false;
     };
-  }, [position, isPremium, selectAd]);
+  }, [position, isPremium]);
 
   // Handle Rotation Timer
   useEffect(() => {
@@ -162,19 +143,17 @@ function AdZone({ position }) {
     const intervalSec = currentAd.rotationInterval || settings?.globalRotationInterval || 10;
     
     const rotateAd = () => {
-      // Re-build pool of OTHER ads to avoid selecting the same one consecutively if possible
-      const otherAds = ads.filter(a => a._id !== currentAd._id);
-      const poolSource = otherAds.length > 0 ? otherAds : ads;
-
-      const selectedAd = selectAd(poolSource);
-      if (selectedAd) {
-        setCurrentAd(selectedAd);
+      const currentIndex = ads.findIndex(a => a._id === currentAd._id);
+      const nextIndex = (currentIndex + 1) % ads.length;
+      const nextAd = ads[nextIndex];
+      if (nextAd) {
+        setCurrentAd(nextAd);
       }
     };
 
     const timer = setInterval(rotateAd, intervalSec * 1000);
     return () => clearInterval(timer);
-  }, [ads, currentAd, settings, isPremium, selectAd]);
+  }, [ads, currentAd, settings, isPremium]);
 
   // Handle Impression Tracking using IntersectionObserver
   useEffect(() => {

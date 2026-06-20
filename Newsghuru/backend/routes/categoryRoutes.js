@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
 });
 
 // POST /api/categories - Create a category (Admin only)
-router.post("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
+router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
     const { name, slug } = req.body;
     if (!name || !slug) {
@@ -44,7 +44,7 @@ router.post("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
 });
 
 // PUT /api/categories/:id - Update a category (Admin only)
-router.put("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
+router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
     const { name, slug } = req.body;
     const category = await Category.findById(req.params.id);
@@ -73,7 +73,7 @@ router.put("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
 });
 
 // DELETE /api/categories/:id - Delete a category (Admin only)
-router.delete("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
+router.delete("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
     if (!category) {

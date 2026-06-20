@@ -179,6 +179,13 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
       hour12: true,
     });
 
+    let finalStatus = status || "draft";
+    if (req.user.role === "reporter") {
+      if (finalStatus !== "draft" && finalStatus !== "pending_editor_review") {
+        finalStatus = "pending_editor_review";
+      }
+    }
+
     const news = new News({
       title,
       subtitle,
@@ -192,12 +199,12 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
       tags: tags || "",
       seoKeywords: seoKeywords || "",
       reporterId: req.user._id,
-      status: status || "draft",
+      status: finalStatus,
       date: newsDate,
       time: timeString,
-      submittedAt: status === "pending_editor_review" ? newsDate : undefined,
-      adminId: status === "published" ? req.user._id : undefined,
-      publishedAt: status === "published" ? newsDate : undefined,
+      submittedAt: finalStatus === "pending_editor_review" ? newsDate : undefined,
+      adminId: finalStatus === "published" ? req.user._id : undefined,
+      publishedAt: finalStatus === "published" ? newsDate : undefined,
     });
 
     const savedNews = await news.save();
@@ -288,8 +295,10 @@ router.get("/", async (req, res) => {
 // GET CATEGORY NEWS
 router.get("/category/:category", async (req, res) => {
   try {
+    const categoryParam = req.params.category;
     const news = await News.find({
-      category: req.params.category,
+      category: { $regex: new RegExp("^" + categoryParam + "$", "i") },
+      status: "published"
     }).sort({ createdAt: -1 });
 
     res.json(news);
@@ -502,8 +511,14 @@ router.put("/:id", verifyToken, uploadFields, async (req, res) => {
     
     // Update status and timestamps
     if (status !== undefined) {
-      news.status = status;
-      if (status === "pending_editor_review") {
+      let finalStatus = status;
+      if (req.user.role === "reporter") {
+        if (finalStatus !== "draft" && finalStatus !== "pending_editor_review") {
+          finalStatus = "pending_editor_review";
+        }
+      }
+      news.status = finalStatus;
+      if (finalStatus === "pending_editor_review") {
         news.submittedAt = new Date();
       }
     }

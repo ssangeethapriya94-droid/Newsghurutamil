@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import API from "../config/api";
 import RelativeTime from "../components/RelativeTime";
 import AdZone from "../components/AdZone";
@@ -8,7 +8,7 @@ import {
   FaBolt, FaFire, FaMapMarkedAlt, FaFlag, FaGlobe, FaFutbol, 
   FaBriefcase, FaFilm, FaGraduationCap, FaLandmark, FaHeart, 
   FaBookmark, FaShareAlt, FaPlay, FaImage, FaChevronRight, 
-  FaStar, FaCloudSun, FaArrowUp, FaArrowDown, FaMobileAlt,
+  FaStar, FaMobileAlt,
   FaRegLightbulb, FaTimes, FaChevronLeft, FaTimesCircle
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -74,6 +74,45 @@ const Home = () => {
   const [photoStoryIndex, setPhotoStoryIndex] = useState(0);
   const [visibleFeedCount, setVisibleFeedCount] = useState(6);
   const [likedArticles, setLikedArticles] = useState({});
+
+  const leftRef = useRef(null);
+  const sidebarBaseRef = useRef(null);
+  const [extraAdsCount, setExtraAdsCount] = useState(0);
+
+  // Dynamically calculate extra advertisements based on left column vs base sidebar height
+  useEffect(() => {
+    if (!isLargeScreen) {
+      setExtraAdsCount(0);
+      return;
+    }
+
+    const calculateExtraAds = () => {
+      if (!leftRef.current || !sidebarBaseRef.current) return;
+      const leftHeight = leftRef.current.offsetHeight;
+      const baseSidebarHeight = sidebarBaseRef.current.offsetHeight;
+      const diff = leftHeight - baseSidebarHeight;
+      
+      // Each extra sidebar advertisement widget is ~500px high
+      const count = Math.max(0, Math.floor(diff / 500));
+      setExtraAdsCount(count);
+    };
+
+    calculateExtraAds();
+
+    const observer = new ResizeObserver(() => {
+      calculateExtraAds();
+    });
+
+    if (leftRef.current) observer.observe(leftRef.current);
+    if (sidebarBaseRef.current) observer.observe(sidebarBaseRef.current);
+
+    window.addEventListener("resize", calculateExtraAds);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", calculateExtraAds);
+    };
+  }, [isLargeScreen]);
   const [bookmarkedArticles, setBookmarkedArticles] = useState({});
   const [activePollVote, setActivePollVote] = useState(null);
   const [activeScoreTab, setActiveScoreTab] = useState("match1");
@@ -274,7 +313,7 @@ const Home = () => {
     { id: "sports", titleTa: "விளையாட்டு", titleEn: "Sports", isEnabled: true, order: 6 },
     { id: "tech", titleTa: "தொழில்நுட்பம்", titleEn: "Technology", isEnabled: true, order: 7 },
     { id: "business", titleTa: "வணிகம் & வர்த்தகம்", titleEn: "Business & Markets", isEnabled: true, order: 8 },
-    { id: "videos", titleTa: "வீடியோக்கள்", titleEn: "Video News", isEnabled: true, order: 9 },
+    { id: "tamil", titleTa: "தமிழ்நாடு", titleEn: "Tamil Nadu", isEnabled: true, order: 9 },
     { id: "shorts", titleTa: "சார்ட்ஸ்", titleEn: "Shorts Reels", isEnabled: true, order: 10 },
     { id: "photos", titleTa: "புகைப்படக் கதைகள்", titleEn: "Photo Stories", isEnabled: true, order: 11 },
     { id: "editors", titleTa: "ஆசிரியர் தேர்வு", titleEn: "Editor's Picks", isEnabled: true, order: 12 }
@@ -305,10 +344,19 @@ const Home = () => {
     : videos.slice(0, 4);
 
   const resolvedFeaturedShorts = (() => {
-    const featured = (homepageConfig?.featuredShorts || []).filter(s => s && s.isEnabled);
-    const featuredIds = new Set(featured.map(s => s._id.toString()));
-    const remaining = shorts.filter(s => s && s._id && !featuredIds.has(s._id.toString()));
-    return [...featured, ...remaining];
+    // Only include active, published/enabled shorts
+    const activeShortsMap = new Map(shorts.map((s) => [s._id.toString(), s]));
+
+    const featured = (homepageConfig?.featuredShorts || [])
+      .filter((s) => s && s.isEnabled && activeShortsMap.has(s._id.toString()))
+      .map((s) => activeShortsMap.get(s._id.toString()));
+
+    const featuredIds = new Set(featured.map((s) => s._id.toString()));
+    const remaining = shorts.filter((s) => s && s._id && !featuredIds.has(s._id.toString()));
+
+    // Combine featured and remaining, then sort by creation date descending (newest first)
+    const combined = [...featured, ...remaining];
+    return combined.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   })();
 
   // Standard News Card Component
@@ -422,7 +470,7 @@ const Home = () => {
 
         {/* Center column: Stack of 4 Secondary Stories */}
         <div className="above-fold-center secondary-stack" style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.15rem", borderBottom: "2px solid var(--border-color)", paddingBottom: "8px", margin: 0, fontWeight: "800", color: "var(--accent-orange)" }}>
+          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.15rem", borderBottom: "2px solid var(--accent-orange)", paddingBottom: "8px", margin: 0, fontWeight: "800", color: "var(--text-primary)" }}>
             முக்கியப் பதிவுகள்
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", overflowY: "auto", flex: 1, maxHeight: "420px" }}>
@@ -451,7 +499,7 @@ const Home = () => {
         <div className="above-fold-right right-widget-stack" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           {/* Trending Widget */}
           <div className="premium-widget" style={{ padding: "16px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-secondary)" }}>
-            <h3 className="widget-title-serif" style={{ fontSize: "1.05rem", fontWeight: "800", borderBottom: "2px solid var(--border-color)", paddingBottom: "8px", marginTop: 0, color: "var(--accent-orange)" }}>டிரெண்டிங் <span>🔥</span></h3>
+            <h3 className="widget-title-serif" style={{ marginTop: 0 }}>டிரெண்டிங் <span>🔥</span></h3>
             <div className="trending-list" style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
               {resolvedTrendingStories.map((story, index) => (
                 <div 
@@ -501,12 +549,12 @@ const Home = () => {
     if (pStories.length === 0) return null;
 
     return (
-      <div style={{ marginBottom: "40px", borderTop: "3px solid #dc2626", paddingTop: "15px" }}>
+      <div style={{ marginBottom: "40px", borderTop: "3px solid var(--accent-orange)", paddingTop: "15px" }}>
         <div className="section-headline-bar" style={{ border: "none", marginBottom: "15px" }}>
-          <h2 className="section-title-premium" style={{ color: "#dc2626", fontSize: "1.4rem" }}>
-            <FaLandmark style={{ color: "#dc2626" }} /> {titleTa || "அரசியல்"}
+          <h2 className="section-title-premium" style={{ fontSize: "1.4rem" }}>
+            <FaLandmark style={{ color: "var(--accent-orange)" }} /> {titleTa || "அரசியல்"}
           </h2>
-          <span className="section-see-all" onClick={() => navigate("/politics")} style={{ color: "#dc2626" }}>
+          <span className="section-see-all" onClick={() => navigate("/politics")} style={{ color: "var(--accent-orange)" }}>
             அனைத்தும் பார்க்க <FaChevronRight size={10} />
           </span>
         </div>
@@ -550,6 +598,60 @@ const Home = () => {
     );
   };
 
+  const renderTamilSection = (titleTa) => {
+    const tStories = getStoriesOrFallback(filteredTamil, 4);
+    if (tStories.length === 0) return null;
+
+    return (
+      <div style={{ marginBottom: "40px", borderTop: "3px solid var(--accent-orange)", paddingTop: "15px" }}>
+        <div className="section-headline-bar" style={{ border: "none", marginBottom: "15px" }}>
+          <h2 className="section-title-premium" style={{ fontSize: "1.4rem" }}>
+            <FaMapMarkedAlt style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleTa || "தமிழ்நாடு"}
+          </h2>
+          <span className="section-see-all" onClick={() => navigate("/tamil")} style={{ color: "var(--accent-orange)" }}>
+            அனைத்தும் பார்க்க <FaChevronRight size={10} />
+          </span>
+        </div>
+
+        {/* Thick headline feature story */}
+        <div style={{ display: "grid", gridTemplateColumns: isLargeScreen ? "1.2fr 0.8fr" : "1fr", gap: "25px" }}>
+          <div 
+            style={{ cursor: "pointer", borderRight: isLargeScreen ? "1px solid var(--border-color)" : "none", paddingRight: isLargeScreen ? "20px" : "0" }}
+            onClick={() => navigate(`/news/${tStories[0]._id}`, { state: tStories[0] })}
+          >
+            <img src={tStories[0].image || tStories[0].coverImage} alt="tamil" style={{ width: "100%", height: "230px", objectFit: "cover", borderRadius: "6px" }} />
+            <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.25rem", fontWeight: "800", margin: "12px 0 8px 0", color: "var(--text-main)" }}>
+              {tStories[0].titleTa || tStories[0].title}
+            </h3>
+            <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", lineHeight: "1.5" }}>
+              {stripHtml(tStories[0].shortDescription || tStories[0].description).slice(0, 150)}...
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            {tStories.slice(1).map(story => (
+              <div 
+                key={story._id} 
+                style={{ display: "flex", gap: "12px", cursor: "pointer" }}
+                onClick={() => navigate(`/news/${story._id}`, { state: story })}
+              >
+                <img src={story.image || story.coverImage} alt={story.title} style={{ width: "90px", height: "65px", objectFit: "cover", borderRadius: "4px" }} />
+                <div>
+                  <h4 style={{ fontSize: "0.88rem", fontWeight: "700", margin: "0 0 4px 0", color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: "2", WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {story.titleTa || story.title}
+                  </h4>
+                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                    <RelativeTime createdAt={story.createdAt} fallback={story.time} />
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCinemaSection = (titleTa) => {
     const cStories = getStoriesOrFallback(filteredCinema, 4);
     if (cStories.length === 0) return null;
@@ -557,10 +659,10 @@ const Home = () => {
     return (
       <div style={{ marginBottom: "40px", padding: "20px", background: "#0d0d15", color: "#fff", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
         <div className="section-headline-bar" style={{ borderColor: "rgba(255,255,255,0.1)", marginBottom: "20px" }}>
-          <h2 className="section-title-premium" style={{ color: "#db2777" }}>
-            <FaFilm style={{ color: "#db2777" }} /> {titleTa || "சினிமா"}
+          <h2 className="section-title-premium" style={{ color: "#fff" }}>
+            <FaFilm style={{ color: "var(--accent-orange)" }} /> {titleTa || "சினிமா"}
           </h2>
-          <span className="section-see-all" onClick={() => navigate("/cinema")} style={{ color: "#db2777" }}>
+          <span className="section-see-all" onClick={() => navigate("/cinema")} style={{ color: "var(--accent-orange)" }}>
             கோலிவுட் செய்திகள் <FaChevronRight size={10} />
           </span>
         </div>
@@ -583,7 +685,7 @@ const Home = () => {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <span style={{ fontSize: "13px", fontWeight: "700", color: "#db2777" }}>பிரபல செய்திகள் & OTT அப்டேட்ஸ்:</span>
+            <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--accent-orange)" }}>பிரபல செய்திகள் & OTT அப்டேட்ஸ்:</span>
             {cStories.slice(1).map(story => (
               <div 
                 key={story._id}
@@ -611,11 +713,11 @@ const Home = () => {
 
     return (
       <div style={{ marginBottom: "40px" }}>
-        <div className="section-headline-bar" style={{ borderColor: "#7c3aed" }}>
-          <h2 className="section-title-premium" style={{ color: "#7c3aed" }}>
-            <FaFutbol style={{ color: "#7c3aed" }} /> {titleTa || "விளையாட்டு"}
+        <div className="section-headline-bar">
+          <h2 className="section-title-premium">
+            <FaFutbol style={{ color: "var(--accent-orange)" }} /> {titleTa || "விளையாட்டு"}
           </h2>
-          <span className="section-see-all" onClick={() => navigate("/sports")} style={{ color: "#7c3aed" }}>
+          <span className="section-see-all" onClick={() => navigate("/sports")} style={{ color: "var(--accent-orange)" }}>
             அனைத்தும் பார்க்க <FaChevronRight size={10} />
           </span>
         </div>
@@ -627,19 +729,19 @@ const Home = () => {
 
           {/* Interactive Scoreboard */}
           <div style={{ border: "1px solid var(--border-color)", borderRadius: "10px", padding: "15px", background: "var(--bg-secondary)" }}>
-            <h4 style={{ margin: "0 0 10px 0", borderBottom: "1px solid var(--border-color)", paddingBottom: "6px", fontSize: "0.95rem", color: "#7c3aed", fontWeight: "800" }}>
+            <h4 style={{ margin: "0 0 10px 0", borderBottom: "1px solid var(--border-color)", paddingBottom: "6px", fontSize: "0.95rem", color: "var(--accent-orange)", fontWeight: "800" }}>
               விளையாட்டு ஸ்கோர்போர்டு 🏆
             </h4>
             <div style={{ display: "flex", gap: "10px", marginBottom: "12px" }}>
               <button 
                 onClick={() => setActiveScoreTab("match1")}
-                style={{ flex: 1, padding: "5px 8px", fontSize: "11px", borderRadius: "4px", border: "1px solid var(--border-color)", background: activeScoreTab === "match1" ? "#7c3aed" : "transparent", color: activeScoreTab === "match1" ? "white" : "var(--text-primary)", fontWeight: "bold", cursor: "pointer" }}
+                style={{ flex: 1, padding: "5px 8px", fontSize: "11px", borderRadius: "4px", border: "1px solid var(--border-color)", background: activeScoreTab === "match1" ? "var(--accent-orange)" : "transparent", color: activeScoreTab === "match1" ? "white" : "var(--text-primary)", fontWeight: "bold", cursor: "pointer" }}
               >
                 IND vs PAK
               </button>
               <button 
                 onClick={() => setActiveScoreTab("match2")}
-                style={{ flex: 1, padding: "5px 8px", fontSize: "11px", borderRadius: "4px", border: "1px solid var(--border-color)", background: activeScoreTab === "match2" ? "#7c3aed" : "transparent", color: activeScoreTab === "match2" ? "white" : "var(--text-primary)", fontWeight: "bold", cursor: "pointer" }}
+                style={{ flex: 1, padding: "5px 8px", fontSize: "11px", borderRadius: "4px", border: "1px solid var(--border-color)", background: activeScoreTab === "match2" ? "var(--accent-orange)" : "transparent", color: activeScoreTab === "match2" ? "white" : "var(--text-primary)", fontWeight: "bold", cursor: "pointer" }}
               >
                 CSK vs MI
               </button>
@@ -690,7 +792,7 @@ const Home = () => {
 
     return (
       <div style={{ marginBottom: "40px" }}>
-        <div className="section-headline-bar" style={{ borderColor: "#0f172a" }}>
+        <div className="section-headline-bar">
           <h2 className="section-title-premium">
             <FaMobileAlt style={{ color: "var(--accent-orange)" }} /> {titleTa || "தொழில்நுட்பம்"}
           </h2>
@@ -735,35 +837,14 @@ const Home = () => {
 
     return (
       <div style={{ marginBottom: "40px" }}>
-        <div className="section-headline-bar" style={{ borderColor: "#059669" }}>
-          <h2 className="section-title-premium" style={{ color: "#059669" }}>
-            <FaBriefcase style={{ color: "#059669" }} /> {titleTa || "வணிகம்"}
+        <div className="section-headline-bar">
+          <h2 className="section-title-premium">
+            <FaBriefcase style={{ color: "var(--accent-orange)" }} /> {titleTa || "வணிகம்"}
           </h2>
-          <span className="section-see-all" onClick={() => navigate("/business")} style={{ color: "#059669" }}>
+          <span className="section-see-all" onClick={() => navigate("/business")} style={{ color: "var(--accent-orange)" }}>
             வணிகம் <FaChevronRight size={10} />
           </span>
         </div>
-
-        {/* Stock price rates ticker widget */}
-        <div className="business-rates-bar" style={{ display: "grid", gridTemplateColumns: isLargeScreen ? "repeat(4, 1fr)" : "repeat(2, 1fr)", gap: "10px", marginBottom: "20px" }}>
-          <div style={{ border: "1px solid var(--border-color)", borderRadius: "6px", padding: "8px 12px", background: "var(--bg-secondary)", fontSize: "11px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontWeight: "700" }}>SENSEX:</span>
-            <span style={{ color: "#10b981", fontWeight: "700", display: "flex", alignItems: "center" }}>73,240 <FaArrowUp size={8} /></span>
-          </div>
-          <div style={{ border: "1px solid var(--border-color)", borderRadius: "6px", padding: "8px 12px", background: "var(--bg-secondary)", fontSize: "11px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontWeight: "700" }}>Gold (22K 1g):</span>
-            <span style={{ color: "#ef4444", fontWeight: "700", display: "flex", alignItems: "center" }}>₹7,230 <FaArrowDown size={8} /></span>
-          </div>
-          <div style={{ border: "1px solid var(--border-color)", borderRadius: "6px", padding: "8px 12px", background: "var(--bg-secondary)", fontSize: "11px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontWeight: "700" }}>Petrol (Ltr):</span>
-            <span style={{ fontWeight: "700" }}>₹102.63</span>
-          </div>
-          <div style={{ border: "1px solid var(--border-color)", borderRadius: "6px", padding: "8px 12px", background: "var(--bg-secondary)", fontSize: "11px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontWeight: "700" }}>Diesel (Ltr):</span>
-            <span style={{ fontWeight: "700" }}>₹94.24</span>
-          </div>
-        </div>
-
         <div style={{ display: "grid", gridTemplateColumns: isLargeScreen ? "repeat(3, 1fr)" : "1fr", gap: "15px" }}>
           {bStories.map(story => (
             <div 
@@ -808,8 +889,8 @@ const Home = () => {
     return (
       <div style={{ marginBottom: "40px" }}>
         <div className="section-headline-bar">
-          <h2 className="section-title-premium" style={{ color: "var(--accent-red)" }}>
-            <FaMobileAlt style={{ color: "var(--accent-red)", marginRight: "8px" }} /> {titleTa || "சார்ட்ஸ்"}
+          <h2 className="section-title-premium">
+            <FaMobileAlt style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleTa || "சார்ட்ஸ்"}
           </h2>
         </div>
 
@@ -867,7 +948,7 @@ const Home = () => {
     return (
       <div style={{ marginBottom: "40px" }}>
         <div className="section-headline-bar">
-          <h2 className="section-title-premium" style={{ color: "var(--accent-orange)" }}>
+          <h2 className="section-title-premium">
             <FaImage style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleTa || "புகைப்படக் கதைகள்"}
           </h2>
         </div>
@@ -961,6 +1042,331 @@ const Home = () => {
     );
   };
 
+  const renderSidebarWidget = (widget) => {
+    if (!widget.isEnabled) return null;
+
+    switch (widget.id) {
+      case "ad1":
+        return (
+          <div key={widget.id} className="premium-widget-card" style={{ padding: "12px" }}>
+            <AdZone position="SIDEBAR" />
+          </div>
+        );
+      case "ad2":
+        return (
+          <div key={widget.id} className="premium-widget-card" style={{ padding: "12px" }}>
+            <AdZone position="SIDEBAR" />
+          </div>
+        );
+      case "ad3":
+        return (
+          <div key={widget.id} className="premium-widget-card sticky-ad-wrapper" style={{ position: "sticky", top: "80px", padding: "12px", zIndex: 10 }}>
+            <AdZone position="SIDEBAR" />
+          </div>
+        );
+      case "ad4":
+        return (
+          <div key={widget.id} className="premium-widget-card" style={{ padding: "12px" }}>
+            <AdZone position="SIDEBAR" />
+          </div>
+        );
+      case "trending":
+        return renderTrendingWidget(widget.titleTa || "டிரெண்டிங் செய்திகள்");
+      case "mostRead":
+        return renderMostReadWidget(widget.titleTa || "அதிகம் வாசிக்கப்பட்டவை");
+      case "shorts":
+        return null;
+      case "cinema":
+        return renderSidebarCinemaWidget(widget.titleTa || "சினிமா செய்திகள்");
+      case "weather":
+        return null;
+      case "rates":
+        return null;
+      case "poll":
+        return renderPollWidget();
+      case "score":
+        return renderScoreWidget();
+      default:
+        return null;
+    }
+  };
+
+  const renderTrendingWidget = (title) => {
+    const list = homepageConfig?.trendingStories || filteredBreaking.slice(0, 5);
+    if (!list || list.length === 0) return null;
+
+    return (
+      <div key="trending" className="premium-widget-card" style={{ padding: "20px" }}>
+        <h3 className="widget-title-serif" style={{ marginTop: 0, marginBottom: "15px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span>🔥</span> {title}
+        </h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {list.slice(0, 5).map((story, index) => {
+            const rank = index + 1 < 10 ? `0${index + 1}` : index + 1;
+            return (
+              <div 
+                key={story._id}
+                onClick={() => navigate(`/news/${story._id}`, { state: story })}
+                style={{ display: "flex", gap: "15px", cursor: "pointer", borderBottom: index < 4 ? "1px solid var(--border-color)" : "none", paddingBottom: "10px", transition: "transform 0.2s" }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateX(4px)";
+                  const headline = e.currentTarget.querySelector(".trending-headline");
+                  if (headline) headline.style.color = "var(--accent-orange)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                  const headline = e.currentTarget.querySelector(".trending-headline");
+                  if (headline) headline.style.color = "var(--text-primary)";
+                }}
+              >
+                <span style={{ fontSize: "1.6rem", fontWeight: "900", color: "var(--accent-orange)", fontFamily: "var(--font-serif)", lineHeight: "1" }}>
+                  {rank}
+                </span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", gap: "6px", alignItems: "center", marginBottom: "4px" }}>
+                    <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(245, 158, 11, 0.08)", color: "var(--accent-orange)", borderRadius: "4px", fontWeight: "bold" }}>
+                      {getCategoryLabel(story.category)}
+                    </span>
+                    <span style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "600" }}>
+                      <RelativeTime createdAt={story.createdAt} fallback={story.time} />
+                    </span>
+                  </div>
+                  <h4 className="trending-headline" style={{ fontSize: "0.9rem", fontWeight: "700", margin: 0, lineHeight: "1.4", color: "var(--text-primary)" }}>
+                    {story.titleTa || story.title}
+                  </h4>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderMostReadWidget = (title) => {
+    const sorted = [...allNews]
+      .filter(n => n.status === "published")
+      .map(n => ({
+        ...n,
+        viewNum: parseInt(n.views) || 0
+      }))
+      .filter(n => n.viewNum >= (homepageConfig?.mostReadSettings?.minViews || 0))
+      .sort((a, b) => b.viewNum - a.viewNum);
+
+    const limit = homepageConfig?.mostReadSettings?.limit || 5;
+    const showViews = homepageConfig?.mostReadSettings?.showViews !== false;
+    const list = sorted.slice(0, limit);
+
+    if (list.length === 0) return null;
+
+    const formatViews = (num) => {
+      if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+      return num.toString();
+    };
+
+    return (
+      <div key="mostRead" className="premium-widget-card" style={{ padding: "20px" }}>
+        <h3 className="widget-title-serif" style={{ marginTop: 0, marginBottom: "15px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span>📈</span> {title}
+        </h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {list.map((story, index) => {
+            return (
+              <div 
+                key={story._id}
+                onClick={() => navigate(`/news/${story._id}`, { state: story })}
+                style={{ display: "flex", gap: "10px", cursor: "pointer", borderBottom: index < list.length - 1 ? "1px solid var(--border-color)" : "none", paddingBottom: "10px" }}
+                onMouseOver={(e) => {
+                  const headline = e.currentTarget.querySelector(".mostread-headline");
+                  if (headline) headline.style.color = "var(--accent-orange)";
+                }}
+                onMouseOut={(e) => {
+                  const headline = e.currentTarget.querySelector(".mostread-headline");
+                  if (headline) headline.style.color = "var(--text-primary)";
+                }}
+              >
+                <img 
+                  src={story.image || story.coverImage} 
+                  alt={story.title} 
+                  style={{ width: "65px", height: "50px", objectFit: "cover", borderRadius: "6px" }} 
+                />
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <h4 className="mostread-headline" style={{ fontSize: "0.85rem", fontWeight: "700", margin: 0, lineHeight: "1.35", color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: "2", WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {story.titleTa || story.title}
+                  </h4>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
+                    <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+                      <RelativeTime createdAt={story.createdAt} fallback={story.time} />
+                    </span>
+                    {showViews && (
+                      <span style={{ fontSize: "10px", background: "rgba(245, 158, 11, 0.08)", color: "var(--accent-orange)", padding: "2px 6px", borderRadius: "4px", fontWeight: "bold" }}>
+                        {formatViews(story.viewNum)} Views
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderSidebarCinemaWidget = (title) => {
+    const list = cinemaNews.slice(0, 3);
+    if (list.length === 0) return null;
+
+    return (
+      <div key="cinema-sidebar" className="premium-widget-card" style={{ padding: "20px" }}>
+        <h3 className="widget-title-serif" style={{ marginTop: 0, marginBottom: "15px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span>🎬</span> {title}
+        </h3>
+        
+        <div 
+          onClick={() => navigate(`/news/${list[0]._id}`, { state: list[0] })}
+          style={{ position: "relative", borderRadius: "8px", overflow: "hidden", height: "140px", cursor: "pointer", marginBottom: "12px", border: "1px solid var(--border-color)" }}
+        >
+          <img src={list[0].image} alt={list[0].title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 12px", background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)", color: "white" }}>
+            <h4 style={{ fontSize: "0.8rem", fontWeight: "bold", margin: 0, textShadow: "1px 1px 2px rgba(0,0,0,0.8)" }}>{list[0].titleTa || list[0].title}</h4>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {list.slice(1).map(story => (
+            <div 
+              key={story._id}
+              onClick={() => navigate(`/news/${story._id}`, { state: story })}
+              style={{ display: "flex", gap: "10px", cursor: "pointer", alignItems: "center" }}
+            >
+              <img src={story.image} alt={story.title} style={{ width: "70px", height: "45px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+              <h5 style={{ fontSize: "0.8rem", fontWeight: "700", margin: 0, color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: "2", WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                {story.titleTa || story.title}
+              </h5>
+            </div>
+          ))}
+        </div>
+
+        <button 
+          onClick={() => navigate("/cinema")}
+          style={{ width: "100%", marginTop: "12px", padding: "8px", background: "none", border: "1px solid var(--accent-orange)", color: "var(--accent-orange)", borderRadius: "6px", fontSize: "0.78rem", fontWeight: "bold", cursor: "pointer" }}
+        >
+          சினிமா செய்திகள் அனைத்தும் பார்க்க
+        </button>
+      </div>
+    );
+  };
+
+  const renderPollWidget = () => {
+    return (
+      <div key="poll" className="premium-widget-card" style={{ padding: "20px" }}>
+        <h3 className="widget-title-serif" style={{ marginTop: 0, marginBottom: "15px" }}>
+          📊 கருத்துக் கணிப்பு
+        </h3>
+        <div style={{ fontSize: "0.85rem" }}>
+          <p style={{ fontWeight: "700", marginBottom: "12px", color: "var(--text-primary)" }}>இணைய வழிக் கல்வி மாணவர்களுக்கு உகந்ததா?</p>
+          {activePollVote === null ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <button 
+                onClick={() => setActivePollVote("yes")}
+                style={{ width: "100%", padding: "8px", background: "var(--bg-hover)", border: "1px solid var(--border-color)", borderRadius: "4px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", fontSize: "0.82rem" }}
+              >
+                ஆம், மிகவும் உகந்தது
+              </button>
+              <button 
+                onClick={() => setActivePollVote("no")}
+                style={{ width: "100%", padding: "8px", background: "var(--bg-hover)", border: "1px solid var(--border-color)", borderRadius: "4px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", fontSize: "0.82rem" }}
+              >
+                இல்லை, நேரடி கல்வியே சிறந்தது
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div style={{ marginBottom: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                  <span>ஆம்</span>
+                  <span style={{ fontWeight: "700" }}>34%</span>
+                </div>
+                <div style={{ width: "100%", height: "8px", background: "var(--border-color)", borderRadius: "4px", overflow: "hidden" }}>
+                  <div style={{ width: "34%", height: "100%", background: "var(--accent-orange)" }}></div>
+                </div>
+              </div>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                  <span>இல்லை</span>
+                  <span style={{ fontWeight: "700" }}>66%</span>
+                </div>
+                <div style={{ width: "100%", height: "8px", background: "var(--border-color)", borderRadius: "4px", overflow: "hidden" }}>
+                  <div style={{ width: "66%", height: "100%", background: "var(--accent-orange)" }}></div>
+                </div>
+              </div>
+              <p style={{ fontSize: "0.75rem", color: "#10b981", marginTop: "10px", fontWeight: "700" }}>வாக்களித்தமைக்கு நன்றி!</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderScoreWidget = () => {
+    return (
+      <div key="score" className="premium-widget-card" style={{ padding: "20px" }}>
+        <h4 style={{ margin: "0 0 10px 0", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px", fontSize: "0.95rem", color: "var(--accent-orange)", fontWeight: "800" }}>
+          விளையாட்டு ஸ்கோர்போர்டு 🏆
+        </h4>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "12px" }}>
+          <button 
+            onClick={() => setActiveScoreTab("match1")}
+            style={{ flex: 1, padding: "5px 8px", fontSize: "11px", borderRadius: "4px", border: "1px solid var(--border-color)", background: activeScoreTab === "match1" ? "var(--accent-orange)" : "transparent", color: activeScoreTab === "match1" ? "white" : "var(--text-primary)", fontWeight: "bold", cursor: "pointer" }}
+          >
+            IND vs PAK
+          </button>
+          <button 
+            onClick={() => setActiveScoreTab("match2")}
+            style={{ flex: 1, padding: "5px 8px", fontSize: "11px", borderRadius: "4px", border: "1px solid var(--border-color)", background: activeScoreTab === "match2" ? "var(--accent-orange)" : "transparent", color: activeScoreTab === "match2" ? "white" : "var(--text-primary)", fontWeight: "bold", cursor: "pointer" }}
+          >
+            CSK vs MI
+          </button>
+        </div>
+
+        {activeScoreTab === "match1" ? (
+          <div style={{ textAlign: "center" }}>
+            <span style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase" }}>T20 World Cup 2026</span>
+            <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", margin: "10px 0" }}>
+              <div>
+                <span style={{ fontWeight: "800", display: "block" }}>IND</span>
+                <span style={{ fontSize: "12px" }}>172/6 (20)</span>
+              </div>
+              <span style={{ fontSize: "12px", color: "red", fontWeight: "bold" }}>VS</span>
+              <div>
+                <span style={{ fontWeight: "800", display: "block" }}>PAK</span>
+                <span style={{ fontSize: "12px" }}>168/9 (20)</span>
+              </div>
+            </div>
+            <div style={{ fontSize: "12px", color: "#10b981", fontWeight: "700" }}>இந்தியா 4 ரன்களில் வென்றது!</div>
+          </div>
+        ) : (
+          <div style={{ textAlign: "center" }}>
+            <span style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase" }}>IPL 2026 - Live Score</span>
+            <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", margin: "10px 0" }}>
+              <div>
+                <span style={{ fontWeight: "800", display: "block" }}>CSK</span>
+                <span style={{ fontSize: "12px" }}>195/3 (18.2)</span>
+              </div>
+              <span style={{ fontSize: "12px", color: "red", fontWeight: "bold" }}>VS</span>
+              <div>
+                <span style={{ fontWeight: "800", display: "block" }}>MI</span>
+                <span style={{ fontSize: "12px" }}>194/6 (20)</span>
+              </div>
+            </div>
+            <div style={{ fontSize: "12px", color: "#fbbf24", fontWeight: "700" }}>சிஎஸ்கே அணிக்கு 7 விக்கெட் வித்தியாசத்தில் வெற்றி!</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderSectionById = (id, titleTa) => {
     switch (id) {
       case "breaking":
@@ -977,6 +1383,8 @@ const Home = () => {
         return renderTechSection(titleTa);
       case "business":
         return renderBusinessSection(titleTa);
+      case "tamil":
+        return renderTamilSection(titleTa);
       case "videos":
         return null;
       case "shorts":
@@ -1005,10 +1413,10 @@ const Home = () => {
       <AdZone position="SECTION_BANNER" />
 
       {/* Two-Column Body Grid */}
-      <div style={isLargeScreen ? { display: "grid", gridTemplateColumns: "1fr 300px", gap: "30px", alignItems: "start", marginTop: "20px" } : { display: "flex", flexDirection: "column", gap: "30px", marginTop: "20px" }}>
+      <div style={isLargeScreen ? { display: "grid", gridTemplateColumns: "1fr 320px", gap: "30px", alignItems: "start", marginTop: "20px" } : { display: "flex", flexDirection: "column", gap: "30px", marginTop: "20px" }}>
         
         {/* Left Column: All other categories loaded in dynamic order */}
-        <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div ref={leftRef} style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
           {activeSections.map(sec => {
             if (sec.id !== "breaking" && sec.id !== "hero") {
               return <div key={sec.id}>{renderSectionById(sec.id, sec.titleTa)}</div>;
@@ -1017,99 +1425,81 @@ const Home = () => {
           })}
         </div>
 
-        {/* Right Column: Sticky Sidebar with ads & widgets */}
+        {/* Right Column: Dynamic Sidebar with ads & widgets */}
         <aside style={{ 
           display: "flex", 
           flexDirection: "column", 
           gap: "25px", 
-          width: isLargeScreen ? "300px" : "100%",
-          position: isLargeScreen ? "sticky" : "static", 
-          top: isLargeScreen ? "20px" : "auto",
-          minWidth: "300px"
+          width: isLargeScreen ? "320px" : "100%",
+          minWidth: isLargeScreen ? "320px" : "100%"
         }}>
-          <AdZone position="SIDEBAR" />
+          <div ref={sidebarBaseRef} style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
+            {/* Go Premium promotion card */}
+            {(!token || !readerData?.isPremium) && (
+              <motion.div 
+                className="premium-widget go-premium-promo-widget" 
+                style={{ 
+                  padding: "24px 20px", 
+                  borderRadius: "12px", 
+                  background: "linear-gradient(135deg, #ea580c 0%, #ca8a04 100%)", 
+                  color: "#ffffff",
+                  border: "none",
+                  boxShadow: "0 10px 15px -3px rgba(234, 88, 12, 0.25)",
+                  cursor: "pointer",
+                  textAlign: "center"
+                }} 
+                onClick={() => navigate("/subscribe")}
+                whileHover={{ scale: 1.02 }}
+              >
+                <h3 style={{ margin: "0 0 10px 0", fontSize: "1.3rem", fontWeight: "900", fontFamily: "var(--font-serif)" }}>நியூஸ்குரு பிரீமியம் 👑</h3>
+                <p style={{ margin: "0 0 18px 0", fontSize: "0.85rem", opacity: "0.9", lineHeight: "1.4" }}>முழுமையான விளம்பரங்கள் இல்லாத தடையற்ற செய்தி வாசிப்பு அனுபவத்தை இப்போதே பெற சந்தா சேருங்கள்!</p>
+                <button style={{ 
+                  background: "#ffffff", 
+                  color: "#ea580c", 
+                  border: "none", 
+                  padding: "10px 20px", 
+                  borderRadius: "25px", 
+                  fontWeight: "800", 
+                  fontSize: "0.82rem",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+                }}>இப்போது இணைவோம் &rarr;</button>
+              </motion.div>
+            )}
 
-          {/* Go Premium promotion card */}
-          {(!token || !readerData?.isPremium) && (
-            <motion.div 
-              className="premium-widget go-premium-promo-widget" 
-              style={{ 
-                padding: "24px 20px", 
-                borderRadius: "10px", 
-                background: "linear-gradient(135deg, #ea580c 0%, #ca8a04 100%)", 
-                color: "#ffffff",
-                border: "none",
-                boxShadow: "0 10px 15px -3px rgba(234, 88, 12, 0.25)",
-                cursor: "pointer",
-                textAlign: "center"
-              }} 
-              onClick={() => navigate("/subscribe")}
-              whileHover={{ scale: 1.02 }}
-            >
-              <h3 style={{ margin: "0 0 10px 0", fontSize: "1.3rem", fontWeight: "900", fontFamily: "var(--font-serif)" }}>நியூஸ்குரு பிரீமியம் 👑</h3>
-              <p style={{ margin: "0 0 18px 0", fontSize: "0.85rem", opacity: "0.9", lineHeight: "1.4" }}>முழுமையான விளம்பரங்கள் இல்லாத தடையற்ற செய்தி வாசிப்பு அனுபவத்தை இப்போதே பெற சந்தா சேருங்கள்!</p>
-              <button style={{ 
-                background: "#ffffff", 
-                color: "#ea580c", 
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "25px", 
-                fontWeight: "800", 
-                fontSize: "0.82rem",
-                cursor: "pointer",
-                boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
-              }}>இப்போது இணைவோம் &rarr;</button>
-            </motion.div>
-          )}
-
-
-          <AdZone position="SIDEBAR" />
-
-          {/* Reader Poll Widget */}
-          <div className="premium-widget" style={{ padding: "16px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-secondary)" }}>
-            <h3 className="widget-title-serif" style={{ fontSize: "1.05rem", fontWeight: "700", borderBottom: "2px solid var(--border-color)", paddingBottom: "8px", marginTop: 0 }}>கருத்துக் கணிப்பு 📊</h3>
-            <div style={{ fontSize: "0.85rem", marginTop: "12px" }}>
-              <p style={{ fontWeight: "700", marginBottom: "12px", color: "var(--text-primary)" }}>இணைய வழிக் கல்வி மாணவர்களுக்கு உகந்ததா?</p>
-              {activePollVote === null ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <button 
-                    onClick={() => setActivePollVote("yes")}
-                    style={{ width: "100%", padding: "8px", background: "var(--bg-hover)", border: "1px solid var(--border-color)", borderRadius: "4px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", fontSize: "0.82rem" }}
-                  >
-                    ஆம், மிகவும் உகந்தது
-                  </button>
-                  <button 
-                    onClick={() => setActivePollVote("no")}
-                    style={{ width: "100%", padding: "8px", background: "var(--bg-hover)", border: "1px solid var(--border-color)", borderRadius: "4px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", fontSize: "0.82rem" }}
-                  >
-                    இல்லை, நேரடி கல்வியே சிறந்தது
-                  </button>
+            {/* Render dynamic sidebar widgets sorted by order */}
+            {homepageConfig?.sidebarWidgets && homepageConfig.sidebarWidgets.length > 0 ? (
+              [...homepageConfig.sidebarWidgets]
+                .sort((a, b) => a.order - b.order)
+                .map(widget => renderSidebarWidget(widget))
+            ) : (
+              // Fallback default sidebar widgets if homepageConfig isn't loaded/migrated
+              <>
+                <div className="premium-widget-card" style={{ padding: "12px" }}>
+                  <AdZone position="SIDEBAR" />
                 </div>
-              ) : (
-                <div>
-                  <div style={{ marginBottom: "8px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                      <span>ஆம்</span>
-                      <span style={{ fontWeight: "700" }}>34%</span>
-                    </div>
-                    <div style={{ width: "100%", height: "8px", background: "var(--border-color)", borderRadius: "4px", overflow: "hidden" }}>
-                      <div style={{ width: "34%", height: "100%", background: "var(--accent-orange)" }}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                      <span>இல்லை</span>
-                      <span style={{ fontWeight: "700" }}>66%</span>
-                    </div>
-                    <div style={{ width: "100%", height: "8px", background: "var(--border-color)", borderRadius: "4px", overflow: "hidden" }}>
-                      <div style={{ width: "66%", height: "100%", background: "var(--accent-orange)" }}></div>
-                    </div>
-                  </div>
-                  <p style={{ fontSize: "0.75rem", color: "#10b981", marginTop: "10px", fontWeight: "700" }}>வாக்களித்தமைக்கு நன்றி!</p>
+                {renderTrendingWidget("டிரெண்டிங் செய்திகள்")}
+                <div className="premium-widget-card" style={{ padding: "12px" }}>
+                  <AdZone position="SIDEBAR" />
                 </div>
-              )}
-            </div>
+                {renderMostReadWidget("அதிகம் வாசிக்கப்பட்டவை")}
+                <div className="premium-widget-card sticky-ad-wrapper" style={{ position: "sticky", top: "80px", padding: "12px", zIndex: 10 }}>
+                  <AdZone position="SIDEBAR" />
+                </div>
+                <div className="premium-widget-card" style={{ padding: "12px" }}>
+                  <AdZone position="SIDEBAR" />
+                </div>
+                {renderSidebarCinemaWidget("சினிமா செய்திகள்")}
+              </>
+            )}
           </div>
+
+          {/* Dynamically appended extra ads based on page height */}
+          {isLargeScreen && Array.from({ length: extraAdsCount }).map((_, idx) => (
+            <div key={`extra-ad-${idx}`} className="premium-widget-card" style={{ padding: "12px" }}>
+              <AdZone position="SIDEBAR" />
+            </div>
+          ))}
         </aside>
       </div>
 
@@ -1132,7 +1522,23 @@ const Home = () => {
                 </span>
                 <button 
                   onClick={() => setActiveShort(null)}
-                  style={{ background: "none", border: "none", color: "white", cursor: "pointer", fontSize: "20px" }}
+                  style={{
+                    background: "rgba(0, 0, 0, 0.6)",
+                    border: "none",
+                    color: "white",
+                    cursor: "pointer",
+                    fontSize: "18px",
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+                    transition: "background 0.2s"
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0, 0, 0, 0.8)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0, 0, 0, 0.6)"; }}
                 >
                   <FaTimes />
                 </button>

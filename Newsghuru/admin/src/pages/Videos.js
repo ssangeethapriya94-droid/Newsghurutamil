@@ -547,7 +547,7 @@ function Videos() {
                         </button>
                       </div>
                     ) : (
-                      <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "nowrap", whiteSpace: "nowrap" }}>
                         <button
                           className="action-btn edit"
                           onClick={() => startEdit(vid)}
@@ -589,17 +589,18 @@ function Videos() {
           padding: "20px"
         }}>
           <div style={{
-            background: "var(--bg-secondary, #1e1e24)",
+            background: "var(--card-bg, #ffffff)",
             padding: "20px", borderRadius: "12px",
             width: "100%", maxWidth: "640px",
-            border: "1px solid var(--border-color)",
-            position: "relative"
+            border: "1px solid var(--border-color, #cbd5e1)",
+            position: "relative",
+            color: "var(--text-main, #000000)"
           }}>
             <button
               onClick={() => setPreviewVideo(null)}
               style={{
                 position: "absolute", top: "10px", right: "15px",
-                background: "none", border: "none", color: "var(--text-main, #fff)",
+                background: "none", border: "none", color: "var(--text-main, #000000)",
                 fontSize: "20px", cursor: "pointer"
               }}
             >
