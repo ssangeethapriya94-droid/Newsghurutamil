@@ -52,7 +52,5 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
-
-backend/uploads/
 backend/scratch/
 
