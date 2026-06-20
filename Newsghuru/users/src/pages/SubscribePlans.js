@@ -358,7 +358,12 @@ const SubscribePlans = () => {
               const isRec = plan.isRecommended;
               const isActive = userData?.isPremium && (
                 userData.premiumPlan === plan._id || 
-                userData.premiumPlan?._id === plan._id
+                userData.premiumPlan?._id === plan._id ||
+                (typeof userData.premiumPlan === "object" && userData.premiumPlan !== null && (
+                  userData.premiumPlan.durationMonths === plan.durationMonths ||
+                  userData.premiumPlan.duration === plan.duration ||
+                  userData.premiumPlan.name?.toLowerCase() === plan.name?.toLowerCase()
+                ))
               );
 
               return (
@@ -413,7 +418,12 @@ const SubscribePlans = () => {
         {lifetimePlan && (() => {
           const isLifetimeActive = userData?.isPremium && (
             userData.premiumPlan === lifetimePlan._id || 
-            userData.premiumPlan?._id === lifetimePlan._id
+            userData.premiumPlan?._id === lifetimePlan._id ||
+            (typeof userData.premiumPlan === "object" && userData.premiumPlan !== null && (
+              userData.premiumPlan.durationMonths === lifetimePlan.durationMonths ||
+              userData.premiumPlan.duration === lifetimePlan.duration ||
+              userData.premiumPlan.name?.toLowerCase() === lifetimePlan.name?.toLowerCase()
+            ))
           );
           return (
             <div className={`lifetime-horizontal-card-custom ${isLifetimeActive ? "lifetime-active" : ""}`}>

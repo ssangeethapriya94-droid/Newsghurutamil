@@ -101,7 +101,7 @@ router.post("/register", async (req, res) => {
 // GET /api/users/profile - Get currently logged-in user's profile
 router.get("/users/profile", verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("-password");
+    const user = await User.findById(req.user._id).select("-password").populate("premiumPlan");
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
