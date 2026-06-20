@@ -71,8 +71,19 @@ function ReporterNotifications() {
   };
 
   const handleNotificationClick = (notification) => {
+    const textLower = (notification.text || "").toLowerCase();
+    const isAd = textLower.includes("advertisement") || textLower.includes("ad campaign");
+    const isShort = textLower.includes("short reel") || textLower.includes("news short") || textLower.includes("shorts");
+    const isPhotoStory = textLower.includes("photo story");
+
     if (notification.type === "contact" && role === "admin") {
       navigate("/admin/contact-queries");
+    } else if (isAd) {
+      navigate("/admin/ads/all");
+    } else if (isShort) {
+      navigate("/admin/shorts");
+    } else if (isPhotoStory) {
+      navigate("/admin/photo-stories");
     } else if (notification.type === "submitted") {
       if (role === "admin") navigate("/admin/pending");
       else if (role === "editor") navigate("/editor/pending");

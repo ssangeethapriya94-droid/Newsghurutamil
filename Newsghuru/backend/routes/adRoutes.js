@@ -29,7 +29,9 @@ const upload = multer({ storage });
 // Helper to determine status dynamically
 const updateAdStatuses = async () => {
   const now = new Date();
-  const ads = await Advertisement.find({});
+  const ads = await Advertisement.find({
+    status: { $in: ["Active", "Scheduled", "Expired", "Published"] }
+  });
   for (let ad of ads) {
     if (!ad.isActive || ad.status === "Inactive") {
       if (ad.status !== "Inactive") {
@@ -42,8 +44,8 @@ const updateAdStatuses = async () => {
     // Parse combined date and time strings (local-friendly parsing)
     const startStr = ad.startDate.toISOString().split("T")[0];
     const endStr = ad.endDate.toISOString().split("T")[0];
-    const start = new Date(`${startStr}T${ad.startTime || "00:00"}:00`);
-    const end = new Date(`${endStr}T${ad.endTime || "23:59"}:59`);
+    const start = new Date(`${startStr}T${ad.startTime || "00:00"}:00+05:30`);
+    const end = new Date(`${endStr}T${ad.endTime || "23:59"}:59+05:30`);
     
     let newStatus = "Active";
     if (now < start) {
@@ -196,7 +198,7 @@ router.post("/requests", async (req, res) => {
 ========================================= */
 
 // POST /api/ads/upload - Upload ad image (returns URL)
-router.post("/upload", verifyToken, authorizeRoles("admin"), upload.single("image"), async (req, res) => {
+router.post("/upload", verifyToken, authorizeRoles("admin", "editor"), upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: "No file uploaded" });
@@ -213,7 +215,7 @@ router.post("/upload", verifyToken, authorizeRoles("admin"), upload.single("imag
 });
 
 // GET /api/ads - Get all advertisements
-router.get("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
+router.get("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
     await updateAdStatuses(); // Sync status with dates on list fetch
     const ads = await Advertisement.find().sort({ createdAt: -1 });
@@ -429,7 +431,7 @@ router.post("/requests/:id/convert", verifyToken, authorizeRoles("admin"), async
 });
 
 // POST /api/ads - Create advertisement
-router.post("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
+router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
     const {
       title,
@@ -456,6 +458,10 @@ router.post("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
       return res.status(400).json({ success: false, message: "All required fields must be provided" });
     }
 
+    const adStatus = req.user.role === "editor"
+      ? (["Draft", "Pending Approval"].includes(status) ? status : "Draft")
+      : (status || "Active");
+
     const newAd = new Advertisement({
       title,
       advertiserName,
@@ -467,7 +473,7 @@ router.post("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
       targetUrl,
       position,
       priority: priority || "Medium",
-      status: status || "Active",
+      status: adStatus,
       popupDelay: popupDelay !== undefined ? popupDelay : 3,
       popupAutoClose: popupAutoClose !== undefined ? popupAutoClose : 10,
       rotationInterval: rotationInterval !== undefined ? rotationInterval : 10,
@@ -475,11 +481,30 @@ router.post("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
       startTime: startTime || "00:00",
       endDate,
       endTime: endTime || "23:59",
-      isActive: status !== "Inactive"
+      isActive: req.user.role === "admin" ? (status !== "Inactive") : false,
+      createdBy: req.user._id
     });
 
     await newAd.save();
     await updateAdStatuses(); // Sync status on save
+
+    if (newAd.status === "Pending Approval") {
+      try {
+        const User = require("../models/User");
+        const Notification = require("../models/Notification");
+        const admins = await User.find({ role: "admin" });
+        const notificationPromises = admins.map((admin) =>
+          Notification.create({
+            recipientId: admin._id,
+            type: "submitted",
+            text: `New advertisement campaign "${newAd.title}" submitted by Editor ${req.user.name} is pending approval.`,
+          })
+        );
+        await Promise.all(notificationPromises);
+      } catch (notifErr) {
+        console.error("Failed to create submission notification:", notifErr);
+      }
+    }
 
     res.status(201).json({ success: true, message: "Advertisement created successfully 🎉", ad: newAd });
   } catch (error) {
@@ -489,7 +514,7 @@ router.post("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
 });
 
 // GET /api/ads/:id - Get single advertisement
-router.get("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
+router.get("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
     const ad = await Advertisement.findById(req.params.id);
     if (!ad) {
@@ -503,7 +528,7 @@ router.get("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
 });
 
 // PUT /api/ads/:id - Update advertisement
-router.put("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
+router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
     const adId = req.params.id;
     const updates = req.body;
@@ -512,6 +537,20 @@ router.put("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
     if (!ad) {
       return res.status(404).json({ success: false, message: "Advertisement not found" });
     }
+
+    if (req.user.role === "editor") {
+      if (ad.status !== "Draft" && ad.status !== "Rejected" && ad.status !== undefined) {
+        return res.status(403).json({ success: false, message: "Not authorized. Editors can only edit Draft or Rejected advertisements." });
+      }
+
+      if (updates.status !== undefined) {
+        if (!["Draft", "Pending Approval"].includes(updates.status)) {
+          updates.status = "Draft";
+        }
+      }
+    }
+
+    const oldStatus = ad.status;
 
     // Apply updates
     Object.keys(updates).forEach(key => {
@@ -523,12 +562,30 @@ router.put("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
     // Handle manual isActive sync
     if (updates.status === "Inactive") {
       ad.isActive = false;
-    } else if (updates.status && updates.status !== "Inactive") {
+    } else if (updates.status && updates.status !== "Inactive" && req.user.role === "admin") {
       ad.isActive = true;
     }
 
     await ad.save();
     await updateAdStatuses(); // Resync status dynamically
+
+    if (updates.status === "Pending Approval" && oldStatus !== "Pending Approval") {
+      try {
+        const User = require("../models/User");
+        const Notification = require("../models/Notification");
+        const admins = await User.find({ role: "admin" });
+        const notificationPromises = admins.map((admin) =>
+          Notification.create({
+            recipientId: admin._id,
+            type: "submitted",
+            text: `Advertisement campaign "${ad.title}" submitted by Editor ${req.user.name} is pending approval.`,
+          })
+        );
+        await Promise.all(notificationPromises);
+      } catch (notifErr) {
+        console.error("Failed to create submission notification:", notifErr);
+      }
+    }
 
     res.json({ success: true, message: "Advertisement updated successfully", ad });
   } catch (error) {
@@ -558,12 +615,21 @@ router.put("/:id/toggle", verifyToken, authorizeRoles("admin"), async (req, res)
 });
 
 // DELETE /api/ads/:id - Delete advertisement campaign
-router.delete("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
+router.delete("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
-    const ad = await Advertisement.findByIdAndDelete(req.params.id);
+    const ad = await Advertisement.findById(req.params.id);
     if (!ad) {
       return res.status(404).json({ success: false, message: "Advertisement not found" });
     }
+
+    if (req.user.role === "editor") {
+      const createdByStr = ad.createdBy ? ad.createdBy.toString() : "";
+      if (ad.status !== "Draft" || createdByStr !== req.user._id.toString()) {
+        return res.status(403).json({ success: false, message: "Not authorized. Editors can only delete their own Draft advertisements." });
+      }
+    }
+
+    await Advertisement.findByIdAndDelete(req.params.id);
 
     // Clean up related analytics events to keep DB neat
     await AdEvent.deleteMany({ adId: req.params.id });
@@ -572,6 +638,135 @@ router.delete("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => 
   } catch (error) {
     console.error("Delete ad error:", error);
     res.status(500).json({ success: false, message: "Server error deleting advertisement" });
+  }
+});
+
+// PUT /api/ads/:id/approve - Admin Approve Advertisement
+router.put("/:id/approve", verifyToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const ad = await Advertisement.findById(req.params.id);
+    if (!ad) {
+      return res.status(404).json({ success: false, message: "Advertisement not found" });
+    }
+
+    ad.status = "Approved";
+    ad.approvedBy = req.user._id;
+    ad.approvedAt = new Date();
+    await ad.save();
+
+    // Notify the creator Editor
+    if (ad.createdBy) {
+      try {
+        const Notification = require("../models/Notification");
+        await Notification.create({
+          recipientId: ad.createdBy,
+          type: "approved",
+          text: `Your advertisement campaign "${ad.title}" has been approved by the Admin.`
+        });
+      } catch (notifErr) {
+        console.error("Failed to notify creator editor:", notifErr);
+      }
+    }
+
+    res.json({ success: true, message: "Advertisement approved successfully", ad });
+  } catch (error) {
+    console.error("Approve ad error:", error);
+    res.status(500).json({ success: false, message: "Server error approving advertisement" });
+  }
+});
+
+// PUT /api/ads/:id/reject - Admin Reject Advertisement
+router.put("/:id/reject", verifyToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const { rejectionReason } = req.body;
+    if (!rejectionReason) {
+      return res.status(400).json({ success: false, message: "Rejection reason is required" });
+    }
+
+    const ad = await Advertisement.findById(req.params.id);
+    if (!ad) {
+      return res.status(404).json({ success: false, message: "Advertisement not found" });
+    }
+
+    ad.status = "Rejected";
+    ad.rejectedAt = new Date();
+    ad.rejectionReason = rejectionReason;
+    await ad.save();
+
+    // Notify the creator Editor
+    if (ad.createdBy) {
+      try {
+        const Notification = require("../models/Notification");
+        await Notification.create({
+          recipientId: ad.createdBy,
+          type: "rejected",
+          text: `Your advertisement campaign "${ad.title}" was rejected by the Admin. Reason: ${rejectionReason}`,
+          reason: rejectionReason
+        });
+      } catch (notifErr) {
+        console.error("Failed to notify creator editor:", notifErr);
+      }
+    }
+
+    res.json({ success: true, message: "Advertisement rejected successfully", ad });
+  } catch (error) {
+    console.error("Reject ad error:", error);
+    res.status(500).json({ success: false, message: "Server error rejecting advertisement" });
+  }
+});
+
+// PUT /api/ads/:id/publish - Admin Publish Advertisement
+router.put("/:id/publish", verifyToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const ad = await Advertisement.findById(req.params.id);
+    if (!ad) {
+      return res.status(404).json({ success: false, message: "Advertisement not found" });
+    }
+
+    ad.status = "Active"; // Active is the published state
+    ad.isActive = true;
+    ad.publishedBy = req.user._id;
+    ad.publishedAt = new Date();
+    await ad.save();
+    await updateAdStatuses(); // Sync status on publish
+
+    // Notify the creator Editor
+    if (ad.createdBy) {
+      try {
+        const Notification = require("../models/Notification");
+        await Notification.create({
+          recipientId: ad.createdBy,
+          type: "published",
+          text: `Your advertisement campaign "${ad.title}" has been published by the Admin.`
+        });
+      } catch (notifErr) {
+        console.error("Failed to notify creator editor:", notifErr);
+      }
+    }
+
+    res.json({ success: true, message: "Advertisement published successfully", ad });
+  } catch (error) {
+    console.error("Publish ad error:", error);
+    res.status(500).json({ success: false, message: "Server error publishing advertisement" });
+  }
+});
+
+// PUT /api/ads/:id/unpublish - Admin Unpublish Advertisement
+router.put("/:id/unpublish", verifyToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const ad = await Advertisement.findById(req.params.id);
+    if (!ad) {
+      return res.status(404).json({ success: false, message: "Advertisement not found" });
+    }
+
+    ad.status = "Draft";
+    ad.isActive = false;
+    await ad.save();
+
+    res.json({ success: true, message: "Advertisement unpublished successfully", ad });
+  } catch (error) {
+    console.error("Unpublish ad error:", error);
+    res.status(500).json({ success: false, message: "Server error unpublishing advertisement" });
   }
 });
 

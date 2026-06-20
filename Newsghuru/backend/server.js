@@ -42,6 +42,8 @@ connectDB().then(async () => {
   await seedShorts();
   await seedPhotoStories();
   await seedHomepageConfig();
+}).catch((err) => {
+  console.warn("⚠️ Database connection failed. Seeding default data was skipped.");
 });
 
 const seedAdmin = async () => {

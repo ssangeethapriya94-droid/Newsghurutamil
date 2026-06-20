@@ -49,8 +49,8 @@ router.get("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
   }
 });
 
-// POST /api/media/upload - Upload a file (Admin only)
-router.post("/upload", verifyToken, authorizeRoles("admin"), upload.single("image"), async (req, res) => {
+// POST /api/media/upload - Upload a file (Admin and Editor)
+router.post("/upload", verifyToken, authorizeRoles("admin", "editor"), upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });

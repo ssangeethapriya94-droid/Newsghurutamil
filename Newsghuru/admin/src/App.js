@@ -65,18 +65,22 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" />;
   }
   
-  if (requiredRole && getUserRole() !== requiredRole) {
-    // If user tries to access a route they shouldn't, redirect to their home
+  if (requiredRole) {
     const role = getUserRole();
-    if (role === "admin") return <Navigate to="/admin/dashboard" />;
-    if (role === "editor") return <Navigate to="/editor/pending" />;
-    if (role === "reporter") return <Navigate to="/reporter/create-news" />;
-    return <Navigate to="/" />;
+    const hasRole = Array.isArray(requiredRole) 
+      ? requiredRole.includes(role) 
+      : role === requiredRole;
+      
+    if (!hasRole) {
+      if (role === "admin") return <Navigate to="/admin/dashboard" />;
+      if (role === "editor") return <Navigate to="/editor/pending" />;
+      if (role === "reporter") return <Navigate to="/reporter/create-news" />;
+      return <Navigate to="/" />;
+    }
   }
 
   return children;
 };
-
 // layout wrapper (controls sidebar visibility and topbar)
 function Layout({ children }) {
   const location = useLocation();
@@ -260,15 +264,15 @@ function App() {
         <Route path="/admin/subscriptions" element={<ProtectedRoute requiredRole="admin"><Layout><SubscriptionPlans /></Layout></ProtectedRoute>} />
         <Route path="/admin/revenue" element={<ProtectedRoute requiredRole="admin"><Layout><Revenue /></Layout></ProtectedRoute>} />
         <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
-        <Route path="/admin/shorts" element={<ProtectedRoute requiredRole="admin"><Layout><Shorts /></Layout></ProtectedRoute>} />
-        <Route path="/admin/photo-stories" element={<ProtectedRoute requiredRole="admin"><Layout><PhotoStories /></Layout></ProtectedRoute>} />
+        <Route path="/admin/shorts" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><Shorts /></Layout></ProtectedRoute>} />
+        <Route path="/admin/photo-stories" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><PhotoStories /></Layout></ProtectedRoute>} />
         <Route path="/admin/homepage-builder" element={<ProtectedRoute requiredRole="admin"><Layout><HomepageBuilder /></Layout></ProtectedRoute>} />
 
         {/* ADVERTISEMENT MANAGEMENT MODULE ROUTES */}
         <Route path="/admin/ads/dashboard" element={<ProtectedRoute requiredRole="admin"><Layout><AdDashboard /></Layout></ProtectedRoute>} />
-        <Route path="/admin/ads/all" element={<ProtectedRoute requiredRole="admin"><Layout><AllAds /></Layout></ProtectedRoute>} />
-        <Route path="/admin/ads/add" element={<ProtectedRoute requiredRole="admin"><Layout><AddAd /></Layout></ProtectedRoute>} />
-        <Route path="/admin/ads/edit/:id" element={<ProtectedRoute requiredRole="admin"><Layout><AddAd /></Layout></ProtectedRoute>} />
+        <Route path="/admin/ads/all" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AllAds /></Layout></ProtectedRoute>} />
+        <Route path="/admin/ads/add" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AddAd /></Layout></ProtectedRoute>} />
+        <Route path="/admin/ads/edit/:id" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AddAd /></Layout></ProtectedRoute>} />
         <Route path="/admin/ads/requests" element={<ProtectedRoute requiredRole="admin"><Layout><AdRequests /></Layout></ProtectedRoute>} />
         <Route path="/admin/ads/analytics" element={<ProtectedRoute requiredRole="admin"><Layout><AdAnalytics /></Layout></ProtectedRoute>} />
         <Route path="/admin/ads/settings" element={<ProtectedRoute requiredRole="admin"><Layout><AdSettings /></Layout></ProtectedRoute>} />

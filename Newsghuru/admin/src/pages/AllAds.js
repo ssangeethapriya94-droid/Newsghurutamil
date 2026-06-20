@@ -1,16 +1,43 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../config/api";
 import { FiEdit, FiTrash2, FiPlus, FiExternalLink, FiSearch, FiSliders, FiFilter } from "react-icons/fi";
+import { FaEye, FaTimes } from "react-icons/fa";
 import "../styles/ReporterMyArticles.css"; // Reuse table styling
 
 function AllAds() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [positionFilter, setPositionFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState((location.state && location.state.statusFilter) || "all");
+  const [previewAd, setPreviewAd] = useState(null);
+
+  const role = localStorage.getItem("role");
+  const token = localStorage.getItem("token");
+
+  // Decoded userId from JWT token
+  let userId = "";
+  if (token) {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        window
+          .atob(base64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+      userId = JSON.parse(jsonPayload).userId;
+    } catch (e) {
+      console.error("Error decoding token:", e);
+    }
+  }
 
   const fetchAds = async () => {
     try {
@@ -57,17 +84,89 @@ function AllAds() {
       }
     } catch (err) {
       console.error("Error deleting advertisement", err);
-      alert("Failed to delete advertisement");
+      alert(err.response?.data?.message || "Failed to delete advertisement");
+    }
+  };
+
+  const handleSubmitForApproval = async (id) => {
+    try {
+      const res = await API.put(`/api/ads/${id}`, { status: "Pending Approval" });
+      if (res.data.success) {
+        alert("Advertisement submitted for approval successfully 🎉");
+        fetchAds();
+      }
+    } catch (err) {
+      console.error("Error submitting ad for approval", err);
+      alert("Failed to submit advertisement");
+    }
+  };
+
+  const handleApprove = async (id) => {
+    try {
+      const res = await API.put(`/api/ads/${id}/approve`);
+      if (res.data.success) {
+        alert("Advertisement approved successfully!");
+        fetchAds();
+      }
+    } catch (err) {
+      console.error("Error approving ad", err);
+      alert("Failed to approve advertisement");
+    }
+  };
+
+  const handleReject = async (id) => {
+    const reason = window.prompt("Please enter a reason for rejecting this advertisement:");
+    if (reason === null) return; // cancelled
+    if (!reason.trim()) {
+      alert("A rejection reason is required.");
+      return;
+    }
+
+    try {
+      const res = await API.put(`/api/ads/${id}/reject`, { rejectionReason: reason });
+      if (res.data.success) {
+        alert("Advertisement rejected successfully.");
+        fetchAds();
+      }
+    } catch (err) {
+      console.error("Error rejecting ad", err);
+      alert("Failed to reject advertisement");
+    }
+  };
+
+  const handlePublish = async (id) => {
+    try {
+      const res = await API.put(`/api/ads/${id}/publish`);
+      if (res.data.success) {
+        alert("Advertisement published and activated successfully!");
+        fetchAds();
+      }
+    } catch (err) {
+      console.error("Error publishing ad", err);
+      alert("Failed to publish advertisement");
+    }
+  };
+
+  const handleUnpublish = async (id) => {
+    try {
+      const res = await API.put(`/api/ads/${id}/unpublish`);
+      if (res.data.success) {
+        alert("Advertisement unpublished successfully.");
+        fetchAds();
+      }
+    } catch (err) {
+      console.error("Error unpublishing ad", err);
+      alert("Failed to unpublish advertisement");
     }
   };
 
   // Filter ads
-  const filteredAds = ads.filter(ad => {
-    const matchesSearch = 
+  const filteredAds = ads.filter((ad) => {
+    const matchesSearch =
       ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ad.advertiserName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (ad.companyName && ad.companyName.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     const matchesPosition = positionFilter === "all" || ad.position === positionFilter;
     const matchesStatus = statusFilter === "all" || ad.status === statusFilter;
 
@@ -77,11 +176,20 @@ function AllAds() {
   const getStatusStyle = (status) => {
     switch (status) {
       case "Active":
+      case "Published":
         return { background: "#e6f4ea", color: "#137333", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
-      case "Scheduled":
+      case "Approved":
+        return { background: "#e0f2fe", color: "#0369a1", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Pending Approval":
         return { background: "#feefe3", color: "#b06000", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Scheduled":
+        return { background: "#faf5ff", color: "#6b21a8", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
       case "Expired":
         return { background: "#fce8e6", color: "#c5221f", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Rejected":
+        return { background: "#fee2e2", color: "#ef4444", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Draft":
+        return { background: "#f1f3f4", color: "#3c4043", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
       case "Inactive":
       default:
         return { background: "#f1f3f4", color: "#3c4043", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
@@ -104,7 +212,7 @@ function AllAds() {
     <div className="reporter-my-articles">
       <div className="header-actions">
         <div>
-          <h2>📢 All Advertisement Campaigns</h2>
+          <h2>📢 Advertisement Campaigns</h2>
           <div className="header-subtitle">
             Manage newspaper-style banner banners, click rates, active scheduling, and tracking indicators.
           </div>
@@ -156,14 +264,19 @@ function AllAds() {
             style={{ padding: "8px 12px", borderRadius: "10px", fontSize: "14px" }}
           >
             <option value="all">All Statuses</option>
+            <option value="Draft">Draft</option>
+            <option value="Pending Approval">Pending Approval</option>
+            <option value="Approved">Approved</option>
             <option value="Active">Active</option>
             <option value="Scheduled">Scheduled</option>
             <option value="Expired">Expired</option>
             <option value="Inactive">Inactive</option>
+            <option value="Rejected">Rejected</option>
           </select>
         </div>
 
         {/* Add Ad Button */}
+        {role === "editor" && (
         <button 
           onClick={() => navigate("/admin/ads/add")} 
           className="btn-primary" 
@@ -171,6 +284,7 @@ function AllAds() {
         >
           <FiPlus /> Add Campaign
         </button>
+        )}
 
       </div>
 
@@ -193,14 +307,19 @@ function AllAds() {
                 <th style={{ textAlign: "center" }}>Clicks</th>
                 <th style={{ textAlign: "center" }}>Impressions</th>
                 <th style={{ textAlign: "center" }}>CTR</th>
-                <th style={{ width: "160px" }}>Actions</th>
+                <th style={{ width: "220px" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredAds.map((ad) => {
                 const imgUrl = ad.image.startsWith("http") ? ad.image : `${API.defaults.baseURL || "http://localhost:5000"}${ad.image}`;
                 const adClickTrackUrl = `${API.defaults.baseURL || "http://localhost:5000"}/api/ads/${ad._id}/click`;
+                const createdByStr = ad.createdBy ? (typeof ad.createdBy === "object" ? ad.createdBy._id : ad.createdBy) : "";
+                const isOwnDraft = role === "editor" && createdByStr === userId;
                 
+                const canEdit = role === "editor" && isOwnDraft && (ad.status === "Draft" || ad.status === "Rejected");
+                const canDelete = role === "editor" && isOwnDraft && ad.status === "Draft";
+
                 return (
                   <tr key={ad._id}>
                     <td>
@@ -214,13 +333,18 @@ function AllAds() {
                         <span style={{ fontSize: "12px", color: "var(--text-muted)", display: "block" }}>
                           Advertiser: <strong>{ad.advertiserName}</strong> {ad.companyName && `(${ad.companyName})`}
                         </span>
+                        {ad.rejectionReason && ad.status === "Rejected" && (
+                          <span style={{ fontSize: "11px", color: "#ef4444", display: "block", marginTop: "2px" }}>
+                            Rejection Reason: {ad.rejectionReason}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td>
                       <span className="category-tag">{ad.position}</span>
                     </td>
                     <td>
-                      <span style={getStatusStyle(ad.status)}>{ad.status}</span>
+                      <span style={getStatusStyle(ad.status)}>{ad.status || "Draft"}</span>
                     </td>
                     <td>
                       <span style={getPriorityStyle(ad.priority)}>{ad.priority}</span>
@@ -237,24 +361,26 @@ function AllAds() {
                     <td style={{ textAlign: "center", fontWeight: 600 }}>{ad.impressions}</td>
                     <td style={{ textAlign: "center", fontWeight: 700, color: "#10b981" }}>{ad.ctr}%</td>
                     <td>
-                      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
                         
-                        {/* Toggle active state */}
-                        <button
-                          onClick={() => handleToggleActive(ad._id, ad.title, ad.isActive)}
-                          title={ad.isActive ? "Deactivate Campaign" : "Activate Campaign"}
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            fontSize: "12px",
-                            color: ad.isActive ? "#10b981" : "#94a3b8",
-                            fontWeight: "bold",
-                            padding: 0
-                          }}
-                        >
-                          {ad.isActive ? "ON" : "OFF"}
-                        </button>
+                        {/* Toggle active state (Admin only) */}
+                        {role === "admin" && (
+                          <button
+                            onClick={() => handleToggleActive(ad._id, ad.title, ad.isActive)}
+                            title={ad.isActive ? "Deactivate Campaign" : "Activate Campaign"}
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              fontSize: "12px",
+                              color: ad.isActive ? "#10b981" : "#94a3b8",
+                              fontWeight: "bold",
+                              padding: 0
+                            }}
+                          >
+                            {ad.isActive ? "ON" : "OFF"}
+                          </button>
+                        )}
 
                         {/* Test Click Redirection */}
                         <a
@@ -267,23 +393,136 @@ function AllAds() {
                           <FiExternalLink />
                         </a>
 
-                        {/* Edit Button */}
+                        {/* Preview Option Button */}
                         <button
-                          className="action-btn edit"
-                          onClick={() => navigate(`/admin/ads/edit/${ad._id}`)}
-                          title="Edit Campaign"
+                          onClick={() => setPreviewAd(ad)}
+                          title="Preview Advertisement Campaign"
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            color: "var(--accent-orange, #f97316)",
+                            fontSize: "14px",
+                            padding: 0,
+                            display: "inline-flex",
+                            alignItems: "center"
+                          }}
                         >
-                          <FiEdit />
+                          <FaEye />
                         </button>
 
+                        {/* Edit Button */}
+                        {canEdit && (
+                          <button
+                            className="action-btn edit"
+                            onClick={() => navigate(`/admin/ads/edit/${ad._id}`)}
+                            title="Edit Campaign"
+                          >
+                            <FiEdit />
+                          </button>
+                        )}
+
                         {/* Delete Button */}
-                        <button
-                          className="action-btn delete"
-                          onClick={() => handleDelete(ad._id, ad.title)}
-                          title="Delete Campaign"
-                        >
-                          <FiTrash2 />
-                        </button>
+                        {canDelete && (
+                          <button
+                            className="action-btn delete"
+                            onClick={() => handleDelete(ad._id, ad.title)}
+                            title="Delete Campaign"
+                          >
+                            <FiTrash2 />
+                          </button>
+                        )}
+
+                        {/* Submit for Approval (Editor own drafts/rejected) */}
+                        {role === "editor" && isOwnDraft && (ad.status === "Draft" || ad.status === "Rejected" || !ad.status) && (
+                          <button
+                            onClick={() => handleSubmitForApproval(ad._id)}
+                            style={{
+                              background: "#3b82f6",
+                              color: "white",
+                              border: "none",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "11px",
+                              fontWeight: 600
+                            }}
+                          >
+                            Submit
+                          </button>
+                        )}
+
+                        {/* Admin Approvals & Publishing */}
+                        {role === "admin" && ad.status === "Pending Approval" && (
+                          <>
+                            <button
+                              onClick={() => handleApprove(ad._id)}
+                              style={{
+                                background: "#10b981",
+                                color: "white",
+                                border: "none",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "11px",
+                                fontWeight: 600
+                              }}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleReject(ad._id)}
+                              style={{
+                                background: "#ef4444",
+                                color: "white",
+                                border: "none",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "11px",
+                                fontWeight: 600
+                              }}
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+
+                        {role === "admin" && ad.status === "Approved" && (
+                          <button
+                            onClick={() => handlePublish(ad._id)}
+                            style={{
+                              background: "#ea580c",
+                              color: "white",
+                              border: "none",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "11px",
+                              fontWeight: 600
+                            }}
+                          >
+                            Publish
+                          </button>
+                        )}
+
+                        {role === "admin" && ["Active", "Scheduled", "Expired"].includes(ad.status) && (
+                          <button
+                            onClick={() => handleUnpublish(ad._id)}
+                            style={{
+                              background: "#6b7280",
+                              color: "white",
+                              border: "none",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "11px",
+                              fontWeight: 600
+                            }}
+                          >
+                            Unpublish
+                          </button>
+                        )}
 
                       </div>
                     </td>
@@ -294,6 +533,171 @@ function AllAds() {
           </table>
         )}
       </div>
+
+      {/* FULLSCREEN AD PREVIEW MODAL */}
+      {previewAd && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.85)", zIndex: 999999,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "20px"
+        }}>
+          <div style={{
+            background: "var(--bg-secondary, #1e1e24)",
+            padding: "25px", borderRadius: "12px",
+            width: "100%", maxWidth: "550px",
+            border: "1px solid var(--border-color)",
+            position: "relative",
+            color: "var(--text-main, #fff)",
+            maxHeight: "90vh",
+            overflowY: "auto"
+          }}>
+            <button
+              onClick={() => setPreviewAd(null)}
+              style={{
+                position: "absolute", top: "15px", right: "15px",
+                background: "none", border: "none", color: "var(--text-main, #fff)",
+                fontSize: "20px", cursor: "pointer", zIndex: 10
+              }}
+            >
+              <FaTimes />
+            </button>
+            <h3 style={{ color: "var(--text-main)", marginBottom: "15px", fontSize: "1.3rem", paddingRight: "30px", fontFamily: "var(--font-serif)" }}>
+              📢 Ad Campaign Preview
+            </h3>
+
+            {/* Banner Image */}
+            <div style={{ width: "100%", height: "200px", borderRadius: "8px", overflow: "hidden", background: "var(--bg-light)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border-color)", marginBottom: "20px" }}>
+              <img 
+                src={previewAd.image.startsWith("http") ? previewAd.image : `${API.defaults.baseURL || "http://localhost:5000"}${previewAd.image}`} 
+                alt={previewAd.title} 
+                style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} 
+              />
+            </div>
+
+            {/* Campaign Details */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "14px", lineHeight: "1.6" }}>
+              <div>
+                <strong>Campaign Title:</strong> <span style={{ color: "var(--accent-orange, #f97316)", fontWeight: "bold" }}>{previewAd.title}</span>
+              </div>
+              {previewAd.companyName && (
+                <div>
+                  <strong>Company / Brand:</strong> {previewAd.companyName}
+                </div>
+              )}
+              {previewAd.description && (
+                <div>
+                  <strong>Description:</strong> {previewAd.description}
+                </div>
+              )}
+              <div>
+                <strong>Position / Location:</strong> <span className="category-tag">{previewAd.position}</span>
+              </div>
+              <div>
+                <strong>Priority:</strong> <span style={{ fontWeight: "bold", color: previewAd.priority === "High" ? "#ef4444" : previewAd.priority === "Medium" ? "#3b82f6" : "#6b7280" }}>{previewAd.priority}</span>
+              </div>
+              <div>
+                <strong>Target Link:</strong> <a href={previewAd.targetUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#3b82f6", textDecoration: "underline", wordBreak: "break-all" }}>{previewAd.targetUrl}</a>
+              </div>
+
+              <div style={{ borderTop: "1px solid var(--border-color)", marginTop: "10px", paddingTop: "10px" }}>
+                <h4 style={{ margin: "0 0 8px 0", color: "var(--text-main)", fontSize: "14px" }}>Advertiser Information:</h4>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "13px", color: "var(--text-muted)" }}>
+                  <div><strong>Name:</strong> {previewAd.advertiserName}</div>
+                  <div><strong>Phone:</strong> {previewAd.advertiserPhone}</div>
+                  <div style={{ gridColumn: "span 2" }}><strong>Email:</strong> {previewAd.advertiserEmail}</div>
+                </div>
+              </div>
+
+              <div style={{ borderTop: "1px solid var(--border-color)", marginTop: "10px", paddingTop: "10px" }}>
+                <h4 style={{ margin: "0 0 8px 0", color: "var(--text-main)", fontSize: "14px" }}>Publication Timeline:</h4>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "13px", color: "var(--text-muted)" }}>
+                  <div><strong>Start:</strong> {new Date(previewAd.startDate).toLocaleDateString()} at {previewAd.startTime}</div>
+                  <div><strong>End:</strong> {new Date(previewAd.endDate).toLocaleDateString()} at {previewAd.endTime}</div>
+                </div>
+              </div>
+
+              {previewAd.rejectionReason && previewAd.status === "Rejected" && (
+                <div style={{ borderLeft: "4px solid #ef4444", background: "rgba(239, 68, 68, 0.08)", padding: "10px", borderRadius: "4px", marginTop: "10px", color: "#f87171" }}>
+                  <strong>Rejection Reason:</strong> {previewAd.rejectionReason}
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons in Modal */}
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "25px", borderTop: "1px solid var(--border-color)", paddingTop: "15px" }}>
+              <button 
+                onClick={() => setPreviewAd(null)}
+                className="btn-secondary"
+                style={{ padding: "8px 16px", borderRadius: "6px", fontSize: "13px" }}
+              >
+                Close
+              </button>
+
+              {/* Submit for Approval (Editor own drafts/rejected) */}
+              {role === "editor" && (previewAd.status === "Draft" || previewAd.status === "Rejected" || !previewAd.status) && (
+                <button
+                  onClick={() => {
+                    handleSubmitForApproval(previewAd._id);
+                    setPreviewAd(null);
+                  }}
+                  style={{ background: "#3b82f6", color: "white", border: "none", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}
+                >
+                  Submit for Approval
+                </button>
+              )}
+
+              {/* Admin Actions */}
+              {role === "admin" && previewAd.status === "Pending Approval" && (
+                <>
+                  <button
+                    onClick={() => {
+                      handleApprove(previewAd._id);
+                      setPreviewAd(null);
+                    }}
+                    style={{ background: "#10b981", color: "white", border: "none", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleReject(previewAd._id);
+                      setPreviewAd(null);
+                    }}
+                    style={{ background: "#ef4444", color: "white", border: "none", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}
+                  >
+                    Reject Campaign
+                  </button>
+                </>
+              )}
+
+              {role === "admin" && previewAd.status === "Approved" && (
+                <button
+                  onClick={() => {
+                    handlePublish(previewAd._id);
+                    setPreviewAd(null);
+                  }}
+                  style={{ background: "#ea580c", color: "white", border: "none", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}
+                >
+                  Publish Campaign
+                </button>
+              )}
+
+              {role === "admin" && ["Active", "Scheduled", "Expired"].includes(previewAd.status) && (
+                <button
+                  onClick={() => {
+                    handleUnpublish(previewAd._id);
+                    setPreviewAd(null);
+                  }}
+                  style={{ background: "#6b7280", color: "white", border: "none", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}
+                >
+                  Unpublish Campaign
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

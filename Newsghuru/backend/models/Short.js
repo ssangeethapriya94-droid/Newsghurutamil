@@ -33,6 +33,36 @@ const shortSchema = new mongoose.Schema(
     isEnabled: {
       type: Boolean,
       default: true
+    },
+    status: {
+      type: String,
+      enum: ["Draft", "Pending Approval", "Approved", "Published", "Rejected"],
+      default: "Draft"
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    publishedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    approvedAt: {
+      type: Date
+    },
+    publishedAt: {
+      type: Date
+    },
+    rejectedAt: {
+      type: Date
+    },
+    rejectionReason: {
+      type: String,
+      default: ""
     }
   },
   {

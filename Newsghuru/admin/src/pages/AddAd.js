@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../config/api";
-import { FiUpload, FiTrash2, FiSave, FiArrowLeft, FiAlertCircle } from "react-icons/fi";
+import { FiUpload, FiSave, FiArrowLeft, FiAlertCircle } from "react-icons/fi";
 import "../styles/ReporterCreateNews.css"; // Reuse existing news form styles for consistency
 
 function AddAd() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
+  const role = localStorage.getItem("role");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -20,7 +21,7 @@ function AddAd() {
     targetUrl: "",
     position: "TOP_BANNER",
     priority: "Medium",
-    status: "Active",
+    status: role === "editor" ? "Draft" : "Active",
     popupDelay: 3,
     popupAutoClose: 10,
     rotationInterval: 10,
@@ -454,9 +455,22 @@ function AddAd() {
             <div className="form-group">
               <label>Status *</label>
               <select name="status" value={formData.status} onChange={handleInputChange}>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Scheduled">Scheduled</option>
+                {role === "editor" ? (
+                  <>
+                    <option value="Draft">Draft</option>
+                    <option value="Pending Approval">Pending Approval</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Pending Approval">Pending Approval</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                  </>
+                )}
               </select>
             </div>
           </div>
@@ -554,7 +568,7 @@ function AddAd() {
             Cancel
           </button>
           <button type="submit" className="btn-primary" disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 24px" }}>
-            <FiSave /> {isEditMode ? "Save Changes" : "Publish Advertisement"}
+            <FiSave /> {isEditMode ? "Save Changes" : (role === "editor" ? "Save Campaign" : "Publish Advertisement")}
           </button>
         </div>
 

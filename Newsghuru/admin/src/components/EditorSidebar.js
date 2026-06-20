@@ -3,7 +3,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import "../styles/Sidebar.css";
 import { 
   FiClock, FiCheckSquare, FiCheckCircle, FiXCircle, 
-  FiBell, FiUser, FiLogOut 
+  FiBell, FiUser, FiLogOut, FiTv, FiLayers, FiPlusCircle,
+  FiCamera
 } from "react-icons/fi";
 
 function EditorSidebar({ isOpen }) {
@@ -39,6 +40,30 @@ function EditorSidebar({ isOpen }) {
         <NavLink className="sidebar-link" to="/editor/review">
           <span className="link-icon"><FiCheckSquare /></span>
           Review Queue
+        </NavLink>
+
+        <div className="sidebar-section">CONTENT</div>
+
+        <NavLink className="sidebar-link" to="/admin/shorts">
+          <span className="link-icon"><FiTv /></span>
+          Shorts Reels
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/photo-stories">
+          <span className="link-icon"><FiCamera /></span>
+          Photo Stories
+        </NavLink>
+
+        <div className="sidebar-section">ADVERTISEMENTS</div>
+
+        <NavLink className="sidebar-link" to="/admin/ads/all">
+          <span className="link-icon"><FiLayers /></span>
+          All Advertisements
+        </NavLink>
+
+        <NavLink className="sidebar-link" to="/admin/ads/add">
+          <span className="link-icon"><FiPlusCircle /></span>
+          Add Advertisement
         </NavLink>
 
         <div className="sidebar-section">STATUS</div>

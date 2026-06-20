@@ -1,10 +1,36 @@
 import React, { useState, useEffect } from "react";
 import API from "../config/api";
 import "../styles/ReporterMyArticles.css";
+import { FaTimes, FaEye, FaChevronLeft, FaChevronRight, FaImage } from "react-icons/fa";
+import { FiSliders } from "react-icons/fi";
 
 function PhotoStories() {
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const role = localStorage.getItem("role");
+  const token = localStorage.getItem("token");
+
+  // Decoded userId from JWT token
+  let userId = "";
+  if (token) {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        window
+          .atob(base64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+      userId = JSON.parse(jsonPayload).userId;
+    } catch (e) {
+      console.error("Error decoding token:", e);
+    }
+  }
 
   // Form states
   const [title, setTitle] = useState("");
@@ -12,6 +38,7 @@ function PhotoStories() {
   const [coverImage, setCoverImage] = useState("");
   const [imagesText, setImagesText] = useState(""); // Comma separated image URLs
   const [isFeatured, setIsFeatured] = useState(false);
+  const [status, setStatus] = useState(role === "editor" ? "Draft" : "Published");
 
   // Edit states
   const [editingId, setEditingId] = useState(null);
@@ -20,6 +47,14 @@ function PhotoStories() {
   const [editCoverImage, setEditCoverImage] = useState("");
   const [editImagesText, setEditImagesText] = useState(""); // Comma separated
   const [editIsFeatured, setEditIsFeatured] = useState(false);
+  const [editStatus, setEditStatus] = useState("Draft");
+
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Preview Lightbox state
+  const [previewStory, setPreviewStory] = useState(null);
+  const [previewIndex, setPreviewIndex] = useState(0);
 
   const fetchStories = async () => {
     try {
@@ -45,7 +80,7 @@ function PhotoStories() {
       .filter(line => line.length > 0)
       .flatMap(line => line.split(","))
       .map(url => url.trim())
-      .filter(url => url.startsWith("http"));
+      .filter(url => url.startsWith("http") || url.startsWith("/uploads/"));
   };
 
   const handleCreate = async (e) => {
@@ -63,7 +98,8 @@ function PhotoStories() {
         description: description.trim(),
         coverImage: coverImage.trim(),
         images: imagesArray,
-        isFeatured
+        isFeatured: role === "admin" ? isFeatured : false,
+        status: role === "editor" ? status : "Published"
       });
 
       // Clear fields
@@ -72,6 +108,7 @@ function PhotoStories() {
       setCoverImage("");
       setImagesText("");
       setIsFeatured(false);
+      setStatus(role === "editor" ? "Draft" : "Published");
 
       alert("Photo story created successfully 🎉");
       fetchStories();
@@ -90,13 +127,16 @@ function PhotoStories() {
     const imagesArray = parseImages(editImagesText);
 
     try {
-      await API.put(`/api/photo-stories/${id}`, {
+      const updateData = {
         title: editTitle.trim(),
         description: editDescription.trim(),
         coverImage: editCoverImage.trim(),
         images: imagesArray,
-        isFeatured: editIsFeatured
-      });
+        isFeatured: editIsFeatured,
+        status: editStatus
+      };
+
+      await API.put(`/api/photo-stories/${id}`, updateData);
       setEditingId(null);
       alert("Photo story updated successfully");
       fetchStories();
@@ -121,6 +161,68 @@ function PhotoStories() {
     }
   };
 
+  const handleSubmitForApproval = async (id) => {
+    try {
+      await API.put(`/api/photo-stories/${id}`, { status: "Pending Approval" });
+      alert("Photo story submitted for approval successfully 🎉");
+      fetchStories();
+    } catch (error) {
+      console.error("Submit photo story error:", error);
+      alert("Failed to submit photo story");
+    }
+  };
+
+  const handleApprove = async (id) => {
+    try {
+      await API.put(`/api/photo-stories/${id}/approve`);
+      alert("Photo story approved successfully!");
+      fetchStories();
+    } catch (error) {
+      console.error("Approve photo story error:", error);
+      alert("Failed to approve photo story");
+    }
+  };
+
+  const handleReject = async (id) => {
+    const reason = window.prompt("Please enter a rejection reason:");
+    if (reason === null) return;
+    if (!reason.trim()) {
+      alert("A rejection reason is required.");
+      return;
+    }
+
+    try {
+      await API.put(`/api/photo-stories/${id}/reject`, { rejectionReason: reason });
+      alert("Photo story rejected successfully.");
+      fetchStories();
+    } catch (error) {
+      console.error("Reject photo story error:", error);
+      alert("Failed to reject photo story");
+    }
+  };
+
+  const handlePublish = async (id) => {
+    try {
+      await API.put(`/api/photo-stories/${id}/publish`);
+      alert("Photo story published successfully!");
+      fetchStories();
+    } catch (error) {
+      console.error("Publish photo story error:", error);
+      alert("Failed to publish photo story");
+    }
+  };
+
+  const handleUnpublish = async (id) => {
+    try {
+      await API.put(`/api/photo-stories/${id}/unpublish`);
+      alert("Photo story unpublished successfully.");
+      fetchStories();
+    } catch (error) {
+      console.error("Unpublish photo story error:", error);
+      alert("Failed to unpublish photo story");
+    }
+  };
+
   const startEdit = (st) => {
     setEditingId(st._id);
     setEditTitle(st.title);
@@ -128,7 +230,31 @@ function PhotoStories() {
     setEditCoverImage(st.coverImage);
     setEditImagesText((st.images || []).join(",\n"));
     setEditIsFeatured(st.isFeatured || false);
+    setEditStatus(st.status || "Draft");
   };
+
+  const getStatusStyle = (statusVal) => {
+    const resolvedStatus = statusVal || "Published";
+    switch (resolvedStatus) {
+      case "Published":
+        return { background: "#e6f4ea", color: "#137333", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Approved":
+        return { background: "#e0f2fe", color: "#0369a1", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Pending Approval":
+        return { background: "#feefe3", color: "#b06000", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Rejected":
+        return { background: "#fee2e2", color: "#ef4444", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Draft":
+      default:
+        return { background: "#f1f3f4", color: "#3c4043", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+    }
+  };
+
+  // Filter photo stories based on status Filter
+  const filteredStories = stories.filter((st) => {
+    const resolvedStatus = st.status || "Published";
+    return statusFilter === "all" || resolvedStatus === statusFilter;
+  });
 
   return (
     <div className="reporter-my-articles">
@@ -140,62 +266,66 @@ function PhotoStories() {
       </div>
 
       {/* CREATE FORM */}
-      <form onSubmit={handleCreate} className="categories-create-form" style={{ flexDirection: "column", alignItems: "stretch" }}>
-        <h3 style={{ margin: "0 0 15px 0", color: "var(--text-main)" }}>Create New Photo Story</h3>
+      {role === "editor" && (
+      <form onSubmit={handleCreate} className="categories-create-form" style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "stretch", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+        <h3 style={{ margin: 0, color: "var(--text-main)", fontSize: "1.1rem" }}>Create New Photo Story</h3>
         
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px", marginBottom: "20px" }}>
-          <div className="form-group" style={{ minWidth: "auto" }}>
-            <label>Gallery Title (Tamil)</label>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
+          <div className="form-group" style={{ minWidth: "auto", margin: 0 }}>
+            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Gallery Title (Tamil)</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. மதுரை சித்திரை திருவிழா 2026..."
+              style={{ padding: "10px 14px", fontSize: "14px", height: "40px" }}
             />
           </div>
 
-          <div className="form-group" style={{ minWidth: "auto" }}>
-            <label>Cover/Thumbnail URL</label>
+          <div className="form-group" style={{ minWidth: "auto", margin: 0 }}>
+            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Cover/Thumbnail URL</label>
             <input
               type="text"
               value={coverImage}
               onChange={(e) => setCoverImage(e.target.value)}
               placeholder="e.g. https://images.unsplash.com/cover-image-url"
+              style={{ padding: "10px 14px", fontSize: "14px", height: "40px" }}
             />
           </div>
         </div>
 
-        <div className="form-group" style={{ marginBottom: "20px" }}>
-          <label>Short Description / Narrative</label>
+        <div className="form-group" style={{ margin: 0 }}>
+          <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Short Description / Narrative</label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Write a brief narrative caption describing the event..."
             style={{
-              padding: "14px 18px",
+              padding: "10px 14px",
               borderRadius: "8px",
               border: "1px solid var(--border-color)",
               outline: "none",
-              fontSize: "16px",
+              fontSize: "14px",
               backgroundColor: "var(--card-bg)",
-              color: "var(--text-main)"
+              color: "var(--text-main)",
+              height: "40px"
             }}
           />
         </div>
 
-        <div className="form-group" style={{ marginBottom: "20px" }}>
-          <label>Gallery Images (URLs - One per line, or comma separated)</label>
+        <div className="form-group" style={{ margin: 0 }}>
+          <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Gallery Images (URLs - One per line, or comma separated)</label>
           <textarea
             value={imagesText}
             onChange={(e) => setImagesText(e.target.value)}
             placeholder="https://images.unsplash.com/photo-1&#13;&#10;https://images.unsplash.com/photo-2&#13;&#10;https://images.unsplash.com/photo-3"
             style={{
-              padding: "14px 18px",
+              padding: "10px 14px",
               borderRadius: "8px",
               border: "1px solid var(--border-color)",
               outline: "none",
-              fontSize: "15px",
+              fontSize: "14px",
               backgroundColor: "var(--card-bg)",
               color: "var(--text-main)",
               minHeight: "100px",
@@ -207,31 +337,78 @@ function PhotoStories() {
           </span>
         </div>
 
-        <div style={{ display: "flex", gap: "30px", flexWrap: "wrap", alignItems: "center", marginBottom: "20px" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "16px", cursor: "pointer", fontWeight: "600" }}>
-            <input
-              type="checkbox"
-              checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-              style={{ width: "20px", height: "20px" }}
-            />
-            Featured Photo Story (Large Highlight Card)
-          </label>
-        </div>
+        {/* Row 4: Status Selector (Editor) & Checkboxes & Save button */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "15px", marginTop: "5px" }}>
+          <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+            {role === "admin" && (
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", cursor: "pointer", fontWeight: "600" }}>
+                <input
+                  type="checkbox"
+                  checked={isFeatured}
+                  onChange={(e) => setIsFeatured(e.target.checked)}
+                  style={{ width: "16px", height: "16px" }}
+                />
+                Featured Photo Story (Large Highlight Card)
+              </label>
+            )}
 
-        <div className="form-submit" style={{ justifyContent: "flex-end" }}>
-          <button type="submit" className="btn-primary add-category-btn">
-            Publish Photo Gallery
+            {role === "editor" && (
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-main)" }}>Status:</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--border-color)",
+                    outline: "none",
+                    fontSize: "14px",
+                    backgroundColor: "var(--card-bg)",
+                    color: "var(--text-main)",
+                    height: "36px"
+                  }}
+                >
+                  <option value="Draft">Draft</option>
+                  <option value="Pending Approval">Pending Approval</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          <button type="submit" className="btn-primary add-category-btn" style={{ height: "40px", padding: "0 22px", fontSize: "14px", margin: 0 }}>
+            {role === "editor" ? "Save Photo Gallery" : "Publish Photo Gallery"}
           </button>
         </div>
       </form>
+      )}
+
+      {/* FILTER CONTROL BAR */}
+      <div style={{ display: "flex", gap: "10px", margin: "20px 0 0 0", alignItems: "center" }}>
+        <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "5px" }}>
+          <FiSliders /> Filter Status:
+        </span>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="dropdown-field"
+          style={{ padding: "8px 12px", borderRadius: "8px", fontSize: "14px" }}
+        >
+          <option value="all">All Statuses</option>
+          <option value="Draft">Draft</option>
+          <option value="Pending Approval">Pending Approval</option>
+          <option value="Approved">Approved</option>
+          <option value="Published">Published</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </div>
 
       {/* LIST TABLE */}
-      <div className="table-container" style={{ marginTop: "30px" }}>
+      <div className="table-container" style={{ marginTop: "15px" }}>
         {loading && stories.length === 0 ? (
           <div style={{ padding: "20px", textAlign: "center" }}>Loading photo stories...</div>
-        ) : stories.length === 0 ? (
-          <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>No photo galleries logged yet.</div>
+        ) : filteredStories.length === 0 ? (
+          <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>No photo galleries found.</div>
         ) : (
           <table className="articles-table">
             <thead>
@@ -240,119 +417,365 @@ function PhotoStories() {
                 <th>Photo Story Details</th>
                 <th>Image Count</th>
                 <th>Flags</th>
-                <th style={{ width: "220px" }}>Actions</th>
+                <th>Status</th>
+                <th style={{ width: "240px" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {stories.map((st) => (
-                <tr key={st._id}>
-                  <td>
-                    <img 
-                      src={st.coverImage} 
-                      alt="cover" 
-                      style={{ width: "100px", height: "65px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border-color)" }} 
-                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=200"; }}
-                    />
-                  </td>
-                  <td>
-                    {editingId === st._id ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <input
-                          type="text"
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "14px" }}
-                          placeholder="Gallery Title"
-                        />
-                        <input
-                          type="text"
-                          value={editCoverImage}
-                          onChange={(e) => setEditCoverImage(e.target.value)}
-                          style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px" }}
-                          placeholder="Cover Image URL"
-                        />
-                        <input
-                          type="text"
-                          value={editDescription}
-                          onChange={(e) => setEditDescription(e.target.value)}
-                          style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px" }}
-                          placeholder="Description"
-                        />
-                        <textarea
-                          value={editImagesText}
-                          onChange={(e) => setEditImagesText(e.target.value)}
-                          style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px", minHeight: "80px", fontFamily: "monospace" }}
-                          placeholder="Gallery Images (comma separated)"
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <div style={{ fontWeight: 600, color: "var(--text-main)" }}>{st.title}</div>
-                        <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px", maxWidth: "450px" }}>
-                          {st.description || "No narrative content loaded."}
+              {filteredStories.map((st) => {
+                const createdByStr = st.createdBy ? (typeof st.createdBy === "object" ? st.createdBy._id : st.createdBy) : "";
+                const isOwnStory = role === "editor" && createdByStr === userId;
+                const resolvedStatus = st.status || "Published";
+
+                const canEdit = role === "editor" && isOwnStory && (resolvedStatus === "Draft" || resolvedStatus === "Rejected");
+                const canDelete = role === "editor" && isOwnStory && resolvedStatus === "Draft";
+
+                return (
+                  <tr key={st._id}>
+                    <td>
+                      <img 
+                        src={st.coverImage} 
+                        alt="cover" 
+                        style={{ width: "100px", height: "65px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border-color)" }} 
+                        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=200"; }}
+                      />
+                    </td>
+                    <td>
+                      {editingId === st._id ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          <input
+                            type="text"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+                            placeholder="Gallery Title"
+                          />
+                          <input
+                            type="text"
+                            value={editCoverImage}
+                            onChange={(e) => setEditCoverImage(e.target.value)}
+                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px" }}
+                            placeholder="Cover Image URL"
+                          />
+                          <input
+                            type="text"
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px" }}
+                            placeholder="Description"
+                          />
+                          <textarea
+                            value={editImagesText}
+                            onChange={(e) => setEditImagesText(e.target.value)}
+                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px", minHeight: "80px", fontFamily: "monospace" }}
+                            placeholder="Gallery Images (comma separated)"
+                          />
+                          {role === "editor" ? (
+                            <select
+                              value={editStatus}
+                              onChange={(e) => setEditStatus(e.target.value)}
+                              style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)" }}
+                            >
+                              <option value="Draft">Draft</option>
+                              <option value="Pending Approval">Pending Approval</option>
+                            </select>
+                          ) : (
+                            <select
+                              value={editStatus}
+                              onChange={(e) => setEditStatus(e.target.value)}
+                              style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)" }}
+                            >
+                              <option value="Draft">Draft</option>
+                              <option value="Pending Approval">Pending Approval</option>
+                              <option value="Approved">Approved</option>
+                              <option value="Published">Published</option>
+                              <option value="Rejected">Rejected</option>
+                            </select>
+                          )}
                         </div>
-                      </div>
-                    )}
-                  </td>
-                  <td>
-                    <span className="category-tag" style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10b981", border: "1px solid #10b981" }}>
-                      {editingId === st._id ? parseImages(editImagesText).length : (st.images || []).length} Images
-                    </span>
-                  </td>
-                  <td>
-                    {editingId === st._id ? (
-                      <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
-                        <input type="checkbox" checked={editIsFeatured} onChange={(e) => setEditIsFeatured(e.target.checked)} />
-                        Featured
-                      </label>
-                    ) : (
-                      st.isFeatured ? (
-                        <span className="status-badge badge-published" style={{ textAlign: "center" }}>Featured</span>
                       ) : (
-                        <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Standard</span>
-                      )
-                    )}
-                  </td>
-                  <td>
-                    {editingId === st._id ? (
-                      <div style={{ display: "flex", gap: "10px" }}>
-                        <button
-                          className="action-btn edit"
-                          onClick={() => handleUpdate(st._id)}
-                          style={{ color: "#10b981" }}
-                        >
-                          Save
-                        </button>
-                        <button
-                          className="action-btn delete"
-                          onClick={() => setEditingId(null)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div style={{ display: "flex", gap: "15px" }}>
-                        <button
-                          className="action-btn edit"
-                          onClick={() => startEdit(st)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="action-btn delete"
-                          onClick={() => handleDelete(st._id, st.title)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                        <div>
+                          <div style={{ fontWeight: 600, color: "var(--text-main)" }}>{st.title}</div>
+                          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px", maxWidth: "450px" }}>
+                            {st.description || "No narrative content loaded."}
+                          </div>
+                          {st.rejectionReason && resolvedStatus === "Rejected" && (
+                            <div style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px" }}>
+                              Rejection Reason: {st.rejectionReason}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      <span className="category-tag" style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10b981", border: "1px solid #10b981" }}>
+                        {editingId === st._id ? parseImages(editImagesText).length : (st.images || []).length} Images
+                      </span>
+                    </td>
+                    <td>
+                      {editingId === st._id ? (
+                        role === "admin" ? (
+                          <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
+                            <input type="checkbox" checked={editIsFeatured} onChange={(e) => setEditIsFeatured(e.target.checked)} />
+                            Featured
+                          </label>
+                        ) : null
+                      ) : (
+                        st.isFeatured ? (
+                          <span className="status-badge badge-published" style={{ textAlign: "center" }}>Featured</span>
+                        ) : (
+                          <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Standard</span>
+                        )
+                      )}
+                    </td>
+                    <td>
+                      {editingId === st._id ? (
+                        null
+                      ) : (
+                        <span style={getStatusStyle(st.status)}>
+                          {resolvedStatus}
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      {editingId === st._id ? (
+                        <div style={{ display: "flex", gap: "10px" }}>
+                          <button
+                            className="action-btn edit"
+                            onClick={() => handleUpdate(st._id)}
+                            style={{ color: "#10b981" }}
+                          >
+                            Save
+                          </button>
+                          <button
+                            className="action-btn delete"
+                            onClick={() => setEditingId(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                          
+                          {/* Preview Option Button */}
+                          <button
+                            className="action-btn edit"
+                            onClick={() => {
+                              setPreviewStory(st);
+                              setPreviewIndex(0);
+                            }}
+                            style={{ color: "var(--accent-orange)", display: "flex", alignItems: "center", gap: "4px" }}
+                          >
+                            <FaEye /> Preview
+                          </button>
+
+                          {/* Edit Button */}
+                          {canEdit && (
+                            <button
+                              className="action-btn edit"
+                              onClick={() => startEdit(st)}
+                            >
+                              Edit
+                            </button>
+                          )}
+
+                          {/* Delete Button */}
+                          {canDelete && (
+                            <button
+                              className="action-btn delete"
+                              onClick={() => handleDelete(st._id, st.title)}
+                            >
+                              Delete
+                            </button>
+                          )}
+
+                          {/* Submit for Approval (Editor own drafts/rejected) */}
+                          {role === "editor" && isOwnStory && (resolvedStatus === "Draft" || resolvedStatus === "Rejected") && (
+                            <button
+                              onClick={() => handleSubmitForApproval(st._id)}
+                              style={{
+                                background: "#3b82f6",
+                                color: "white",
+                                border: "none",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "11px",
+                                fontWeight: 600
+                              }}
+                            >
+                              Submit
+                            </button>
+                          )}
+
+                          {/* Admin approval / publishing controls */}
+                          {role === "admin" && resolvedStatus === "Pending Approval" && (
+                            <>
+                              <button
+                                onClick={() => handleApprove(st._id)}
+                                style={{
+                                  background: "#10b981",
+                                  color: "white",
+                                  border: "none",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  fontSize: "11px",
+                                  fontWeight: 600
+                                }}
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => handleReject(st._id)}
+                                style={{
+                                  background: "#ef4444",
+                                  color: "white",
+                                  border: "none",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  fontSize: "11px",
+                                  fontWeight: 600
+                                }}
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
+
+                          {role === "admin" && resolvedStatus === "Approved" && (
+                            <button
+                              onClick={() => handlePublish(st._id)}
+                              style={{
+                                background: "#ea580c",
+                                color: "white",
+                                border: "none",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "11px",
+                                fontWeight: 600
+                              }}
+                            >
+                              Publish
+                            </button>
+                          )}
+
+                          {role === "admin" && resolvedStatus === "Published" && (
+                            <button
+                              onClick={() => handleUnpublish(st._id)}
+                              style={{
+                                background: "#6b7280",
+                                color: "white",
+                                border: "none",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "11px",
+                                fontWeight: 600
+                              }}
+                            >
+                              Unpublish
+                            </button>
+                          )}
+
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
       </div>
+
+      {/* FULLSCREEN PHOTO STORY PREVIEW MODAL */}
+      {previewStory && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.9)", zIndex: 999999,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "20px"
+        }}>
+          <div style={{
+            background: "var(--bg-secondary, #1e1e24)",
+            padding: "20px", borderRadius: "12px",
+            width: "100%", maxWidth: "600px",
+            border: "1px solid var(--border-color)",
+            position: "relative"
+          }}>
+            <button
+              onClick={() => setPreviewStory(null)}
+              style={{
+                position: "absolute", top: "10px", right: "15px",
+                background: "none", border: "none", color: "var(--text-main, #fff)",
+                fontSize: "20px", cursor: "pointer", zIndex: 10
+              }}
+            >
+              <FaTimes />
+            </button>
+            <h3 style={{ color: "var(--text-main)", marginBottom: "15px", fontSize: "1.2rem", paddingRight: "30px", fontFamily: "var(--font-serif)" }}>
+              📸 Preview: {previewStory.title}
+            </h3>
+
+            {/* Slider view of images */}
+            {previewStory.images && previewStory.images.length > 0 ? (
+              <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0a", borderRadius: "8px", overflow: "hidden", minHeight: "300px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <img 
+                  src={previewStory.images[previewIndex]} 
+                  alt={`Slide ${previewIndex + 1}`} 
+                  style={{ maxWidth: "100%", maxHeight: "40vh", objectFit: "contain" }} 
+                />
+
+                {/* Left/Right scroll buttons */}
+                {previewIndex > 0 && (
+                  <button 
+                    onClick={() => setPreviewIndex(prev => prev - 1)}
+                    style={{ position: "absolute", left: "15px", background: "rgba(0,0,0,0.6)", border: "none", color: "white", width: "36px", height: "36px", borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
+                    <FaChevronLeft />
+                  </button>
+                )}
+                {previewIndex < previewStory.images.length - 1 && (
+                  <button 
+                    onClick={() => setPreviewIndex(prev => prev + 1)}
+                    style={{ position: "absolute", right: "15px", background: "rgba(0,0,0,0.6)", border: "none", color: "white", width: "36px", height: "36px", borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
+                    <FaChevronRight />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "200px", color: "var(--text-muted)" }}>
+                <FaImage size={32} style={{ marginBottom: "10px" }} />
+                <span>No gallery images uploaded. Showing cover image below.</span>
+                <img src={previewStory.coverImage} alt="Cover fallback" style={{ maxWidth: "100%", maxHeight: "25vh", objectFit: "contain", marginTop: "15px", borderRadius: "6px" }} />
+              </div>
+            )}
+
+            {/* Narrative & Index count */}
+            {previewStory.images && previewStory.images.length > 0 && (
+              <div style={{ marginTop: "12px", textAlign: "center" }}>
+                <span style={{ fontSize: "13px", fontWeight: "bold", color: "var(--accent-orange)" }}>
+                  Image {previewIndex + 1} of {previewStory.images.length}
+                </span>
+              </div>
+            )}
+
+            <div style={{ marginTop: "15px", borderTop: "1px solid var(--border-color)", paddingTop: "12px" }}>
+              <p style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: "1.5", margin: 0 }}>
+                <strong>Narrative:</strong> {previewStory.description || "No description provided."}
+              </p>
+              <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                <span className="category-tag">Status: {previewStory.status || "Published"}</span>
+                {previewStory.isFeatured && <span className="category-tag" style={{ background: "orange", color: "white" }}>Featured</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

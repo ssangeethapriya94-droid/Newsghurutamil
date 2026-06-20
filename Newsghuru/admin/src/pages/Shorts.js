@@ -1,12 +1,39 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import API from "../config/api";
 import "../styles/ReporterMyArticles.css";
 import { FaTimes, FaEye } from "react-icons/fa";
+import { FiSliders } from "react-icons/fi";
 
 function Shorts() {
+  const location = useLocation();
   const [shorts, setShorts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+
+  const role = localStorage.getItem("role");
+  const token = localStorage.getItem("token");
+
+  // Decoded userId from JWT token
+  let userId = "";
+  if (token) {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        window
+          .atob(base64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+      userId = JSON.parse(jsonPayload).userId;
+    } catch (e) {
+      console.error("Error decoding token:", e);
+    }
+  }
 
   // Form states
   const [title, setTitle] = useState("");
@@ -14,7 +41,8 @@ function Shorts() {
   const [category, setCategory] = useState("General");
   const [description, setDescription] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(true);
+  const [isEnabled, setIsEnabled] = useState(role === "admin");
+  const [status, setStatus] = useState(role === "editor" ? "Draft" : "Published");
 
   // Uploading states
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -27,7 +55,11 @@ function Shorts() {
   const [editDescription, setEditDescription] = useState("");
   const [editIsFeatured, setEditIsFeatured] = useState(false);
   const [editIsEnabled, setEditIsEnabled] = useState(true);
+  const [editStatus, setEditStatus] = useState("Draft");
   const [editUploadingVideo, setEditUploadingVideo] = useState(false);
+
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState((location.state && location.state.statusFilter) || "all");
 
   // Preview Modal state
   const [previewShort, setPreviewShort] = useState(null);
@@ -126,7 +158,8 @@ function Shorts() {
         category,
         description: description.trim(),
         isFeatured,
-        isEnabled
+        isEnabled: role === "admin" ? isEnabled : false,
+        status: role === "editor" ? status : "Published"
       });
 
       // Clear fields
@@ -135,7 +168,8 @@ function Shorts() {
       setDescription("");
       setCategory("General");
       setIsFeatured(false);
-      setIsEnabled(true);
+      setIsEnabled(role === "admin");
+      setStatus(role === "editor" ? "Draft" : "Published");
 
       // Reset file input fields
       const fileInputs = document.querySelectorAll('input[type="file"]');
@@ -156,15 +190,23 @@ function Shorts() {
     }
 
     try {
-      await API.put(`/api/shorts/${id}`, {
+      const updateData = {
         title: editTitle.trim(),
         thumbnail: editVideoUrl.trim(),
         videoUrl: editVideoUrl.trim(),
         category: editCategory,
         description: editDescription.trim(),
-        isFeatured: editIsFeatured,
-        isEnabled: editIsEnabled
-      });
+        isFeatured: editIsFeatured
+      };
+
+      if (role === "admin") {
+        updateData.isEnabled = editIsEnabled;
+        updateData.status = editStatus;
+      } else {
+        updateData.status = editStatus; // Editor can choose Draft or Pending Approval
+      }
+
+      await API.put(`/api/shorts/${id}`, updateData);
       setEditingId(null);
       alert("Short updated successfully");
       fetchShorts();
@@ -189,7 +231,7 @@ function Shorts() {
     }
   };
 
-  const toggleStatus = async (item) => {
+  const handleToggleEnable = async (item) => {
     try {
       await API.put(`/api/shorts/${item._id}`, {
         ...item,
@@ -202,6 +244,68 @@ function Shorts() {
     }
   };
 
+  const handleSubmitForApproval = async (id) => {
+    try {
+      await API.put(`/api/shorts/${id}`, { status: "Pending Approval" });
+      alert("Short submitted for approval successfully 🎉");
+      fetchShorts();
+    } catch (error) {
+      console.error("Submit short error:", error);
+      alert("Failed to submit short for approval");
+    }
+  };
+
+  const handleApprove = async (id) => {
+    try {
+      await API.put(`/api/shorts/${id}/approve`);
+      alert("Short approved successfully!");
+      fetchShorts();
+    } catch (error) {
+      console.error("Approve short error:", error);
+      alert("Failed to approve short");
+    }
+  };
+
+  const handleReject = async (id) => {
+    const reason = window.prompt("Please enter a rejection reason:");
+    if (reason === null) return;
+    if (!reason.trim()) {
+      alert("A rejection reason is required.");
+      return;
+    }
+
+    try {
+      await API.put(`/api/shorts/${id}/reject`, { rejectionReason: reason });
+      alert("Short rejected successfully.");
+      fetchShorts();
+    } catch (error) {
+      console.error("Reject short error:", error);
+      alert("Failed to reject short");
+    }
+  };
+
+  const handlePublish = async (id) => {
+    try {
+      await API.put(`/api/shorts/${id}/publish`);
+      alert("Short published successfully!");
+      fetchShorts();
+    } catch (error) {
+      console.error("Publish short error:", error);
+      alert("Failed to publish short");
+    }
+  };
+
+  const handleUnpublish = async (id) => {
+    try {
+      await API.put(`/api/shorts/${id}/unpublish`);
+      alert("Short unpublished successfully.");
+      fetchShorts();
+    } catch (error) {
+      console.error("Unpublish short error:", error);
+      alert("Failed to unpublish short");
+    }
+  };
+
   const startEdit = (sh) => {
     setEditingId(sh._id);
     setEditTitle(sh.title);
@@ -210,7 +314,31 @@ function Shorts() {
     setEditDescription(sh.description || "");
     setEditIsFeatured(sh.isFeatured || false);
     setEditIsEnabled(sh.isEnabled || false);
+    setEditStatus(sh.status || "Draft");
   };
+
+  const getStatusStyle = (statusVal, isEnabledVal) => {
+    const resolvedStatus = statusVal || (isEnabledVal ? "Published" : "Draft");
+    switch (resolvedStatus) {
+      case "Published":
+        return { background: "#e6f4ea", color: "#137333", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Approved":
+        return { background: "#e0f2fe", color: "#0369a1", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Pending Approval":
+        return { background: "#feefe3", color: "#b06000", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Rejected":
+        return { background: "#fee2e2", color: "#ef4444", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+      case "Draft":
+      default:
+        return { background: "#f1f3f4", color: "#3c4043", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600 };
+    }
+  };
+
+  // Filter shorts based on status Filter
+  const filteredShorts = shorts.filter((sh) => {
+    const resolvedStatus = sh.status || (sh.isEnabled ? "Published" : "Draft");
+    return statusFilter === "all" || resolvedStatus === statusFilter;
+  });
 
   // Checks if URL is YouTube link or direct video file
   const renderShortVideoPlayer = (url, title) => {
@@ -249,6 +377,7 @@ function Shorts() {
       </div>
 
       {/* CREATE FORM - styled compactly to eliminate empty spaces */}
+      {role === "editor" && (
       <form onSubmit={handleCreate} className="categories-create-form" style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "stretch", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
         <h3 style={{ margin: 0, color: "var(--text-main)", fontSize: "1.1rem" }}>Add New Short Reel</h3>
         
@@ -308,25 +437,50 @@ function Shorts() {
           )}
         </div>
 
-        {/* Row 3: Caption / Mini Description */}
-        <div className="form-group" style={{ flex: "none", minWidth: "auto", margin: 0 }}>
-          <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Caption / Mini Description</label>
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Write a brief caption for this short..."
-            style={{
-              padding: "10px 14px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-color)",
-              outline: "none",
-              fontSize: "14px",
-              backgroundColor: "var(--card-bg)",
-              color: "var(--text-main)",
-              height: "40px"
-            }}
-          />
+        {/* Row 3: Caption / Mini Description & Status Selection (Editor) */}
+        <div style={{ display: "grid", gridTemplateColumns: role === "editor" ? "3fr 1fr" : "1fr", gap: "15px" }}>
+          <div className="form-group" style={{ flex: "none", minWidth: "auto", margin: 0 }}>
+            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Caption / Mini Description</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Write a brief caption for this short..."
+              style={{
+                padding: "10px 14px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                outline: "none",
+                fontSize: "14px",
+                backgroundColor: "var(--card-bg)",
+                color: "var(--text-main)",
+                height: "40px"
+              }}
+            />
+          </div>
+
+          {role === "editor" && (
+            <div className="form-group" style={{ flex: "none", minWidth: "auto", margin: 0 }}>
+              <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border-color)",
+                  outline: "none",
+                  fontSize: "14px",
+                  backgroundColor: "var(--card-bg)",
+                  color: "var(--text-main)",
+                  height: "40px"
+                }}
+              >
+                <option value="Draft">Draft</option>
+                <option value="Pending Approval">Pending Approval</option>
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Row 4: Status Checkboxes & Save button */}
@@ -342,29 +496,52 @@ function Shorts() {
               Featured Short
             </label>
 
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", cursor: "pointer", fontWeight: "600" }}>
-              <input
-                type="checkbox"
-                checked={isEnabled}
-                onChange={(e) => setIsEnabled(e.target.checked)}
-                style={{ width: "16px", height: "16px" }}
-              />
-              Enable Short Reel Immediately
-            </label>
+            {role === "admin" && (
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", cursor: "pointer", fontWeight: "600" }}>
+                <input
+                  type="checkbox"
+                  checked={isEnabled}
+                  onChange={(e) => setIsEnabled(e.target.checked)}
+                  style={{ width: "16px", height: "16px" }}
+                />
+                Enable Short Reel Immediately
+              </label>
+            )}
           </div>
 
           <button type="submit" className="btn-primary add-category-btn" style={{ height: "40px", padding: "0 22px", fontSize: "14px", margin: 0 }}>
-            Publish Short Reel
+            {role === "editor" ? "Save Short Reel" : "Publish Short Reel"}
           </button>
         </div>
       </form>
+      )}
+
+      {/* FILTER CONTROL BAR */}
+      <div style={{ display: "flex", gap: "10px", margin: "20px 0 0 0", alignItems: "center" }}>
+        <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "5px" }}>
+          <FiSliders /> Filter Status:
+        </span>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="dropdown-field"
+          style={{ padding: "8px 12px", borderRadius: "8px", fontSize: "14px" }}
+        >
+          <option value="all">All Statuses</option>
+          <option value="Draft">Draft</option>
+          <option value="Pending Approval">Pending Approval</option>
+          <option value="Approved">Approved</option>
+          <option value="Published">Published</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </div>
 
       {/* LIST TABLE */}
-      <div className="table-container" style={{ marginTop: "30px" }}>
+      <div className="table-container" style={{ marginTop: "15px" }}>
         {loading && shorts.length === 0 ? (
           <div style={{ padding: "20px", textAlign: "center" }}>Loading shorts database...</div>
-        ) : shorts.length === 0 ? (
-          <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>No shorts logged yet.</div>
+        ) : filteredShorts.length === 0 ? (
+          <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>No shorts found.</div>
         ) : (
           <table className="articles-table">
             <thead>
@@ -378,156 +555,300 @@ function Shorts() {
               </tr>
             </thead>
             <tbody>
-              {shorts.map((sh) => (
-                <tr key={sh._id}>
-                  <td>
-                    {sh.thumbnail && isVideoUrl(sh.thumbnail) ? (
-                      <video 
-                        src={sh.thumbnail} 
-                        muted 
-                        style={{ width: "60px", height: "100px", objectFit: "cover", borderRadius: "4px", border: "1px solid var(--border-color)" }} 
-                      />
-                    ) : (
-                      <img 
-                        src={sh.thumbnail} 
-                        alt="preview" 
-                        style={{ width: "60px", height: "100px", objectFit: "cover", borderRadius: "4px", border: "1px solid var(--border-color)" }} 
-                        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=200"; }}
-                      />
-                    )}
-                  </td>
-                  <td>
-                    {editingId === sh._id ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <input
-                          type="text"
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "14px" }}
-                          placeholder="Title"
+              {filteredShorts.map((sh) => {
+                const createdByStr = sh.createdBy ? (typeof sh.createdBy === "object" ? sh.createdBy._id : sh.createdBy) : "";
+                const isOwnShort = role === "editor" && createdByStr === userId;
+                const resolvedStatus = sh.status || (sh.isEnabled ? "Published" : "Draft");
+
+                const canEdit = role === "editor" && isOwnShort && (resolvedStatus === "Draft" || resolvedStatus === "Rejected");
+                const canDelete = role === "editor" && isOwnShort && resolvedStatus === "Draft";
+
+                return (
+                  <tr key={sh._id}>
+                    <td>
+                      {sh.thumbnail && isVideoUrl(sh.thumbnail) ? (
+                        <video 
+                          src={sh.thumbnail} 
+                          muted 
+                          style={{ width: "60px", height: "100px", objectFit: "cover", borderRadius: "4px", border: "1px solid var(--border-color)" }} 
                         />
-                        <div style={{ background: "rgba(255,255,255,0.02)", padding: "10px", borderRadius: "6px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "6px" }}>
-                          <label style={{ fontSize: "11px", fontWeight: "bold" }}>Edit Video File:</label>
-                          <input type="file" accept="video/*" onChange={handleEditVideoUpload} style={{ fontSize: "11px" }} />
-                          {editUploadingVideo && <span style={{ fontSize: "11px", color: "orange" }}>Uploading video...</span>}
+                      ) : (
+                        <img 
+                          src={sh.thumbnail} 
+                          alt="preview" 
+                          style={{ width: "60px", height: "100px", objectFit: "cover", borderRadius: "4px", border: "1px solid var(--border-color)" }} 
+                          onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=200"; }}
+                        />
+                      )}
+                    </td>
+                    <td>
+                      {editingId === sh._id ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                           <input
                             type="text"
-                            value={editVideoUrl}
-                            onChange={(e) => setEditVideoUrl(e.target.value)}
-                            style={{ padding: "4px 8px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "11px" }}
-                            placeholder="Video Link/URL"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+                            placeholder="Title"
                           />
+                          <div style={{ background: "rgba(255,255,255,0.02)", padding: "10px", borderRadius: "6px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "6px" }}>
+                            <label style={{ fontSize: "11px", fontWeight: "bold" }}>Edit Video File:</label>
+                            <input type="file" accept="video/*" onChange={handleEditVideoUpload} style={{ fontSize: "11px" }} />
+                            {editUploadingVideo && <span style={{ fontSize: "11px", color: "orange" }}>Uploading video...</span>}
+                            <input
+                              type="text"
+                              value={editVideoUrl}
+                              onChange={(e) => setEditVideoUrl(e.target.value)}
+                              style={{ padding: "4px 8px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "11px" }}
+                              placeholder="Video Link/URL"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px" }}
+                            placeholder="Caption"
+                          />
+                          {role === "editor" ? (
+                            <select
+                              value={editStatus}
+                              onChange={(e) => setEditStatus(e.target.value)}
+                              style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)" }}
+                            >
+                              <option value="Draft">Draft</option>
+                              <option value="Pending Approval">Pending Approval</option>
+                            </select>
+                          ) : (
+                            <select
+                              value={editStatus}
+                              onChange={(e) => setEditStatus(e.target.value)}
+                              style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)" }}
+                            >
+                              <option value="Draft">Draft</option>
+                              <option value="Pending Approval">Pending Approval</option>
+                              <option value="Approved">Approved</option>
+                              <option value="Published">Published</option>
+                              <option value="Rejected">Rejected</option>
+                            </select>
+                          )}
                         </div>
-                        <input
-                          type="text"
-                          value={editDescription}
-                          onChange={(e) => setEditDescription(e.target.value)}
-                          style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px" }}
-                          placeholder="Caption"
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <div style={{ fontWeight: 600, color: "var(--text-main)" }}>{sh.title}</div>
-                        <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
-                          {sh.description || "No caption written."}
-                        </div>
-                      </div>
-                    )}
-                  </td>
-                  <td>
-                    {editingId === sh._id ? (
-                      <select
-                        value={editCategory}
-                        onChange={(e) => setEditCategory(e.target.value)}
-                        style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)" }}
-                      >
-                        <option value="General">General</option>
-                        <option value="Politics">Politics</option>
-                        <option value="Sports">Sports</option>
-                        <option value="Cinema">Cinema</option>
-                        <option value="Business">Business</option>
-                      </select>
-                    ) : (
-                      <span className="category-tag">{sh.category}</span>
-                    )}
-                  </td>
-                  <td>
-                    {editingId === sh._id ? (
-                      <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
-                        <input type="checkbox" checked={editIsFeatured} onChange={(e) => setEditIsFeatured(e.target.checked)} />
-                        Featured
-                      </label>
-                    ) : (
-                      sh.isFeatured ? (
-                        <span className="status-badge badge-published" style={{ textAlign: "center" }}>Featured</span>
                       ) : (
-                        <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Standard</span>
-                      )
-                    )}
-                  </td>
-                  <td>
-                    {editingId === sh._id ? (
-                      <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
-                        <input type="checkbox" checked={editIsEnabled} onChange={(e) => setEditIsEnabled(e.target.checked)} />
-                        Enabled
-                      </label>
-                    ) : (
-                      <button
-                        onClick={() => toggleStatus(sh)}
-                        className={`status-badge ${sh.isEnabled ? "badge-approved" : "badge-rejected"}`}
-                        style={{ border: "none", cursor: "pointer", display: "inline-block", width: "80px", textAlign: "center" }}
-                      >
-                        {sh.isEnabled ? "Active" : "Disabled"}
-                      </button>
-                    )}
-                  </td>
-                  <td>
-                    {editingId === sh._id ? (
-                      <div style={{ display: "flex", gap: "10px" }}>
-                        <button
-                          className="action-btn edit"
-                          onClick={() => handleUpdate(sh._id)}
-                          style={{ color: "#10b981" }}
+                        <div>
+                          <div style={{ fontWeight: 600, color: "var(--text-main)" }}>{sh.title}</div>
+                          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
+                            {sh.description || "No caption written."}
+                          </div>
+                          {sh.rejectionReason && resolvedStatus === "Rejected" && (
+                            <div style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px" }}>
+                              Rejection Reason: {sh.rejectionReason}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      {editingId === sh._id ? (
+                        <select
+                          value={editCategory}
+                          onChange={(e) => setEditCategory(e.target.value)}
+                          style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)" }}
                         >
-                          Save
-                        </button>
-                        <button
-                          className="action-btn delete"
-                          onClick={() => setEditingId(null)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                        <button
-                          className="action-btn edit"
-                          onClick={() => startEdit(sh)}
-                        >
-                          Edit
-                        </button>
+                          <option value="General">General</option>
+                          <option value="Politics">Politics</option>
+                          <option value="Sports">Sports</option>
+                          <option value="Cinema">Cinema</option>
+                          <option value="Business">Business</option>
+                        </select>
+                      ) : (
+                        <span className="category-tag">{sh.category}</span>
+                      )}
+                    </td>
+                    <td>
+                      {editingId === sh._id ? (
+                        <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
+                          <input type="checkbox" checked={editIsFeatured} onChange={(e) => setEditIsFeatured(e.target.checked)} />
+                          Featured
+                        </label>
+                      ) : (
+                        sh.isFeatured ? (
+                          <span className="status-badge badge-published" style={{ textAlign: "center" }}>Featured</span>
+                        ) : (
+                          <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Standard</span>
+                        )
+                      )}
+                    </td>
+                    <td>
+                      {editingId === sh._id ? (
+                        role === "admin" ? (
+                          <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
+                            <input type="checkbox" checked={editIsEnabled} onChange={(e) => setEditIsEnabled(e.target.checked)} />
+                            Enabled
+                          </label>
+                        ) : null
+                      ) : (
+                        <span style={getStatusStyle(sh.status, sh.isEnabled)}>
+                          {resolvedStatus}
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      {editingId === sh._id ? (
+                        <div style={{ display: "flex", gap: "10px" }}>
+                          <button
+                            className="action-btn edit"
+                            onClick={() => handleUpdate(sh._id)}
+                            style={{ color: "#10b981" }}
+                          >
+                            Save
+                          </button>
+                          <button
+                            className="action-btn delete"
+                            onClick={() => setEditingId(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                          
+                          {/* Toggle Active state (Admin only) */}
+                          {role === "admin" && (
+                            <button
+                              onClick={() => handleToggleEnable(sh)}
+                              className={`status-badge ${sh.isEnabled ? "badge-approved" : "badge-rejected"}`}
+                              style={{ border: "none", cursor: "pointer", display: "inline-block", padding: "4px 8px", fontSize: "11px", fontWeight: "bold" }}
+                            >
+                              {sh.isEnabled ? "ON" : "OFF"}
+                            </button>
+                          )}
 
-                        {/* Preview Option Button */}
-                        <button
-                          className="action-btn edit"
-                          onClick={() => setPreviewShort(sh)}
-                          style={{ color: "var(--accent-orange)", display: "flex", alignItems: "center", gap: "4px" }}
-                        >
-                          <FaEye /> Preview
-                        </button>
+                          {/* Preview Option Button */}
+                          <button
+                            className="action-btn edit"
+                            onClick={() => setPreviewShort(sh)}
+                            style={{ color: "var(--accent-orange)", display: "flex", alignItems: "center", gap: "4px" }}
+                          >
+                            <FaEye /> Preview
+                          </button>
 
-                        <button
-                          className="action-btn delete"
-                          onClick={() => handleDelete(sh._id, sh.title)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                          {/* Edit Button */}
+                          {canEdit && (
+                            <button
+                              className="action-btn edit"
+                              onClick={() => startEdit(sh)}
+                            >
+                              Edit
+                            </button>
+                          )}
+
+                          {/* Delete Button */}
+                          {canDelete && (
+                            <button
+                              className="action-btn delete"
+                              onClick={() => handleDelete(sh._id, sh.title)}
+                            >
+                              Delete
+                            </button>
+                          )}
+
+                          {/* Submit for Approval (Editor own drafts/rejected) */}
+                          {role === "editor" && isOwnShort && (resolvedStatus === "Draft" || resolvedStatus === "Rejected") && (
+                            <button
+                              onClick={() => handleSubmitForApproval(sh._id)}
+                              style={{
+                                background: "#3b82f6",
+                                color: "white",
+                                border: "none",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "11px",
+                                fontWeight: 600
+                              }}
+                            >
+                              Submit
+                            </button>
+                          )}
+
+                          {/* Admin approval / publishing controls */}
+                          {role === "admin" && resolvedStatus === "Pending Approval" && (
+                            <>
+                              <button
+                                onClick={() => handleApprove(sh._id)}
+                                style={{
+                                  background: "#10b981",
+                                  color: "white",
+                                  border: "none",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  fontSize: "11px",
+                                  fontWeight: 600
+                                }}
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => handleReject(sh._id)}
+                                style={{
+                                  background: "#ef4444",
+                                  color: "white",
+                                  border: "none",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  fontSize: "11px",
+                                  fontWeight: 600
+                                }}
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
+
+                          {role === "admin" && resolvedStatus === "Approved" && (
+                            <button
+                              onClick={() => handlePublish(sh._id)}
+                              style={{
+                                background: "#ea580c",
+                                color: "white",
+                                border: "none",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "11px",
+                                fontWeight: 600
+                              }}
+                            >
+                              Publish
+                            </button>
+                          )}
+
+                          {role === "admin" && resolvedStatus === "Published" && (
+                            <button
+                              onClick={() => handleUnpublish(sh._id)}
+                              style={{
+                                background: "#6b7280",
+                                color: "white",
+                                border: "none",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "11px",
+                                fontWeight: 600
+                              }}
+                            >
+                              Unpublish
+                            </button>
+                          )}
+
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

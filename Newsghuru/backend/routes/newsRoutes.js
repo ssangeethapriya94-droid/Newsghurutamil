@@ -702,6 +702,9 @@ router.put("/editor/approve/:id", verifyToken, authorizeRoles("editor"), async (
 // Admin stats endpoint
 router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
+    const Advertisement = require("../models/Advertisement");
+    const Short = require("../models/Short");
+
     const totalNews = await News.countDocuments();
     const pendingApproval = await News.countDocuments({ status: "pending_admin_verification" });
     const publishedNews = await News.countDocuments({ status: "published" });
@@ -709,6 +712,8 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
     const totalReporters = await User.countDocuments({ role: "reporter" });
     const totalEditors = await User.countDocuments({ role: "editor" });
     const totalUsers = await User.countDocuments();
+    const pendingAdvertisementsCount = await Advertisement.countDocuments({ status: "Pending Approval" });
+    const pendingNewsShortsCount = await Short.countDocuments({ status: "Pending Approval" });
     
     // Category distribution stats
     const categoriesData = await News.aggregate([
@@ -799,6 +804,8 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
       totalReporters,
       totalEditors,
       totalUsers,
+      pendingAdvertisementsCount,
+      pendingNewsShortsCount,
       breakingNewsCount,
       weeklyStats,
       recentActivities,

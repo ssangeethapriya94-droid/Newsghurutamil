@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from "recharts";
+
 import { 
   FiFileText, FiClock, FiCheckCircle, FiXCircle, 
   FiUsers, FiZap, FiPlusSquare, FiEye, FiMoreVertical, 
-  FiArrowRight, FiList
+  FiArrowRight, FiList, FiSliders, FiTv
 } from "react-icons/fi";
 import "../styles/AdminDashboard.css";
 import { useNavigate } from "react-router-dom";
@@ -226,7 +227,6 @@ function AdminDashboard() {
             <span className="trend-text red-trend">↓ 3.1% this month</span>
           </div>
         </div>
-
         <div className="metric-card purple-glow">
           <div className="metric-icon-bg bg-purple">
             <FiUsers />
@@ -235,6 +235,28 @@ function AdminDashboard() {
             <h3>Total Users</h3>
             <p className="value">{stats.totalUsers || 0}</p>
             <span className="trend-text green-trend">↑ 10.7% this month</span>
+          </div>
+        </div>
+
+        <div className="metric-card yellow-glow" onClick={() => navigate("/admin/ads/all", { state: { statusFilter: "Pending Approval" } })} style={{ cursor: "pointer" }}>
+          <div className="metric-icon-bg bg-yellow">
+            <FiSliders />
+          </div>
+          <div className="metric-details">
+            <h3>Pending Ads</h3>
+            <p className="value">{stats.pendingAdvertisementsCount || 0}</p>
+            <span className="trend-text green-trend">Needs admin review</span>
+          </div>
+        </div>
+
+        <div className="metric-card purple-glow" onClick={() => navigate("/admin/shorts", { state: { statusFilter: "Pending Approval" } })} style={{ cursor: "pointer" }}>
+          <div className="metric-icon-bg bg-purple">
+            <FiTv />
+          </div>
+          <div className="metric-details">
+            <h3>Pending Shorts</h3>
+            <p className="value">{stats.pendingNewsShortsCount || 0}</p>
+            <span className="trend-text green-trend">Needs admin review</span>
           </div>
         </div>
 

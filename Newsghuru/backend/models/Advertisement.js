@@ -61,7 +61,7 @@ const advertisementSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Active", "Inactive", "Scheduled", "Expired"],
+      enum: ["Active", "Inactive", "Scheduled", "Expired", "Draft", "Pending Approval", "Approved", "Published", "Rejected"],
       default: "Active"
     },
     popupDelay: {
@@ -107,6 +107,31 @@ const advertisementSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    publishedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    approvedAt: {
+      type: Date
+    },
+    publishedAt: {
+      type: Date
+    },
+    rejectedAt: {
+      type: Date
+    },
+    rejectionReason: {
+      type: String,
+      default: ""
     }
   },
   {

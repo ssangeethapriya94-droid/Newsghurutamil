@@ -375,40 +375,7 @@ const Home = () => {
 
   // Section Render Map
   const renderBreakingNewsBar = (titleTa) => {
-    const tickerStories = filteredBreaking.length > 0 ? filteredBreaking : filteredAll.slice(0, 6);
-    if (tickerStories.length === 0) return null;
-
-    return (
-      <div className="premium-ticker-container" style={{ margin: "15px 0", background: "rgba(239, 68, 68, 0.05)", border: "1px solid rgba(239, 68, 68, 0.15)", borderRadius: "8px", padding: "10px 20px", display: "flex", alignItems: "center", gap: "15px", overflow: "hidden" }}>
-        <div className="ticker-label" style={{ background: "var(--accent-red)", color: "white", padding: "4px 10px", borderRadius: "4px", fontSize: "13px", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
-          <span className="live-dot" style={{ width: "8px", height: "8px", backgroundColor: "white", borderRadius: "50%", display: "inline-block", animation: "blink 1.2s infinite" }}></span>
-          {titleTa || "முக்கிய செய்திகள்"}
-        </div>
-        <div className="ticker-scroll-wrapper" style={{ overflow: "hidden", width: "100%" }}>
-          <div className="ticker-scroll-content" style={{ display: "flex", gap: "50px", animation: "tickerLoop 30s linear infinite", whiteSpace: "nowrap", cursor: "pointer" }} onMouseOver={(e) => e.currentTarget.style.animationPlayState = "paused"} onMouseOut={(e) => e.currentTarget.style.animationPlayState = "running"}>
-            {tickerStories.concat(tickerStories).map((story, index) => (
-              <span 
-                key={`${story._id}-${index}`} 
-                onClick={() => navigate(`/news/${story._id}`, { state: story })}
-                style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}
-              >
-                ⚡ {story.titleTa || story.title}
-              </span>
-            ))}
-          </div>
-        </div>
-        <style>{`
-          @keyframes tickerLoop {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-50%, 0, 0); }
-          }
-          @keyframes blink {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-          }
-        `}</style>
-      </div>
-    );
+    return null;
   };
 
   const renderHeroSection = () => {
@@ -1095,24 +1062,7 @@ const Home = () => {
             </motion.div>
           )}
 
-          {/* Widget 1: Stock Market */}
-          <div className="premium-widget" style={{ padding: "16px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-secondary)" }}>
-            <h3 className="widget-title-serif" style={{ fontSize: "1.05rem", fontWeight: "700", borderBottom: "2px solid var(--border-color)", paddingBottom: "8px", marginTop: 0 }}>பங்குச் சந்தை & தங்கம் 📈</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px" }}>
-                <span style={{ fontWeight: 600 }}>SENSEX:</span>
-                <span style={{ color: "#10b981", fontWeight: 700, display: "flex", alignItems: "center", gap: "2px" }}>73,240.50 <FaArrowUp size={10} /></span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px" }}>
-                <span style={{ fontWeight: 600 }}>NIFTY:</span>
-                <span style={{ color: "#10b981", fontWeight: 700, display: "flex", alignItems: "center", gap: "2px" }}>22,310.20 <FaArrowUp size={10} /></span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem" }}>
-                <span style={{ fontWeight: 600 }}>தங்கம் (22K 1கி):</span>
-                <span style={{ color: "#ef4444", fontWeight: 700, display: "flex", alignItems: "center", gap: "2px" }}>₹7,230 (-₹15) <FaArrowDown size={10} /></span>
-              </div>
-            </div>
-          </div>
+
           <AdZone position="SIDEBAR" />
 
           {/* Reader Poll Widget */}
