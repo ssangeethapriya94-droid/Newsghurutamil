@@ -158,6 +158,7 @@
   background: var(--brand-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 
 .main-bar-actions {
@@ -380,7 +381,7 @@
 }
 
 .ticker-label {
-  background: var(--accent-red);
+  background: var(--brand-gradient);
   color: #fff;
   height: 100%;
   display: flex;

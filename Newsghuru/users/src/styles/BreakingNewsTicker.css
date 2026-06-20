@@ -25,7 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ef5350; /* Lighter red as requested */
+  background: var(--brand-gradient);
   color: #fff;
   font-weight: bold;
   font-size: 18px;
@@ -65,7 +65,7 @@
 }
 
 .ticker-title:hover {
-  color: #d32f2f;
+  color: #ea580c;
   text-decoration: underline;
 }
 

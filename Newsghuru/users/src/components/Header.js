@@ -151,7 +151,7 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
             <button 
               className="subscribe-header-btn" 
               style={{ 
-                backgroundColor: "#22c55e", 
+                background: "var(--brand-gradient)", 
                 color: "#fff", 
                 border: "none", 
                 padding: "8px 16px", 
@@ -160,12 +160,18 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
                 fontSize: "0.85rem",
                 cursor: "pointer",
                 marginRight: "10px",
-                boxShadow: "0 2px 8px rgba(34, 197, 94, 0.2)",
-                transition: "transform 0.15s ease"
+                boxShadow: "0 4px 12px rgba(234, 88, 12, 0.3)",
+                transition: "all 0.2s ease"
               }} 
               onClick={() => navigate("/subscribe")}
-              onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.03)"}
-              onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = "scale(1.03)";
+                e.currentTarget.style.boxShadow = "0 6px 16px rgba(234, 88, 12, 0.45)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(234, 88, 12, 0.3)";
+              }}
             >
               SUBSCRIBE
             </button>

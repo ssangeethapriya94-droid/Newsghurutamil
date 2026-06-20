@@ -163,7 +163,7 @@ const SubscribePlans = () => {
           key: key,
           amount: amount,
           currency: currency,
-          name: "NewsGuru Premium",
+          name: "NewsGhuru Premium",
           description: "Premium Digital News Subscription",
           // Use absolute URL so Razorpay can load it in their modal
           image: `${window.location.origin}/NEWS GHURU LOGO PNG.png`,
@@ -280,7 +280,7 @@ const SubscribePlans = () => {
         <div className="hero-content">
           <div className="premium-badge-wrapper">
             <span className="premium-crown-icon"><FaCrown /></span>
-            <span className="premium-badge-text">NEWSGURU PREMIUM</span>
+            <span className="premium-badge-text">NEWSGHURU PREMIUM</span>
           </div>
           <h1>முழுமையான செய்தி வாசிப்பு அனுபவம்</h1>
           <p>விளம்பரங்களற்ற தடையற்ற வாசிப்பு, ஆழமான சிறப்புக் கட்டுரைகள் மற்றும் பல சலுகைகளை உடனே பெறுங்கள்.</p>
@@ -321,7 +321,7 @@ const SubscribePlans = () => {
           <label className="coins-checkbox-label">
             <span className="coins-left-badge-row">
               <span className="gold-coin-badge">🌟</span>
-              <span className="coins-text">Redeem NewsGuru Loyalty Points (Upto 20% Discount)</span>
+              <span className="coins-text">Redeem NewsGhuru Loyalty Points (Upto 20% Discount)</span>
             </span>
             <input type="checkbox" className="coins-checkbox-input" />
           </label>

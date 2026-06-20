@@ -139,7 +139,7 @@ const AuthPopup = ({ onClose, onLoginSuccess, isSubscribeFlow }) => {
     <div className="auth-popup-overlay">
       <div className="auth-popup-container">
         <div className="auth-popup-header" style={{
-          background: '#d32f2f', 
+          background: 'var(--brand-gradient)', 
           color: 'white', 
           padding: '12px 15px', 
           textAlign: 'center', fontWeight: '600', fontSize: '1rem', 

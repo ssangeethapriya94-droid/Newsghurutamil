@@ -80,8 +80,8 @@
 }
 
 .auth-tab.active {
-  color: #d32f2f;
-  border-bottom: 2px solid #d32f2f;
+  color: #ea580c;
+  border-bottom: 2px solid #ea580c;
 }
 
 .auth-form-container {
@@ -119,11 +119,11 @@
 }
 
 .auth-form input:focus {
-  border-color: #d32f2f;
+  border-color: #ea580c;
 }
 
 .auth-submit-btn {
-  background: #d32f2f;
+  background: var(--brand-gradient);
   color: white;
   padding: 12px;
   border: none;
@@ -132,15 +132,15 @@
   font-size: 1rem;
   cursor: pointer;
   margin-top: 10px;
-  transition: background 0.2s;
+  transition: opacity 0.2s;
 }
 
 .auth-submit-btn:hover {
-  background: #b71c1c;
+  opacity: 0.9;
 }
 
 .auth-submit-btn:disabled {
-  background: #ef5350;
+  background: #ccc;
   cursor: not-allowed;
 }
 

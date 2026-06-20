@@ -184,19 +184,20 @@ function App() {
     syncUserProfile();
   }, [isLoggedIn]);
 
-  // Visitor tracking: increment once per browser session using sessionStorage
+  // Visitor tracking: increment once for unique users using localStorage
   useEffect(() => {
     const trackVisitor = async () => {
       try {
-        if (!sessionStorage.getItem("ng_visited")) {
-          // First visit this session — increment the counter
+        const visitedKey = "ng_visited_unique";
+        if (!localStorage.getItem(visitedKey)) {
+          // Mark immediately to prevent race conditions / duplicate calls in StrictMode
+          localStorage.setItem(visitedKey, "true");
           const res = await API.post("/api/analytics/visitors/increment");
           if (res.data && res.data.success) {
             setVisitorCount(res.data.count);
-            sessionStorage.setItem("ng_visited", "true");
           }
         } else {
-          // Already visited this session — just fetch the count
+          // Already visited — just fetch the count
           const res = await API.get("/api/analytics/visitors");
           if (res.data && res.data.success) {
             setVisitorCount(res.data.count);

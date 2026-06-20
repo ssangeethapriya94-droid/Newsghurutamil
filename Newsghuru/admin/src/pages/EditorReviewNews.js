@@ -41,6 +41,19 @@ function EditorReviewNews() {
   const [coverFile, setCoverFile] = useState(null);
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryFiles, setGalleryFiles] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await API.get("/api/categories");
+        setCategories(res.data || []);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const stripHtml = (html) => {
     const tmp = document.createElement("DIV");
@@ -420,15 +433,11 @@ function EditorReviewNews() {
             <label>Category / வகை <span className="required">*</span></label>
             <select name="category" className={errors.category ? "error-input" : ""} value={formData.category} onChange={handleChange}>
               <option value="">Select Category / வகையைத் தேர்ந்தெடுக்கவும்</option>
-              <option value="breaking">Breaking News / தற்போதைய செய்திகள்</option>
-              <option value="politics">Politics / அரசியல்</option>
-              <option value="sports">Sports / விளையாட்டு</option>
-              <option value="cinema">Cinema / சினிமா</option>
-              <option value="business">Business / வணிகம்</option>
-              <option value="education">Education / கல்வி</option>
-              <option value="tamilnadu">Tamil Nadu / தமிழகம்</option>
-              <option value="india">India / இந்தியா</option>
-              <option value="world">World / உலகம்</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat.slug}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
             {errors.category && <span className="error-text">{errors.category}</span>}
           </div>

@@ -47,7 +47,18 @@ const Bookmarks = () => {
         {savedArticles.length > 0 && (
           <button 
             onClick={clearAll}
-            style={{ padding: "8px 16px", background: "none", border: "1px solid var(--accent-red)", color: "var(--accent-red)", borderRadius: "var(--border-radius-sm)", fontWeight: "600", cursor: "pointer" }}
+            style={{ 
+              padding: "8px 16px", 
+              background: "var(--brand-gradient)", 
+              color: "#fff", 
+              border: "none", 
+              borderRadius: "var(--border-radius-sm)", 
+              fontWeight: "600", 
+              cursor: "pointer",
+              transition: "opacity 0.2s" 
+            }}
+            onMouseOver={(e) => e.currentTarget.style.opacity = "0.9"}
+            onMouseOut={(e) => e.currentTarget.style.opacity = "1"}
           >
             அனைத்தும் அழி
           </button>

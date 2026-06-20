@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import "../styles/ReporterCreateNews.css"; // Reuse styling
@@ -18,6 +18,20 @@ function AddNews() {
     seoKeywords: "",
     date: new Date().toISOString().split("T")[0],
   });
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await API.get("/api/categories");
+        setCategories(res.data || []);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const [coverImage, setCoverImage] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
@@ -286,16 +300,11 @@ function AddNews() {
             <label>Category <span className="required">*</span></label>
             <select name="category" className={errors.category ? "error-input" : ""} value={formData.category} onChange={handleChange}>
               <option value="">Select Category</option>
-              <option value="Politics">Politics</option>
-              <option value="Sports">Sports</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Technology">Technology</option>
-              <option value="Education">Education</option>
-              <option value="India">India</option>
-              <option value="World">World</option>
-              <option value="Cinema">Cinema</option>
-              <option value="Tamil">Tamil</option>
-              <option value="breaking">Breaking</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat.slug}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
             {errors.category && <span className="error-text">{errors.category}</span>}
           </div>

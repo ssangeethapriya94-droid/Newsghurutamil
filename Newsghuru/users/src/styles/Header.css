@@ -167,8 +167,8 @@
 }
 
 .lang-switch button.active-lang {
-  background: #ff4d4d;
-  color:white
+  background: var(--brand-gradient);
+  color: white;
 }
 
 /* =========================================
@@ -251,8 +251,8 @@
   background: var(--brand-gradient);
 }
 
-.auth-btn { background: #d32f2f; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; }
-.auth-btn:hover { background: #b71c1c; }
+.auth-btn { background: var(--brand-gradient); color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; font-size: 0.9rem; }
+.auth-btn:hover { opacity: 0.9; }
 .logout-btn { background: var(--brand-gradient); }
 .logout-btn:hover { opacity: 0.9; background: var(--brand-gradient); }
 @media (max-width: 600px) { 
