@@ -21,11 +21,6 @@ const stripHtml = (html) => {
   return doc.body.textContent || "";
 };
 
-const getReadingTime = (text) => {
-  const words = stripHtml(text).split(/\s+/).length;
-  const time = Math.max(1, Math.ceil(words / 150));
-  return `${time} நிமிடம்`;
-};
 
 const Home = () => {
   const navigate = useNavigate();
@@ -388,7 +383,6 @@ const Home = () => {
           <span className="card-cat-badge">{getCategoryLabel(article.category)}</span>
           <div className="card-info-overlay">
             {viewCount > 0 && <span>👁 {viewCount.toLocaleString()} வியூஸ்</span>}
-            <span>⏱ {getReadingTime(article.description)}</span>
           </div>
         </div>
         <div className="card-body-content">
@@ -458,7 +452,7 @@ const Home = () => {
                   {stripHtml(resolvedHeroStory.shortDescription || resolvedHeroStory.description)}
                 </p>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.82rem", opacity: "0.8" }}>
-                  <span>⏱ {getReadingTime(resolvedHeroStory.description)}  •  <RelativeTime createdAt={resolvedHeroStory.createdAt} fallback={resolvedHeroStory.time} /></span>
+                  <span><RelativeTime createdAt={resolvedHeroStory.createdAt} fallback={resolvedHeroStory.time} /></span>
                   {parseInt(resolvedHeroStory.views) > 0 && (
                     <span>👁 {parseInt(resolvedHeroStory.views).toLocaleString()} வியூஸ்</span>
                   )}

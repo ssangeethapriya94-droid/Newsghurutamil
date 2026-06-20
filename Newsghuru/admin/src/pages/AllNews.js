@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../config/api";
 import "../styles/AllNews.css";
 import RelativeTime from "../components/RelativeTime";
 
 function AllNews() {
+  const navigate = useNavigate();
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -309,6 +311,12 @@ function AllNews() {
                           {/* ACTIONS — hide delete button when in select mode */}
                           {!selectMode && (
                             <div className="news-actions">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); navigate(`/admin/edit-news/${item._id}`); }}
+                                className="edit-btn"
+                              >
+                                Edit News
+                              </button>
                               <button
                                 onClick={(e) => { e.stopPropagation(); deleteNews(item._id); }}
                                 className="delete-btn"

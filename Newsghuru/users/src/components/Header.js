@@ -114,14 +114,12 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
 
         <div className="main-bar-actions">
           {/* SEARCH OVERLAY TRIGGER */}
-          <button className="header-icon-btn" onClick={() => setShowSearchOverlay(true)} title="தேடுக">
+          <button className="header-icon-btn header-search-btn" onClick={() => setShowSearchOverlay(true)} title="தேடுக">
             <FaSearch />
           </button>
 
-
-
           {/* DARK MODE TOGGLE */}
-          <button className="header-icon-btn" onClick={() => setDarkMode(!darkMode)} title="தீம் மாற்றுக">
+          <button className="header-icon-btn header-theme-btn" onClick={() => setDarkMode(!darkMode)} title="தீம் மாற்றுக">
             {darkMode ? <FaSun /> : <FaMoon />}
           </button>
 
@@ -141,9 +139,11 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
                 gap: "4px",
                 marginRight: "10px",
                 boxShadow: "0 2px 8px rgba(234, 179, 8, 0.3)",
-                userSelect: "none"
+                userSelect: "none",
+                cursor: "pointer"
               }}
-              title="நீங்கள் ஒரு பிரீமியம் உறுப்பினர்!"
+              title="சந்தா திட்டங்களைப் பார்க்கவும்"
+              onClick={() => navigate("/subscribe")}
             >
               PREMIUM 👑
             </div>

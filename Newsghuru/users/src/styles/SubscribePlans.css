@@ -245,6 +245,12 @@
   box-shadow: 0 10px 25px rgba(234, 88, 12, 0.08);
 }
 
+/* ACTIVE CARD Highlight */
+.store-plan-card.store-active {
+  border: 2px solid #10b981;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.08);
+}
+
 .store-rec-badge {
   position: absolute;
   top: -12px;
@@ -258,6 +264,20 @@
   border-radius: 30px;
   letter-spacing: 1px;
   box-shadow: 0 4px 10px rgba(234, 88, 12, 0.2);
+}
+
+.active-plan-badge {
+  background: #10b981 !important;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* ACTIVE LIFETIME CARD */
+.lifetime-horizontal-card-custom.lifetime-active {
+  border: 2px solid #10b981;
+}
+
+.lifetime-horizontal-card-custom.lifetime-active::before {
+  background: #10b981 !important;
 }
 
 .store-plan-name {

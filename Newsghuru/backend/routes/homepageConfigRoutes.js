@@ -122,7 +122,7 @@ router.get("/", async (req, res) => {
 });
 
 // PUT /api/homepage-config - Update homepage layout (Admin only)
-router.put("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
+router.put("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
     const { heroStory, trendingStories, editorPicks, featuredVideos, featuredShorts, sections, sidebarWidgets, mostReadSettings } = req.body;
     

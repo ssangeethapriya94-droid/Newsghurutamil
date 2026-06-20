@@ -512,8 +512,8 @@ router.put("/:id", verifyToken, uploadFields, async (req, res) => {
       return res.status(404).json({ message: "Article not found" });
     }
 
-    // Verify ownership: only the reporter who created it can edit it!
-    if (news.reporterId.toString() !== req.user._id.toString()) {
+    // Verify ownership: only the reporter who created it can edit it, or an admin!
+    if (req.user.role !== "admin" && news.reporterId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized to edit this article" });
     }
 

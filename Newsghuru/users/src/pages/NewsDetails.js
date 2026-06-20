@@ -6,7 +6,7 @@ import useSEO from "../hooks/useSEO";
 import AdZone from "../components/AdZone";
 
 import {
-  FaClock, FaArrowLeft, FaFacebookF, FaTwitter, FaUserAlt,
+  FaArrowLeft, FaFacebookF, FaTwitter, FaUserAlt,
   FaInstagram, FaYoutube, FaHeart, FaBookmark, FaShareAlt,
   FaPlus, FaCheck, FaEye, FaRegComment
 } from "react-icons/fa";
@@ -15,12 +15,6 @@ const stripHtml = (html) => {
   if (!html) return "";
   const doc = new DOMParser().parseFromString(html, "text/html");
   return doc.body.textContent || "";
-};
-
-const getReadingTime = (text) => {
-  const words = stripHtml(text).split(/\s+/).length;
-  const time = Math.max(1, Math.ceil(words / 150));
-  return `${time} நிமிடம் வாசிப்பு`;
 };
 
 const NewsDetails = () => {
@@ -386,7 +380,6 @@ const NewsDetails = () => {
 
           <div className="article-metrics-box">
             <span><FaEye /> {viewCount} பார்வைகள்</span>
-            <span><FaClock /> {getReadingTime(news.description)}</span>
           </div>
         </div>
       </header>

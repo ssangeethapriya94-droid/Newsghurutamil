@@ -1319,51 +1319,55 @@
 @media (max-width: 480px) {
   .header-main-bar {
     height: 65px !important;
-    padding: 0 8px !important;
+    padding: 0 6px !important;
   }
   
   .brand-logo-img {
-    height: 38px !important;
+    height: 32px !important;
   }
   
   .brand-name-serif {
-    font-size: 1.25rem !important;
+    font-size: 1.1rem !important;
   }
   
   .brand-section {
-    gap: 4px !important;
+    gap: 3px !important;
   }
 
   .brand-section .menu-icon {
-    font-size: 1.15rem !important;
-    margin-right: 6px !important;
+    font-size: 1.1rem !important;
+    margin-right: 4px !important;
   }
   
   .main-bar-actions {
-    gap: 6px !important;
+    gap: 4px !important;
   }
   
   .header-icon-btn {
-    font-size: 0.95rem !important;
+    font-size: 0.9rem !important;
     padding: 4px !important;
+  }
+
+  .header-search-btn {
+    display: none !important; /* Hide redundant search button in header on mobile */
   }
   
   .subscribe-header-btn, .login-btn {
     padding: 4px 8px !important;
-    font-size: 0.72rem !important;
+    font-size: 0.7rem !important;
     margin-right: 2px !important;
   }
 
   .premium-badge-header {
     padding: 4px 8px !important;
-    font-size: 0.68rem !important;
+    font-size: 0.65rem !important;
     margin-right: 2px !important;
   }
   
   .user-avatar {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: 0.85rem !important;
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.8rem !important;
   }
 }
 

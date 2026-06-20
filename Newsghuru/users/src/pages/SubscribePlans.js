@@ -62,7 +62,30 @@ const SubscribePlans = () => {
   const [loading, setLoading] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentStep, setPaymentStep] = useState(""); // 'initiating', 'processing', 'success', 'failed'
-  
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    try {
+      const dataStr = localStorage.getItem("readerData");
+      if (dataStr) {
+        setUserData(JSON.parse(dataStr));
+      }
+    } catch (e) {
+      console.error("Error loading readerData:", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePaymentSuccess = (e) => {
+      if (e.detail && e.detail.user) {
+        setUserData(e.detail.user);
+      }
+    };
+    window.addEventListener("payment-success", handlePaymentSuccess);
+    return () => {
+      window.removeEventListener("payment-success", handlePaymentSuccess);
+    };
+  }, []);
 
 
   // Fetch plans on mount to overwrite with latest DB config if available
@@ -333,13 +356,21 @@ const SubscribePlans = () => {
           <div className="standard-plans-grid">
             {standardPlans.map((plan) => {
               const isRec = plan.isRecommended;
+              const isActive = userData?.isPremium && (
+                userData.premiumPlan === plan._id || 
+                userData.premiumPlan?._id === plan._id
+              );
 
               return (
                 <div 
                   key={plan._id} 
-                  className={`store-plan-card ${isRec ? "store-recommended" : ""}`}
+                  className={`store-plan-card ${isActive ? "store-active" : isRec ? "store-recommended" : ""}`}
                 >
-                  {isRec && <div className="store-rec-badge">RECOMMENDED</div>}
+                  {isActive ? (
+                    <div className="store-rec-badge active-plan-badge">ACTIVE PLAN</div>
+                  ) : (
+                    isRec && <div className="store-rec-badge">RECOMMENDED</div>
+                  )}
                   
                   <h3 className="store-plan-name">{plan.name}</h3>
                   
@@ -360,9 +391,11 @@ const SubscribePlans = () => {
 
                   <button 
                     className="store-subscribe-btn"
-                    onClick={() => handleSubscribe(plan._id)}
+                    onClick={() => !isActive && handleSubscribe(plan._id)}
+                    disabled={isActive}
+                    style={isActive ? { background: "#10b981", cursor: "default", boxShadow: "none" } : {}}
                   >
-                    Subscribe Now
+                    {isActive ? "Active Plan" : "Subscribe Now"}
                   </button>
 
                   <div className="store-plan-footer">
@@ -377,31 +410,41 @@ const SubscribePlans = () => {
         </div>
 
         {/* LIFETIME ACCESS CARD */}
-        {lifetimePlan && (
-          <div className="lifetime-horizontal-card-custom">
-            <div className="lifetime-badge-glow">ஆயுட்கால சந்தா (LIFETIME ACCESS)</div>
-            <div className="lifetime-card-content">
-              <div className="lifetime-left-sec">
-                <h3>நியூஸ்குரு ஆயுட்கால பிரீமியம்</h3>
-                <p>ஒருமுறை செலுத்தும் சந்தா! எதிர்காலத்தில் எந்தவொரு கூடுதல் கட்டணமுமின்றி விளம்பரமற்ற செய்திகளை ஆயுட்காலத்திற்கும் பெற்று மகிழுங்கள்.</p>
+        {lifetimePlan && (() => {
+          const isLifetimeActive = userData?.isPremium && (
+            userData.premiumPlan === lifetimePlan._id || 
+            userData.premiumPlan?._id === lifetimePlan._id
+          );
+          return (
+            <div className={`lifetime-horizontal-card-custom ${isLifetimeActive ? "lifetime-active" : ""}`}>
+              <div className="lifetime-badge-glow">
+                {isLifetimeActive ? "ஆயுட்கால சந்தா (ACTIVE LIFETIME PLAN)" : "ஆயுட்கால சந்தா (LIFETIME ACCESS)"}
               </div>
-              
-              <div className="lifetime-right-sec">
-                <div className="lifetime-price-box">
-                  <span className="lt-currency">₹</span>
-                  <span className="lt-price">{lifetimePlan.price}</span>
-                  <span className="lt-period">/ Life</span>
+              <div className="lifetime-card-content">
+                <div className="lifetime-left-sec">
+                  <h3>நியூஸ்குரு ஆயுட்கால பிரீமியம்</h3>
+                  <p>ஒருமுறை செலுத்தும் சந்தா! எதிர்காலத்தில் எந்தவொரு கூடுதல் கட்டணமுமின்றி விளம்பரமற்ற செய்திகளை ஆயுட்காலத்திற்கும் பெற்று மகிழுங்கள்.</p>
                 </div>
-                <button 
-                  className="lifetime-subscribe-btn-custom"
-                  onClick={() => handleSubscribe(lifetimePlan._id)}
-                >
-                  Subscribe Lifetime
-                </button>
+                
+                <div className="lifetime-right-sec">
+                  <div className="lifetime-price-box">
+                    <span className="lt-currency">₹</span>
+                    <span className="lt-price">{lifetimePlan.price}</span>
+                    <span className="lt-period">/ Life</span>
+                  </div>
+                  <button 
+                    className="lifetime-subscribe-btn-custom"
+                    onClick={() => !isLifetimeActive && handleSubscribe(lifetimePlan._id)}
+                    disabled={isLifetimeActive}
+                    style={isLifetimeActive ? { background: "#10b981", cursor: "default", boxShadow: "none" } : {}}
+                  >
+                    {isLifetimeActive ? "Active Plan" : "Subscribe Lifetime"}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* COMPARISON MATRIX SECTION */}
         <div className="plans-comparison-section">

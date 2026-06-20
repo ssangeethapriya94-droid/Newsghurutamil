@@ -30,6 +30,7 @@ function ReporterCreateNews() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
   const [categories, setCategories] = useState([]);
+  const [currentStatus, setCurrentStatus] = useState("");
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -61,6 +62,7 @@ function ReporterCreateNews() {
           });
           setCoverImage(article.coverImage || article.image || null);
           setGalleryImages(article.galleryImages || []);
+          setCurrentStatus(article.status || "draft");
         } catch (error) {
           console.error("Error fetching article for editing:", error);
           alert("Failed to load article details ❌");
@@ -163,10 +165,11 @@ function ReporterCreateNews() {
           });
 
       if (res.data) {
+        const isAdmin = localStorage.getItem("role") === "admin";
         if (status === "draft") {
           alert(isEditMode ? "Article updated successfully! 💾" : "Draft saved successfully! 💾");
           if (isEditMode) {
-            navigate("/reporter/drafts");
+            navigate(isAdmin ? "/admin/all-news" : "/reporter/drafts");
           } else {
             setFormData({
               title: "",
@@ -184,7 +187,12 @@ function ReporterCreateNews() {
             setGalleryFiles([]);
           }
         } else {
-          setIsSubmitted(true);
+          if (isAdmin) {
+            alert("Article updated successfully! 🎉");
+            navigate("/admin/all-news");
+          } else {
+            setIsSubmitted(true);
+          }
         }
       }
     } catch (error) {
@@ -236,9 +244,19 @@ function ReporterCreateNews() {
       <div className="header-actions">
         <h2>{isEditMode ? "Edit News Article" : "Create News Article"}</h2>
         <div className="action-buttons">
-          <button className="btn-secondary" onClick={handleSaveDraft}>Save Draft</button>
-          <button className="btn-secondary" onClick={(e) => { e.preventDefault(); setShowPreview(true); }}>Preview</button>
-          <button className="btn-primary" onClick={triggerSubmitConfirm}>Submit to Editor</button>
+          {localStorage.getItem("role") === "admin" ? (
+            <>
+              <button className="btn-secondary" onClick={(e) => { e.preventDefault(); navigate("/admin/all-news"); }}>Cancel</button>
+              <button className="btn-secondary" onClick={(e) => { e.preventDefault(); setShowPreview(true); }}>Preview</button>
+              <button className="btn-primary" onClick={() => saveNews(currentStatus || "published")}>Save Changes</button>
+            </>
+          ) : (
+            <>
+              <button className="btn-secondary" onClick={handleSaveDraft}>Save Draft</button>
+              <button className="btn-secondary" onClick={(e) => { e.preventDefault(); setShowPreview(true); }}>Preview</button>
+              <button className="btn-primary" onClick={triggerSubmitConfirm}>Submit to Editor</button>
+            </>
+          )}
         </div>
       </div>
 

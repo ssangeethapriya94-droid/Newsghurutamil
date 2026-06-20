@@ -475,3 +475,22 @@
 .news-card {
   position: relative;
 }
+
+/* EDIT BUTTON */
+.edit-btn {
+  background: #ea580c;
+  color: white;
+  border: none;
+  padding: 9px 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-right: 10px;
+}
+
+.edit-btn:hover {
+  background: #c2410c;
+  transform: scale(1.02);
+}

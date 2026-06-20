@@ -4,7 +4,7 @@ import "../styles/Sidebar.css";
 import { 
   FiClock, FiCheckSquare, FiCheckCircle, FiXCircle, 
   FiBell, FiUser, FiLogOut, FiTv, FiLayers, FiPlusCircle,
-  FiCamera, FiFolder, FiLayout
+  FiCamera
 } from "react-icons/fi";
 
 function EditorSidebar({ isOpen }) {
@@ -43,16 +43,6 @@ function EditorSidebar({ isOpen }) {
         </NavLink>
 
         <div className="sidebar-section">CONTENT</div>
-
-        <NavLink className="sidebar-link" to="/admin/categories">
-          <span className="link-icon"><FiFolder /></span>
-          Categories
-        </NavLink>
-
-        <NavLink className="sidebar-link" to="/admin/homepage-builder">
-          <span className="link-icon"><FiLayout /></span>
-          Homepage Builder
-        </NavLink>
 
         <NavLink className="sidebar-link" to="/admin/shorts">
           <span className="link-icon"><FiTv /></span>

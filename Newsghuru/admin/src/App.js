@@ -257,7 +257,8 @@ function App() {
 
         {/* Real routes connecting admin dashboard pages */}
         <Route path="/admin/breaking" element={<ProtectedRoute requiredRole="admin"><Layout><AdminArticlesList defaultFilter="all" /></Layout></ProtectedRoute>} />
-        <Route path="/admin/categories" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><Categories /></Layout></ProtectedRoute>} />
+        <Route path="/admin/categories" element={<ProtectedRoute requiredRole={["admin", "reporter"]}><Layout><Categories /></Layout></ProtectedRoute>} />
+        <Route path="/admin/edit-news/:id" element={<ProtectedRoute requiredRole="admin"><Layout><ReporterCreateNews /></Layout></ProtectedRoute>} />
         <Route path="/admin/media" element={<ProtectedRoute requiredRole="admin"><Layout><MediaLibrary /></Layout></ProtectedRoute>} />
         <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><Layout><UsersManagement /></Layout></ProtectedRoute>} />
         <Route path="/admin/contact-queries" element={<ProtectedRoute requiredRole="admin"><Layout><ContactQueries /></Layout></ProtectedRoute>} />
@@ -266,7 +267,7 @@ function App() {
         <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
         <Route path="/admin/shorts" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><Shorts /></Layout></ProtectedRoute>} />
         <Route path="/admin/photo-stories" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><PhotoStories /></Layout></ProtectedRoute>} />
-        <Route path="/admin/homepage-builder" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><HomepageBuilder /></Layout></ProtectedRoute>} />
+        <Route path="/admin/homepage-builder" element={<ProtectedRoute requiredRole="admin"><Layout><HomepageBuilder /></Layout></ProtectedRoute>} />
 
         {/* ADVERTISEMENT MANAGEMENT MODULE ROUTES */}
         <Route path="/admin/ads/dashboard" element={<ProtectedRoute requiredRole="admin"><Layout><AdDashboard /></Layout></ProtectedRoute>} />

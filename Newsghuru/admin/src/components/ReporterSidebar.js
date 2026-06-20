@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import "../styles/Sidebar.css";
 import { 
   FiPlusSquare, FiFileText, FiEdit3, FiUploadCloud, 
-  FiXCircle, FiCheckCircle, FiBell, FiUser, FiLogOut 
+  FiXCircle, FiCheckCircle, FiBell, FiUser, FiLogOut, FiFolder 
 } from "react-icons/fi";
 
 function ReporterSidebar({ isOpen }) {
@@ -46,6 +46,13 @@ function ReporterSidebar({ isOpen }) {
         <NavLink className="sidebar-link" to="/reporter/my-articles">
           <span className="link-icon"><FiEdit3 /></span>
           My Articles
+        </NavLink>
+        
+        <div className="sidebar-section">CONTENT</div>
+        
+        <NavLink className="sidebar-link" to="/admin/categories">
+          <span className="link-icon"><FiFolder /></span>
+          Categories
         </NavLink>
         
         <div className="sidebar-section">STATUS</div>
