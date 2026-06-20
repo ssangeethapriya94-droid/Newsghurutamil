@@ -1,8 +1,8 @@
 /* =========================================
-   NEWS GURU PAGE
+   NEWS GHURU PAGE
 ========================================= */
 
-.guru-page {
+.ghuru-page {
   width: 100%;
   min-height: 100vh;
   padding: 25px 20px 50px;
@@ -13,7 +13,7 @@
    PAGE HEADER
 ========================================= */
 
-.guru-header {
+.ghuru-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -22,18 +22,18 @@
   flex-wrap: wrap;
 }
 
-.guru-header h1 {
+.ghuru-header h1 {
   font-size: 42px;
   font-weight: 800;
   margin-bottom: 10px;
 }
 
-.guru-header p {
+.ghuru-header p {
   font-size: 17px;
   opacity: 0.85;
 }
 
-.guru-live {
+.ghuru-live {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -72,7 +72,7 @@
    FEATURED NEWS
 ========================================= */
 
-.guru-featured-news {
+.ghuru-featured-news {
   width: 100%;
   display: grid;
   grid-template-columns: 1.4fr 1fr;
@@ -84,31 +84,31 @@
   transition: 0.3s ease;
 }
 
-.guru-featured-news:hover {
+.ghuru-featured-news:hover {
   transform: translateY(-6px);
 }
 
-.guru-featured-image {
+.ghuru-featured-image {
   width: 100%;
   height: 500px;
   object-fit: cover;
 }
 
-.guru-featured-content {
+.ghuru-featured-content {
   padding: 25px 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.guru-featured-content h2 {
+.ghuru-featured-content h2 {
   font-size: 40px;
   line-height: 1.5;
   margin: 20px 0;
   font-weight: 800;
 }
 
-.guru-featured-content p {
+.ghuru-featured-content p {
   font-size: 18px;
   line-height: 1.9;
   margin-bottom: 25px;
@@ -118,7 +118,7 @@
    CATEGORY BUTTON
 ========================================= */
 
-.guru-category-btn {
+.ghuru-category-btn {
   width: fit-content;
   border: none;
   outline: none;
@@ -134,14 +134,14 @@
    META
 ========================================= */
 
-.guru-meta {
+.ghuru-meta {
   display: flex;
   align-items: center;
   gap: 22px;
   flex-wrap: wrap;
 }
 
-.guru-meta span {
+.ghuru-meta span {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -152,7 +152,7 @@
    NEWS GRID
 ========================================= */
 
-.guru-news-grid {
+.ghuru-news-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 25px;
@@ -162,14 +162,14 @@
    NEWS CARD
 ========================================= */
 
-.guru-news-card {
+.ghuru-news-card {
   border-radius: 20px;
   overflow: hidden;
   cursor: pointer;
   transition: 0.3s ease;
 }
 
-.guru-news-card:hover {
+.ghuru-news-card:hover {
   transform: translateY(-6px);
 }
 
@@ -177,19 +177,19 @@
    IMAGE
 ========================================= */
 
-.guru-image-wrapper {
+.ghuru-image-wrapper {
   position: relative;
   overflow: hidden;
 }
 
-.guru-news-image {
+.ghuru-news-image {
   width: 100%;
   height: 240px;
   object-fit: cover;
   transition: 0.4s ease;
 }
 
-.guru-news-card:hover .guru-news-image {
+.ghuru-news-card:hover .ghuru-news-image {
   transform: scale(1.05);
 }
 
@@ -211,18 +211,18 @@
    CONTENT
 ========================================= */
 
-.guru-news-content {
+.ghuru-news-content {
   padding: 20px;
 }
 
-.guru-news-content h3 {
+.ghuru-news-content h3 {
   font-size: 24px;
   line-height: 1.5;
   margin: 18px 0;
   font-weight: 700;
 }
 
-.guru-news-content p {
+.ghuru-news-content p {
   font-size: 16px;
   line-height: 1.8;
   margin-bottom: 22px;
@@ -232,7 +232,7 @@
    FOOTER
 ========================================= */
 
-.guru-news-footer {
+.ghuru-news-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -240,7 +240,7 @@
   flex-wrap: wrap;
 }
 
-.guru-news-footer span {
+.ghuru-news-footer span {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -251,21 +251,21 @@
    DARK THEME
 ========================================= */
 
-.dark-theme .guru-page {
+.dark-theme .ghuru-page {
   background: var(--bg-primary);
   color: #fff;
 }
 
-.dark-theme .guru-news-card,
-.dark-theme .guru-featured-news {
+.dark-theme .ghuru-news-card,
+.dark-theme .ghuru-featured-news {
   background: var(--bg-secondary);
 }
 
-.dark-theme .guru-news-content p,
-.dark-theme .guru-featured-content p,
-.dark-theme .guru-meta span,
-.dark-theme .guru-news-footer span,
-.dark-theme .guru-header p {
+.dark-theme .ghuru-news-content p,
+.dark-theme .ghuru-featured-content p,
+.dark-theme .ghuru-meta span,
+.dark-theme .ghuru-news-footer span,
+.dark-theme .ghuru-header p {
   color: #cbd5e1;
 }
 
@@ -273,22 +273,22 @@
    LIGHT THEME
 ========================================= */
 
-.light-theme .guru-page {
+.light-theme .ghuru-page {
   background: #f8fafc;
   color: #111827;
 }
 
-.light-theme .guru-news-card,
-.light-theme .guru-featured-news {
+.light-theme .ghuru-news-card,
+.light-theme .ghuru-featured-news {
   background: #ffffff;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
 }
 
-.light-theme .guru-news-content p,
-.light-theme .guru-featured-content p,
-.light-theme .guru-meta span,
-.light-theme .guru-news-footer span,
-.light-theme .guru-header p {
+.light-theme .ghuru-news-content p,
+.light-theme .ghuru-featured-content p,
+.light-theme .ghuru-meta span,
+.light-theme .ghuru-news-footer span,
+.light-theme .ghuru-header p {
   color: #4b5563;
 }
 
@@ -298,77 +298,77 @@
 
 @media (max-width: 1200px) {
 
-  .guru-news-grid {
+  .ghuru-news-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .guru-featured-content h2 {
+  .ghuru-featured-content h2 {
     font-size: 34px;
   }
 }
 
 @media (max-width: 992px) {
 
-  .guru-featured-news {
+  .ghuru-featured-news {
     grid-template-columns: 1fr;
   }
 
-  .guru-featured-image {
+  .ghuru-featured-image {
     height: 400px;
   }
 
-  .guru-featured-content h2 {
+  .ghuru-featured-content h2 {
     font-size: 30px;
   }
 }
 
 @media (max-width: 768px) {
 
-  .guru-page {
+  .ghuru-page {
     padding: 20px 15px 40px;
   }
 
-  .guru-header h1 {
+  .ghuru-header h1 {
     font-size: 34px;
   }
 
-  .guru-news-grid {
+  .ghuru-news-grid {
     grid-template-columns: 1fr;
   }
 
-  .guru-featured-content h2 {
+  .ghuru-featured-content h2 {
     font-size: 26px;
   }
 
-  .guru-news-content h3 {
+  .ghuru-news-content h3 {
     font-size: 22px;
   }
 }
 
 @media (max-width: 576px) {
 
-  .guru-featured-image {
+  .ghuru-featured-image {
     height: 260px;
   }
 
-  .guru-featured-content h2 {
+  .ghuru-featured-content h2 {
     font-size: 22px;
   }
 
-  .guru-featured-content p,
-  .guru-news-content p {
+  .ghuru-featured-content p,
+  .ghuru-news-content p {
     font-size: 15px;
   }
 
-  .guru-news-image {
+  .ghuru-news-image {
     height: 220px;
   }
 
-  .guru-news-content h3 {
+  .ghuru-news-content h3 {
     font-size: 20px;
   }
 
-  .guru-news-footer {
+  .ghuru-news-footer {
     flex-direction: column;
     align-items: flex-start;
   }

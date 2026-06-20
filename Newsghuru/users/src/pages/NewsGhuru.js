@@ -1,6 +1,6 @@
 import React from "react";
 
-import "../styles/NewsGuru.css";
+import "../styles/NewsGhuru.css";
 
 import {
   FaClock,
@@ -13,21 +13,21 @@ import {
 import { useNavigate } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
 
-const NewsGuru = () => {
+const NewsGhuru = () => {
 
   const navigate = useNavigate();
 
   useSEO({
-    title: "நியூஸ் குரு (News Guru)",
+    title: "நியூஸ் குரு (News Ghuru)",
     description: "நியூஸ் குரு - முக்கிய செய்திகளை உடனுக்குடன் தமிழ் மொழியில் அறியுங்கள்",
     keywords: "நியூஸ் குரு, முக்கிய செய்திகள், நேரலை செய்திகள், தமிழ் செய்திகள்",
   });
 
   /* =========================================
-     NEWS GURU DATA
+     NEWS GHURU DATA
   ========================================= */
 
-  const guruNews = [
+  const ghuruNews = [
 
     {
       id: 101,
@@ -109,13 +109,13 @@ const NewsGuru = () => {
 
   return (
 
-    <section className="guru-page">
+    <section className="ghuru-page">
 
       {/* =========================================
           PAGE HEADER
       ========================================= */}
 
-      <div className="guru-header">
+      <div className="ghuru-header">
 
         <div>
 
@@ -127,7 +127,7 @@ const NewsGuru = () => {
 
         </div>
 
-        <div className="guru-live">
+        <div className="ghuru-live">
 
           <FaFire />
 
@@ -142,49 +142,49 @@ const NewsGuru = () => {
       ========================================= */}
 
       <div
-        className="guru-featured-news"
+        className="ghuru-featured-news"
         onClick={() =>
-          navigate(`/news/${guruNews[0].id}`, {
-            state: guruNews[0],
+          navigate(`/news/${ghuruNews[0].id}`, {
+            state: ghuruNews[0],
           })
         }
       >
 
         <img
-          src={guruNews[0].image}
+          src={ghuruNews[0].image}
           alt=""
-          className="guru-featured-image"
+          className="ghuru-featured-image"
         />
 
-        <div className="guru-featured-content">
+        <div className="ghuru-featured-content">
 
-          <button className="guru-category-btn">
-            {guruNews[0].category}
+          <button className="ghuru-category-btn">
+            {ghuruNews[0].category}
           </button>
 
           <h2>
-            {guruNews[0].title}
+            {ghuruNews[0].title}
           </h2>
 
           <p>
-            {guruNews[0].description}
+            {ghuruNews[0].description}
           </p>
 
-          <div className="guru-meta">
+          <div className="ghuru-meta">
 
             <span>
               <FaClock />
-              {guruNews[0].time}
+              {ghuruNews[0].time}
             </span>
 
             <span>
               <FaComment />
-              {guruNews[0].comments}
+              {ghuruNews[0].comments}
             </span>
 
             <span>
               <FaEye />
-              {guruNews[0].views}
+              {ghuruNews[0].views}
             </span>
 
           </div>
@@ -197,12 +197,12 @@ const NewsGuru = () => {
           TRENDING NEWS GRID
       ========================================= */}
 
-      <div className="guru-news-grid">
+      <div className="ghuru-news-grid">
 
-        {guruNews.map((news) => (
+        {ghuruNews.map((news) => (
 
           <div
-            className="guru-news-card"
+            className="ghuru-news-card"
             key={news.id}
             onClick={() =>
               navigate(`/news/${news.id}`, {
@@ -213,12 +213,12 @@ const NewsGuru = () => {
 
             {/* IMAGE */}
 
-            <div className="guru-image-wrapper">
+            <div className="ghuru-image-wrapper">
 
               <img
                 src={news.image}
                 alt=""
-                className="guru-news-image"
+                className="ghuru-news-image"
               />
 
               <div className="play-icon">
@@ -231,9 +231,9 @@ const NewsGuru = () => {
 
             {/* CONTENT */}
 
-            <div className="guru-news-content">
+            <div className="ghuru-news-content">
 
-              <button className="guru-category-btn">
+              <button className="ghuru-category-btn">
                 {news.category}
               </button>
 
@@ -247,7 +247,7 @@ const NewsGuru = () => {
 
               {/* FOOTER */}
 
-              <div className="guru-news-footer">
+              <div className="ghuru-news-footer">
 
                 <span>
                   <FaClock />
@@ -274,9 +274,13 @@ const NewsGuru = () => {
 
       </div>
 
+      {/* =========================================
+          FOOTER / BOTTOM SECTION
+      ========================================= */}
+
     </section>
 
   );
 };
 
-export default NewsGuru;
+export default NewsGhuru;
