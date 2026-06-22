@@ -44,7 +44,7 @@ const Contact = () => {
   return (
     <div className="info-page">
       <div className="info-header">
-        <h1>தொடர்பு கொள்ள (Contact Us)</h1>
+        <h1>தொடர்பு கொள்ள</h1>
         <p>உங்களுக்கு ஏதேனும் கேள்விகள் அல்லது செய்திகள் இருந்தால் எங்களைத் தொடர்பு கொள்ளவும்</p>
       </div>
 

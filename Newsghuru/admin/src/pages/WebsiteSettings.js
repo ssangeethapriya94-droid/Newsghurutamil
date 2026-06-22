@@ -18,6 +18,7 @@ const PAGE_OPTIONS = [
 
 function WebsiteSettings() {
   const [selectedSlug, setSelectedSlug] = useState("about");
+  const [selectedLang, setSelectedLang] = useState("ta");
   const [content, setContent] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,7 +28,7 @@ function WebsiteSettings() {
   const fetchPageContent = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await API.get(`/api/pages/${selectedSlug}`);
+      const res = await API.get(`/api/pages/${selectedSlug}`, { params: { language: selectedLang } });
       if (res.data && res.data.success) {
         setContent(res.data.content || "");
         setLastUpdated(res.data.lastUpdated);
@@ -38,7 +39,7 @@ function WebsiteSettings() {
     } finally {
       setLoading(false);
     }
-  }, [selectedSlug]);
+  }, [selectedSlug, selectedLang]);
 
   useEffect(() => {
     fetchPageContent();
@@ -58,7 +59,8 @@ function WebsiteSettings() {
       setSaving(true);
       const res = await API.put(`/api/admin/pages/${selectedSlug}`, {
         title,
-        content
+        content,
+        language: selectedLang
       });
       if (res.data && res.data.success) {
         setContent(res.data.page?.content || "");
@@ -112,6 +114,26 @@ function WebsiteSettings() {
             {page.icon} {page.title}
           </button>
         ))}
+      </div>
+
+      {/* Language Toggle */}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+        <button
+          type="button"
+          className={`settings-tab ${selectedLang === "ta" ? "active" : ""}`}
+          onClick={() => setSelectedLang("ta")}
+          style={{ padding: "8px 20px", borderRadius: "8px", border: "1px solid var(--border-color)", cursor: "pointer", fontWeight: 600, fontSize: "14px", background: selectedLang === "ta" ? "var(--accent-orange)" : "var(--card-bg)", color: selectedLang === "ta" ? "#fff" : "var(--text-main)" }}
+        >
+          🇮🇳 தமிழ் (Tamil)
+        </button>
+        <button
+          type="button"
+          className={`settings-tab ${selectedLang === "en" ? "active" : ""}`}
+          onClick={() => setSelectedLang("en")}
+          style={{ padding: "8px 20px", borderRadius: "8px", border: "1px solid var(--border-color)", cursor: "pointer", fontWeight: 600, fontSize: "14px", background: selectedLang === "en" ? "var(--accent-orange)" : "var(--card-bg)", color: selectedLang === "en" ? "#fff" : "var(--text-main)" }}
+        >
+          🇬🇧 English
+        </button>
       </div>
 
       <div className="cms-editor-container">

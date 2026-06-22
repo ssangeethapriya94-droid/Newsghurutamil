@@ -20,7 +20,7 @@ const Contact = () => {
     const fetchContactDetails = async () => {
       try {
         setLoading(true);
-        const res = await API.get("/api/pages/contact");
+        const res = await API.get("/api/pages/contact?language=en");
         if (res.data && res.data.success) {
           setDescriptionContent(res.data.content || "");
         }

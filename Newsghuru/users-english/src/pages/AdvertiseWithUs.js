@@ -31,7 +31,7 @@ const AdvertiseWithUs = () => {
     const fetchAdPageContent = async () => {
       try {
         setDescLoading(true);
-        const res = await API.get("/api/pages/advertise");
+        const res = await API.get("/api/pages/advertise?language=en");
         if (res.data && res.data.success) {
           setDescriptionContent(res.data.content || "");
         }

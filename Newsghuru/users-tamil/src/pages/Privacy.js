@@ -10,9 +10,9 @@ const Privacy = () => {
   const [loading, setLoading] = useState(true);
 
   useSEO({
-    title: "தனியுரிமைக் கொள்கை (Privacy Policy)",
+    title: "தனியுரிமைக் கொள்கை",
     description: "நியூஸ் குரு வலைத்தளத்தின் தனியுரிமைக் கொள்கை விவரங்கள் மற்றும் விதிமுறைகள்",
-    keywords: "தனியுரிமைக் கொள்கை, privacy policy, நியூஸ் குரு, newsghuru privacy",
+    keywords: "தனியுரிமைக் கொள்கை, நியூஸ் குரு",
   });
 
   useEffect(() => {
@@ -46,7 +46,7 @@ const Privacy = () => {
   return (
     <div className="info-page">
       <div className="info-header">
-        <h1>தனியுரிமைக் கொள்கை (Privacy Policy)</h1>
+        <h1>தனியுரிமைக் கொள்கை</h1>
         <p>நியூஸ் குரு வலைத்தளத்தின் தனியுரிமைக் கொள்கை விவரங்கள்</p>
       </div>
 

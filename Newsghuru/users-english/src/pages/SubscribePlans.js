@@ -15,6 +15,17 @@ const loadRazorpayScript = () => {
   });
 };
 
+const translateBenefit = (benefit) => {
+  const translations = {
+    "பிரீமியம் கட்டுரைகள்": "Premium Articles",
+    "விளம்பரமற்ற வாசிப்பு": "Ad-free Reading",
+    "ஆயுட்கால கட்டுரைகள்": "Lifetime Articles",
+    "பிரீமியம் செய்திகள்": "Premium News",
+    "விளம்பரங்கள் இல்லை": "No Ads"
+  };
+  return translations[benefit] || benefit;
+};
+
 const SubscribePlans = () => {
   const navigate = useNavigate();
   
@@ -389,7 +400,7 @@ const SubscribePlans = () => {
                     {plan.benefits && plan.benefits.map((benefit, idx) => (
                       <div key={idx} className="plan-benefit-item-custom">
                         <FaCheck className="benefit-check-icon" />
-                        <span>{benefit}</span>
+                        <span>{translateBenefit(benefit)}</span>
                       </div>
                     ))}
                   </div>

@@ -19,7 +19,7 @@ const Terms = () => {
     const fetchTerms = async () => {
       try {
         setLoading(true);
-        const res = await API.get("/api/pages/terms");
+        const res = await API.get("/api/pages/terms?language=en");
         if (res.data && res.data.success) {
           setContent(res.data.content || "");
           setLastUpdated(res.data.lastUpdated);

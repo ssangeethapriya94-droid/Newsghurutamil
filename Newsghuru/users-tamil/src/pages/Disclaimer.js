@@ -10,9 +10,9 @@ const Disclaimer = () => {
   const [loading, setLoading] = useState(true);
 
   useSEO({
-    title: "மறுப்புரை (Disclaimer)",
-    description: "நியூஸ் குரு வலைத்தளத்தின் பொறுப்புத் துறப்பு (Disclaimer) கொள்கை மற்றும் விதிமுறைகள்",
-    keywords: "மறுப்புரை, பொறுப்புத் துறப்பு, disclaimer, newsghuru disclaimer, நியூஸ் குரு",
+    title: "மறுப்புரை",
+    description: "நியூஸ் குரு வலைத்தளத்தின் பொறுப்புத் துறப்பு கொள்கை மற்றும் விதிமுறைகள்",
+    keywords: "மறுப்புரை, பொறுப்புத் துறப்பு, நியூஸ் குரு",
   });
 
   useEffect(() => {
@@ -46,7 +46,7 @@ const Disclaimer = () => {
   return (
     <div className="info-page">
       <div className="info-header">
-        <h1>மறுப்புரை (Disclaimer)</h1>
+        <h1>மறுப்புரை</h1>
         <p>நியூஸ் குரு வலைத்தளத்தின் பொறுப்புத் துறப்பு கொள்கை விவரங்கள்</p>
       </div>
 

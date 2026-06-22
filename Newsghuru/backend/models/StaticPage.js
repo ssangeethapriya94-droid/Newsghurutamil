@@ -9,8 +9,13 @@ const staticPageSchema = new mongoose.Schema(
     slug: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
+    },
+    language: {
+      type: String,
+      enum: ['ta', 'en'],
+      default: 'ta',
+      required: true,
     },
     content: {
       type: String,
@@ -25,5 +30,8 @@ const staticPageSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Compound unique index: one page per slug per language
+staticPageSchema.index({ slug: 1, language: 1 }, { unique: true });
 
 module.exports = mongoose.model("StaticPage", staticPageSchema);

@@ -4,6 +4,18 @@ const API = axios.create({
   baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000",
 });
 
+API.interceptors.request.use((config) => {
+  if (!config.params) {
+    config.params = {};
+  }
+  if (!config.params.language) {
+    config.params.language = "ta";
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
 const fixImageUrls = (data) => {
   if (typeof data === 'string' && (data.startsWith('/uploads/') || data.startsWith('/images/'))) {
     return API.defaults.baseURL + data;

@@ -19,7 +19,7 @@ const Privacy = () => {
     const fetchPrivacy = async () => {
       try {
         setLoading(true);
-        const res = await API.get("/api/pages/privacy");
+        const res = await API.get("/api/pages/privacy?language=en");
         if (res.data && res.data.success) {
           setContent(res.data.content || "");
           setLastUpdated(res.data.lastUpdated);

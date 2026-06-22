@@ -359,7 +359,7 @@ const Home = () => {
         <div className="card-media-box" style={{ height: "195px", overflow: "hidden", position: "relative" }}>
           <img 
             src={article.image || article.coverImage} 
-            alt={article.titleTa || article.title} 
+            alt={article.title || article.titleTa} 
             style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }}
             className="hover-zoom"
           />
@@ -400,7 +400,7 @@ const Home = () => {
   };
 
   // Section Render Map
-  const renderBreakingNewsBar = (titleTa) => {
+  const renderBreakingNewsBar = (titleEn) => {
     return null;
   };
 
@@ -499,12 +499,12 @@ const Home = () => {
     );
   };
 
-  const renderLatestNewsSection = (titleTa) => {
+  const renderLatestNewsSection = (titleEn) => {
     return (
       <div style={{ marginBottom: "40px" }}>
         <div className="section-headline-bar">
           <h2 className="section-title-premium">
-            <FaRegLightbulb style={{ color: "var(--accent-orange)" }} /> {titleTa || "Latest News"}
+            <FaRegLightbulb style={{ color: "var(--accent-orange)" }} /> {titleEn || "Latest News"}
           </h2>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: isLargeScreen ? "repeat(2, 1fr)" : "1fr", gap: "20px" }}>
@@ -524,7 +524,7 @@ const Home = () => {
     );
   };
 
-  const renderPoliticsSection = (titleTa) => {
+  const renderPoliticsSection = (titleEn) => {
     const pStories = getStoriesOrFallback(filteredPolitics, 4);
     if (pStories.length === 0) return null;
 
@@ -532,7 +532,7 @@ const Home = () => {
       <div style={{ marginBottom: "40px", borderTop: "3px solid var(--accent-orange)", paddingTop: "15px" }}>
         <div className="section-headline-bar" style={{ border: "none", marginBottom: "15px" }}>
           <h2 className="section-title-premium" style={{ fontSize: "1.4rem" }}>
-            <FaLandmark style={{ color: "var(--accent-orange)" }} /> {titleTa || "Politics"}
+            <FaLandmark style={{ color: "var(--accent-orange)" }} /> {titleEn || "Politics"}
           </h2>
           <span className="section-see-all" onClick={() => navigate("/politics")} style={{ color: "var(--accent-orange)" }}>
             View All <FaChevronRight size={10} />
@@ -547,7 +547,7 @@ const Home = () => {
           >
             <img src={pStories[0].image} alt="politics" style={{ width: "100%", height: "230px", objectFit: "cover", borderRadius: "6px" }} />
             <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.25rem", fontWeight: "800", margin: "12px 0 8px 0", color: "var(--text-main)" }}>
-              {pStories[0].titleTa || pStories[0].title}
+              {pStories[0].title || pStories[0].titleTa}
             </h3>
             <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", lineHeight: "1.5" }}>
               {stripHtml(pStories[0].shortDescription || pStories[0].description).slice(0, 150)}...
@@ -564,7 +564,7 @@ const Home = () => {
                 <img src={story.image} alt={story.title} style={{ width: "90px", height: "65px", objectFit: "cover", borderRadius: "4px" }} />
                 <div>
                   <h4 style={{ fontSize: "0.88rem", fontWeight: "700", margin: "0 0 4px 0", color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: "2", WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                    {story.titleTa || story.title}
+                    {story.title || story.titleTa}
                   </h4>
                   <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
                     <RelativeTime createdAt={story.createdAt} fallback={story.time} />
@@ -578,7 +578,7 @@ const Home = () => {
     );
   };
 
-  const renderTamilSection = (titleTa) => {
+  const renderTamilSection = (titleEn) => {
     const tStories = getStoriesOrFallback(filteredTamil, 4);
     if (tStories.length === 0) return null;
 
@@ -586,7 +586,7 @@ const Home = () => {
       <div style={{ marginBottom: "40px", borderTop: "3px solid var(--accent-orange)", paddingTop: "15px" }}>
         <div className="section-headline-bar" style={{ border: "none", marginBottom: "15px" }}>
           <h2 className="section-title-premium" style={{ fontSize: "1.4rem" }}>
-            <FaMapMarkedAlt style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleTa || "Tamil Nadu"}
+            <FaMapMarkedAlt style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleEn || "Tamil Nadu"}
           </h2>
           <span className="section-see-all" onClick={() => navigate("/tamil")} style={{ color: "var(--accent-orange)" }}>
             View All <FaChevronRight size={10} />
@@ -632,7 +632,7 @@ const Home = () => {
     );
   };
 
-  const renderCinemaSection = (titleTa) => {
+  const renderCinemaSection = (titleEn) => {
     const cStories = getStoriesOrFallback(filteredCinema, 4);
     if (cStories.length === 0) return null;
 
@@ -640,7 +640,7 @@ const Home = () => {
       <div style={{ marginBottom: "40px", padding: "20px", background: "#0d0d15", color: "#fff", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
         <div className="section-headline-bar" style={{ borderColor: "rgba(255,255,255,0.1)", marginBottom: "20px" }}>
           <h2 className="section-title-premium" style={{ color: "#fff" }}>
-            <FaFilm style={{ color: "var(--accent-orange)" }} /> {titleTa || "Cinema"}
+            <FaFilm style={{ color: "var(--accent-orange)" }} /> {titleEn || "Cinema"}
           </h2>
           <span className="section-see-all" onClick={() => navigate("/cinema")} style={{ color: "var(--accent-orange)" }}>
             Cinema News <FaChevronRight size={10} />
@@ -687,7 +687,7 @@ const Home = () => {
     );
   };
 
-  const renderSportsSection = (titleTa) => {
+  const renderSportsSection = (titleEn) => {
     const sStories = getStoriesOrFallback(filteredSports, 3);
     if (sStories.length === 0) return null;
 
@@ -695,7 +695,7 @@ const Home = () => {
       <div style={{ marginBottom: "40px" }}>
         <div className="section-headline-bar">
           <h2 className="section-title-premium">
-            <FaFutbol style={{ color: "var(--accent-orange)" }} /> {titleTa || "Sports"}
+            <FaFutbol style={{ color: "var(--accent-orange)" }} /> {titleEn || "Sports"}
           </h2>
           <span className="section-see-all" onClick={() => navigate("/sports")} style={{ color: "var(--accent-orange)" }}>
             View All <FaChevronRight size={10} />
@@ -766,7 +766,7 @@ const Home = () => {
     );
   };
 
-  const renderTechSection = (titleTa) => {
+  const renderTechSection = (titleEn) => {
     const tStories = getStoriesOrFallback(filteredTech, 3);
     if (tStories.length === 0) return null;
 
@@ -774,7 +774,7 @@ const Home = () => {
       <div style={{ marginBottom: "40px" }}>
         <div className="section-headline-bar">
           <h2 className="section-title-premium">
-            <FaMobileAlt style={{ color: "var(--accent-orange)" }} /> {titleTa || "Technology"}
+            <FaMobileAlt style={{ color: "var(--accent-orange)" }} /> {titleEn || "Technology"}
           </h2>
         </div>
 
@@ -802,7 +802,7 @@ const Home = () => {
               <img src={story.image} alt={story.title} style={{ width: "100%", height: "130px", objectFit: "cover", borderRadius: "6px" }} />
               <span style={{ fontSize: "10px", padding: "2px 6px", background: "var(--accent-orange)", color: "white", borderRadius: "4px", width: "fit-content", fontWeight: "bold" }}>TECH BADGE</span>
               <h4 style={{ fontSize: "0.95rem", margin: 0, fontWeight: "700", color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: "2", WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                {story.titleTa || story.title}
+                {story.title || story.titleTa}
               </h4>
             </div>
           ))}
@@ -811,7 +811,7 @@ const Home = () => {
     );
   };
 
-  const renderBusinessSection = (titleTa) => {
+  const renderBusinessSection = (titleEn) => {
     const bStories = getStoriesOrFallback(filteredBusiness, 3);
     if (bStories.length === 0) return null;
 
@@ -819,7 +819,7 @@ const Home = () => {
       <div style={{ marginBottom: "40px" }}>
         <div className="section-headline-bar">
           <h2 className="section-title-premium">
-            <FaBriefcase style={{ color: "var(--accent-orange)" }} /> {titleTa || "Business"}
+            <FaBriefcase style={{ color: "var(--accent-orange)" }} /> {titleEn || "Business"}
           </h2>
           <span className="section-see-all" onClick={() => navigate("/business")} style={{ color: "var(--accent-orange)" }}>
             Business <FaChevronRight size={10} />
@@ -849,7 +849,7 @@ const Home = () => {
   };
 
 
-  const renderShortsSection = (titleTa) => {
+  const renderShortsSection = (titleEn) => {
     if (resolvedFeaturedShorts.length === 0) return null;
 
     const isVideoUrl = (url) => {
@@ -870,7 +870,7 @@ const Home = () => {
       <div style={{ marginBottom: "40px" }}>
         <div className="section-headline-bar">
           <h2 className="section-title-premium">
-            <FaMobileAlt style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleTa || "Shorts"}
+            <FaMobileAlt style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleEn || "Shorts"}
           </h2>
         </div>
 
@@ -922,14 +922,14 @@ const Home = () => {
     );
   };
 
-  const renderPhotosSection = (titleTa) => {
+  const renderPhotosSection = (titleEn) => {
     if (photoStories.length === 0) return null;
 
     return (
       <div style={{ marginBottom: "40px" }}>
         <div className="section-headline-bar">
           <h2 className="section-title-premium">
-            <FaImage style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleTa || "Photo Stories"}
+            <FaImage style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleEn || "Photo Stories"}
           </h2>
         </div>
 
@@ -972,14 +972,14 @@ const Home = () => {
     );
   };
 
-  const renderEditorsPicksSection = (titleTa) => {
+  const renderEditorsPicksSection = (titleEn) => {
     if (resolvedEditorPicks.length === 0) return null;
 
     return (
       <div style={{ marginBottom: "40px" }}>
         <div className="section-headline-bar">
           <h2 className="section-title-premium">
-            <FaRegLightbulb style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleTa || "Editor's Picks"}
+            <FaRegLightbulb style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleEn || "Editor's Picks"}
           </h2>
         </div>
 
@@ -1112,7 +1112,7 @@ const Home = () => {
                     </span>
                   </div>
                   <h4 className="trending-headline" style={{ fontSize: "0.9rem", fontWeight: "700", margin: 0, lineHeight: "1.4", color: "var(--text-primary)" }}>
-                    {story.titleTa || story.title}
+                    {story.title || story.titleTa}
                   </h4>
                 </div>
               </div>
@@ -1172,7 +1172,7 @@ const Home = () => {
                 />
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                   <h4 className="mostread-headline" style={{ fontSize: "0.85rem", fontWeight: "700", margin: 0, lineHeight: "1.35", color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: "2", WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                    {story.titleTa || story.title}
+                    {story.title || story.titleTa}
                   </h4>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
                     <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
@@ -1209,7 +1209,7 @@ const Home = () => {
         >
           <img src={list[0].image} alt={list[0].title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 12px", background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)", color: "white" }}>
-            <h4 style={{ fontSize: "0.8rem", fontWeight: "bold", margin: 0, textShadow: "1px 1px 2px rgba(0,0,0,0.8)" }}>{list[0].titleTa || list[0].title}</h4>
+            <h4 style={{ fontSize: "0.8rem", fontWeight: "bold", margin: 0, textShadow: "1px 1px 2px rgba(0,0,0,0.8)" }}>{list[0].title || list[0].titleTa}</h4>
           </div>
         </div>
 
@@ -1222,7 +1222,7 @@ const Home = () => {
             >
               <img src={story.image} alt={story.title} style={{ width: "70px", height: "45px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
               <h5 style={{ fontSize: "0.8rem", fontWeight: "700", margin: 0, color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: "2", WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                {story.titleTa || story.title}
+                {story.title || story.titleTa}
               </h5>
             </div>
           ))}
@@ -1347,30 +1347,30 @@ const Home = () => {
     );
   };
 
-  const renderSectionById = (id, titleTa) => {
+  const renderSectionById = (id, titleEn) => {
     switch (id) {
       case "breaking":
-        return renderBreakingNewsBar(titleTa);
+        return renderBreakingNewsBar(titleEn);
       case "latest":
-        return renderLatestNewsSection(titleTa);
+        return renderLatestNewsSection(titleEn);
       case "politics":
-        return renderPoliticsSection(titleTa);
+        return renderPoliticsSection(titleEn);
       case "cinema":
-        return renderCinemaSection(titleTa);
+        return renderCinemaSection(titleEn);
       case "sports":
-        return renderSportsSection(titleTa);
+        return renderSportsSection(titleEn);
       case "tech":
-        return renderTechSection(titleTa);
+        return renderTechSection(titleEn);
       case "business":
-        return renderBusinessSection(titleTa);
+        return renderBusinessSection(titleEn);
       case "tamil":
-        return renderTamilSection(titleTa);
+        return renderTamilSection(titleEn);
       case "shorts":
-        return renderShortsSection(titleTa);
+        return renderShortsSection(titleEn);
       case "photos":
-        return renderPhotosSection(titleTa);
+        return renderPhotosSection(titleEn);
       case "editors":
-        return renderEditorsPicksSection(titleTa);
+        return renderEditorsPicksSection(titleEn);
       default:
         return null;
     }
@@ -1383,7 +1383,7 @@ const Home = () => {
 
       {/* RENDER TOP SECTIONS: Breaking Ticker & Hero Above-the-fold */}
       {activeSections.map(sec => {
-        if (sec.id === "breaking") return <div key={sec.id}>{renderBreakingNewsBar(sec.titleTa)}</div>;
+        if (sec.id === "breaking") return <div key={sec.id}>{renderBreakingNewsBar(sec.titleEn)}</div>;
         if (sec.id === "hero") return <div key={sec.id}>{renderHeroSection()}</div>;
         return null;
       })}
@@ -1397,7 +1397,7 @@ const Home = () => {
         <div ref={leftRef} style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
           {activeSections.map(sec => {
             if (sec.id !== "breaking" && sec.id !== "hero") {
-              return <div key={sec.id}>{renderSectionById(sec.id, sec.titleTa)}</div>;
+              return <div key={sec.id}>{renderSectionById(sec.id, sec.titleEn)}</div>;
             }
             return null;
           })}

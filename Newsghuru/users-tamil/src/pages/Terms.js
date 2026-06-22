@@ -10,9 +10,9 @@ const Terms = () => {
   const [loading, setLoading] = useState(true);
 
   useSEO({
-    title: "விதிமுறைகள் மற்றும் நிபந்தனைகள் (Terms & Conditions)",
+    title: "விதிமுறைகள் மற்றும் நிபந்தனைகள்",
     description: "நியூஸ் குரு சேவைகளைப் பயன்படுத்துவதற்கான விதிகள் மற்றும் விதிமுறைகள்",
-    keywords: "விதிமுறைகள், நிபந்தனைகள், terms and conditions, நியூஸ் குரு, newsghuru terms",
+    keywords: "விதிமுறைகள், நிபந்தனைகள், நியூஸ் குரு",
   });
 
   useEffect(() => {
@@ -46,7 +46,7 @@ const Terms = () => {
   return (
     <div className="info-page">
       <div className="info-header">
-        <h1>விதிமுறைகள் மற்றும் நிபந்தனைகள் (Terms & Conditions)</h1>
+        <h1>விதிமுறைகள் மற்றும் நிபந்தனைகள்</h1>
         <p>நியூஸ் குரு சேவைகளைப் பயன்படுத்துவதற்கான விதிகள்</p>
       </div>
 

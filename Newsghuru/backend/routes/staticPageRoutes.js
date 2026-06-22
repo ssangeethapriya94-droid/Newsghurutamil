@@ -3,11 +3,12 @@ const router = express.Router();
 const StaticPage = require("../models/StaticPage");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 
-// GET /api/pages/:slug - Public page retrieval
+// GET /api/pages/:slug - Public page retrieval (language-aware)
 router.get("/pages/:slug", async (req, res) => {
   try {
     const slug = req.params.slug.toLowerCase();
-    const page = await StaticPage.findOne({ slug });
+    const language = req.query.language || "ta";
+    const page = await StaticPage.findOne({ slug, language });
     if (!page) {
       return res.json({
         success: true,
@@ -31,7 +32,11 @@ router.get("/pages/:slug", async (req, res) => {
 // GET /api/admin/pages - Admin page list
 router.get("/admin/pages", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
-    const pages = await StaticPage.find({}, "title slug lastUpdated").sort({ title: 1 });
+    const filter = {};
+    if (req.query.language) {
+      filter.language = req.query.language;
+    }
+    const pages = await StaticPage.find(filter, "title slug language lastUpdated").sort({ slug: 1, language: 1 });
     res.json({ success: true, pages });
   } catch (error) {
     console.error("GET /api/admin/pages error:", error);
@@ -39,21 +44,23 @@ router.get("/admin/pages", verifyToken, authorizeRoles("admin"), async (req, res
   }
 });
 
-// PUT /api/admin/pages/:slug - Admin page edit/create
+// PUT /api/admin/pages/:slug - Admin page edit/create (language-aware)
 router.put("/admin/pages/:slug", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
     const slug = req.params.slug.toLowerCase();
-    const { title, content } = req.body;
+    const { title, content, language } = req.body;
+    const lang = language || "ta";
     
     if (!title || content === undefined) {
       return res.status(400).json({ success: false, message: "Title and Content are required" });
     }
 
-    let page = await StaticPage.findOne({ slug });
+    let page = await StaticPage.findOne({ slug, language: lang });
     if (!page) {
       page = new StaticPage({
         title,
         slug,
+        language: lang,
         content,
         lastUpdated: new Date(),
       });

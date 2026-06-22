@@ -19,7 +19,7 @@ const AboutUs = () => {
     const fetchAbout = async () => {
       try {
         setLoading(true);
-        const res = await API.get("/api/pages/about");
+        const res = await API.get("/api/pages/about?language=en");
         if (res.data && res.data.success) {
           setContent(res.data.content || "");
           setLastUpdated(res.data.lastUpdated);
