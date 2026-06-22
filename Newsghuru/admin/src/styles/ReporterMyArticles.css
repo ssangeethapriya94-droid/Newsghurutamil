@@ -270,3 +270,124 @@
     font-size: 14px;
   }
 }
+
+/* ==========================================================================
+   BULK SELECTION & ACTION CLASSES FOR MEDIA LIBRARY
+   ========================================================================== */
+
+.select-mode-btn {
+  background: var(--card-bg);
+  color: var(--text-main);
+  border: 1.5px solid var(--border-color);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.select-mode-btn:hover {
+  border-color: #ea580c;
+  color: #ea580c;
+}
+
+.select-mode-btn.select-mode-active {
+  background: #fff7ed;
+  border-color: #ea580c;
+  color: #ea580c;
+}
+
+.select-all-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 10px;
+}
+
+.select-all-btn:hover {
+  background: #e2e8f0;
+}
+
+.delete-selected-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+  animation: pulseRed 1.5s ease-in-out infinite;
+  margin-left: 10px;
+}
+
+.delete-selected-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+@keyframes pulseRed {
+  0%, 100% { box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35); }
+  50% { box-shadow: 0 4px 22px rgba(239, 68, 68, 0.6); }
+}
+
+.bulk-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff7ed;
+  border: 1.5px solid #fed7aa;
+  border-radius: 10px;
+  padding: 12px 18px;
+  margin-bottom: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #c2410c;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.bulk-clear-btn {
+  background: #ffedd5;
+  border: 1px solid #fdba74;
+  color: #c2410c;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bulk-clear-btn:hover {
+  background: #fed7aa;
+}
+
+.card-checkbox-wrapper {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 6px;
+  padding: 3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.card-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #ea580c;
+  display: block;
+}
+

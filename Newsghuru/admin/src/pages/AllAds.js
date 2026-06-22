@@ -276,7 +276,7 @@ function AllAds() {
         </div>
 
         {/* Add Ad Button */}
-        {role === "editor" && (
+        {(role === "admin" || role === "editor") && (
         <button 
           onClick={() => navigate("/admin/ads/add")} 
           className="btn-primary" 
@@ -317,8 +317,8 @@ function AllAds() {
                 const createdByStr = ad.createdBy ? (typeof ad.createdBy === "object" ? ad.createdBy._id : ad.createdBy) : "";
                 const isOwnDraft = role === "editor" && createdByStr === userId;
                 
-                const canEdit = role === "editor" && isOwnDraft && (ad.status === "Draft" || ad.status === "Rejected");
-                const canDelete = role === "editor" && isOwnDraft && ad.status === "Draft";
+                const canEdit = role === "admin" || (role === "editor" && isOwnDraft && (ad.status === "Draft" || ad.status === "Rejected"));
+                const canDelete = role === "admin" || (role === "editor" && isOwnDraft && ad.status === "Draft");
 
                 return (
                   <tr key={ad._id}>
