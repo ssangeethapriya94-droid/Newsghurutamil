@@ -53,6 +53,13 @@ const homepageConfigSchema = new mongoose.Schema(
       limit: { type: Number, default: 5 },
       showViews: { type: Boolean, default: true },
       minViews: { type: Number, default: 0 }
+    },
+    language: {
+      type: String,
+      enum: ["ta", "en", "hi", "te", "ml"],
+      default: "ta",
+      required: true,
+      unique: true
     }
   },
   {

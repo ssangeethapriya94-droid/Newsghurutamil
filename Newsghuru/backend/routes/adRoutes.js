@@ -69,11 +69,18 @@ router.get("/active", async (req, res) => {
   try {
     await updateAdStatuses(); // Resync dynamic statuses based on exact times
     
-    // Fetch ads that are active and marked as "Active" by status manager
-    const activeAds = await Advertisement.find({
+    const query = {
       isActive: true,
       status: "Active"
-    });
+    };
+
+    const lang = req.query.language || "ta";
+    if (lang !== "all") {
+      query.language = { $in: [lang, "both"] };
+    }
+
+    // Fetch ads that are active and marked as "Active" by status manager
+    const activeAds = await Advertisement.find(query);
 
     res.json({ success: true, ads: activeAds });
   } catch (error) {
@@ -218,7 +225,12 @@ router.post("/upload", verifyToken, authorizeRoles("admin", "editor"), upload.si
 router.get("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
     await updateAdStatuses(); // Sync status with dates on list fetch
-    const ads = await Advertisement.find().sort({ createdAt: -1 });
+    const query = {};
+    const lang = req.query.language;
+    if (lang && lang !== "all") {
+      query.language = lang;
+    }
+    const ads = await Advertisement.find(query).sort({ createdAt: -1 });
     res.json({ success: true, ads });
   } catch (error) {
     console.error("Fetch advertisements error:", error);
@@ -482,7 +494,8 @@ router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res
       endDate,
       endTime: endTime || "23:59",
       isActive: req.user.role === "admin" ? (status !== "Inactive") : false,
-      createdBy: req.user._id
+      createdBy: req.user._id,
+      language: req.body.language || "both"
     });
 
     await newAd.save();

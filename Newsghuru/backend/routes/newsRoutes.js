@@ -158,6 +158,7 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
       tags,
       seoKeywords,
       status,
+      language,
     } = req.body;
 
     const baseUrl = req.protocol + '://' + req.get('host');
@@ -206,6 +207,7 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
       submittedAt: finalStatus === "pending_editor_review" ? newsDate : undefined,
       adminId: finalStatus === "published" ? req.user._id : undefined,
       publishedAt: finalStatus === "published" ? newsDate : undefined,
+      language: language || "ta",
     });
 
     const savedNews = await news.save();
@@ -282,7 +284,17 @@ router.post("/", upload.single("image"), async (req, res) => {
 // GET ALL NEWS
 router.get("/", async (req, res) => {
   try {
-    const news = await News.find().sort({ createdAt: -1 });
+    const query = {};
+    const lang = req.query.language || "ta";
+    if (lang !== "all") {
+      query.language = lang;
+    }
+    
+    if (req.query.status) {
+      query.status = req.query.status;
+    }
+    
+    const news = await News.find(query).sort({ createdAt: -1 });
     res.json(news);
 
   } catch (error) {
@@ -297,10 +309,17 @@ router.get("/", async (req, res) => {
 router.get("/category/:category", async (req, res) => {
   try {
     const categoryParam = req.params.category;
-    const news = await News.find({
+    const query = {
       category: { $regex: new RegExp("^" + categoryParam + "$", "i") },
       status: "published"
-    }).sort({ createdAt: -1 });
+    };
+    
+    const lang = req.query.language || "ta";
+    if (lang !== "all") {
+      query.language = lang;
+    }
+    
+    const news = await News.find(query).sort({ createdAt: -1 });
 
     res.json(news);
 
@@ -374,7 +393,12 @@ router.get("/test-email", async (req, res) => {
 // GET PUBLISHED NEWS (for public users frontend)
 router.get("/published", async (req, res) => {
   try {
-    const news = await News.find({ status: "published" }).sort({ publishedAt: -1, createdAt: -1 });
+    const query = { status: "published" };
+    const lang = req.query.language || "ta";
+    if (lang !== "all") {
+      query.language = lang;
+    }
+    const news = await News.find(query).sort({ publishedAt: -1, createdAt: -1 });
     res.json(news);
   } catch (error) {
     console.error("Error fetching published news:", error);
@@ -505,6 +529,7 @@ router.put("/:id", verifyToken, uploadFields, async (req, res) => {
       tags,
       seoKeywords,
       status,
+      language,
     } = req.body;
 
     const news = await News.findById(req.params.id);
@@ -526,6 +551,7 @@ router.put("/:id", verifyToken, uploadFields, async (req, res) => {
     if (fullDescription !== undefined) news.description = fullDescription;
     if (tags !== undefined) news.tags = tags;
     if (seoKeywords !== undefined) news.seoKeywords = seoKeywords;
+    if (language !== undefined) news.language = language;
     
     // Update status and timestamps
     if (status !== undefined) {
@@ -586,7 +612,7 @@ router.put("/:id", verifyToken, uploadFields, async (req, res) => {
 // GET /api/news/editor/review-queue - Fetch articles for the editor queue
 router.get("/editor/review-queue", verifyToken, authorizeRoles("editor"), async (req, res) => {
   try {
-    const { status } = req.query;
+    const { status, language } = req.query;
     let query = {};
 
     if (status === "pending") {
@@ -598,6 +624,10 @@ router.get("/editor/review-queue", verifyToken, authorizeRoles("editor"), async 
     } else {
       // "all"
       query.status = { $ne: "draft" };
+    }
+
+    if (language && language !== "all") {
+      query.language = language;
     }
 
     const articles = await News.find(query)
@@ -623,6 +653,7 @@ router.put("/editor/save/:id", verifyToken, authorizeRoles("editor"), uploadFiel
       fullDescription,
       tags,
       seoKeywords,
+      language,
     } = req.body;
 
     const news = await News.findById(req.params.id);
@@ -638,6 +669,7 @@ router.put("/editor/save/:id", verifyToken, authorizeRoles("editor"), uploadFiel
     if (fullDescription !== undefined) news.description = fullDescription;
     if (tags !== undefined) news.tags = tags;
     if (seoKeywords !== undefined) news.seoKeywords = seoKeywords;
+    if (language !== undefined) news.language = language;
 
     if (req.files) {
       const baseUrl = req.protocol + '://' + req.get('host');
@@ -872,7 +904,7 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
 // Admin fetch articles
 router.get("/admin/articles", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
-    const { filter } = req.query;
+    const { filter, language } = req.query;
     let query = {};
     
     if (filter === "pending") {
@@ -882,6 +914,10 @@ router.get("/admin/articles", verifyToken, authorizeRoles("admin"), async (req, 
     } else {
       // all
       query.status = { $in: ["pending_admin_verification", "published", "rejected"] };
+    }
+
+    if (language && language !== "all") {
+      query.language = language;
     }
 
     const articles = await News.find(query)
@@ -912,7 +948,8 @@ router.get("/admin/articles", verifyToken, authorizeRoles("admin"), async (req, 
         year: "numeric"
       }),
       coverImage: art.coverImage || art.image,
-      galleryImages: art.galleryImages || []
+      galleryImages: art.galleryImages || [],
+      language: art.language || "ta"
     }));
 
     res.json(mapped);

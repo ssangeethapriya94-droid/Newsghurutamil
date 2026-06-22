@@ -1,0 +1,888 @@
+/* =========================================
+   SUBSCRIBE PLANS PAGE STYLING
+========================================= */
+
+.subscribe-plans-page {
+  font-family: var(--font-sans, "Inter", sans-serif);
+  background-color: var(--bg-primary, #f8fafc);
+  color: var(--text-primary, #1e293b);
+  min-height: 100vh;
+  padding-bottom: 80px;
+  overflow-x: hidden;
+}
+
+/* PREMIUM HERO HERO HEADER */
+.subscribe-hero-section {
+  position: relative;
+  background: var(--brand-gradient, linear-gradient(90deg, #ea580c, #f59e0b, #ef4444));
+  padding: 60px 20px;
+  text-align: center;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.hero-gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.45) 100%);
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.premium-badge-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 6px 16px;
+  border-radius: 30px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.premium-crown-icon {
+  color: #fbbf24;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}
+
+.premium-badge-text {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.hero-content h1 {
+  font-family: var(--font-serif, "Lora", serif);
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0 0 12px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  line-height: 1.3;
+}
+
+.hero-content p {
+  font-size: 1.05rem;
+  opacity: 0.92;
+  margin: 0;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* CONTAINER */
+.subscribe-store-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 45px;
+}
+
+.section-title {
+  font-family: var(--font-serif, "Lora", serif);
+  font-size: 1.45rem;
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 25px 0;
+  color: var(--text-primary, #1e293b);
+  position: relative;
+}
+
+.section-title::after {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 3px;
+  background: var(--brand-gradient, linear-gradient(90deg, #ea580c, #ef4444));
+  margin: 8px auto 0 auto;
+  border-radius: 2px;
+}
+
+/* BRAND FEATURES SECTION */
+.brand-features-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.brand-feature-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.brand-feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.05);
+}
+
+.bf-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: rgba(234, 88, 12, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bf-icon {
+  font-size: 1.4rem;
+  color: #ea580c;
+}
+
+.disabled-ad-icon {
+  color: #dc2626;
+  position: relative;
+}
+
+.brand-feature-card h4 {
+  font-size: 0.92rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-primary, #1e293b);
+}
+
+.brand-feature-card p {
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* COINS REDEEM */
+.coins-redeem-container {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.6) 0%, rgba(254, 243, 199, 0.2) 100%);
+  border: 1px dashed #f59e0b;
+  border-radius: 12px;
+  padding: 14px 20px;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.03);
+}
+
+.coins-checkbox-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  width: 100%;
+  user-select: none;
+}
+
+.coins-left-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gold-coin-badge {
+  font-size: 1.3rem;
+  animation: pulseCoin 2s infinite ease-in-out;
+}
+
+.coins-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.coins-checkbox-input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #d97706;
+}
+
+/* PRICING GRID */
+.standard-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.store-plan-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+  border-radius: 16px;
+  padding: 35px 24px;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.store-plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* RECOMMENDED CARD Highlight */
+.store-plan-card.store-recommended {
+  border: 2px solid #ea580c;
+  box-shadow: 0 10px 25px rgba(234, 88, 12, 0.08);
+}
+
+/* ACTIVE CARD Highlight */
+.store-plan-card.store-active {
+  border: 2px solid #10b981;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.08);
+}
+
+.store-rec-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--brand-gradient, linear-gradient(90deg, #ea580c, #ef4444));
+  color: #ffffff;
+  padding: 4px 16px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  border-radius: 30px;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.2);
+}
+
+.active-plan-badge {
+  background: #10b981 !important;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* ACTIVE LIFETIME CARD */
+.lifetime-horizontal-card-custom.lifetime-active {
+  border: 2px solid #10b981;
+}
+
+.lifetime-horizontal-card-custom.lifetime-active::before {
+  background: #10b981 !important;
+}
+
+.store-plan-name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary, #1e293b);
+  margin: 0 0 15px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.store-plan-price {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  margin-bottom: 25px;
+  color: var(--text-primary, #1e293b);
+}
+
+.store-currency {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-right: 3px;
+}
+
+.store-amount {
+  font-size: 2.6rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.store-slash {
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+  font-weight: 600;
+}
+
+/* PLAN BENEFITS LIST (DYNAMIC) */
+.plan-benefits-list-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+  margin-bottom: 30px;
+  border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
+  padding-top: 20px;
+}
+
+.plan-benefit-item-custom {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #475569);
+  line-height: 1.4;
+}
+
+.benefit-check-icon {
+  color: #10b981;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* SUBMIT BUTTON */
+.store-subscribe-btn {
+  background: var(--brand-gradient, linear-gradient(90deg, #ea580c, #f59e0b, #ef4444));
+  color: #ffffff;
+  border: none;
+  width: 100%;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 750;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15);
+  transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.store-subscribe-btn:hover {
+  opacity: 0.94;
+  box-shadow: 0 6px 16px rgba(234, 88, 12, 0.25);
+}
+
+.store-subscribe-btn:active {
+  transform: scale(0.98);
+}
+
+.store-plan-footer {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+  margin-top: 15px;
+  font-weight: 600;
+}
+
+/* LIFETIME PLAN CARD (HORIZONTAL REDESIGN) */
+.lifetime-horizontal-card-custom {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 30px 40px;
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.lifetime-horizontal-card-custom::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background: var(--brand-gradient, linear-gradient(90deg, #ea580c, #ef4444));
+}
+
+.lifetime-badge-glow {
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  background: linear-gradient(90deg, #d97706, #fbbf24);
+  color: #000000;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 3px 12px;
+  border-radius: 30px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+}
+
+.lifetime-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.lifetime-left-sec h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  background: linear-gradient(90deg, #ffffff, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.lifetime-left-sec p {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+.lifetime-right-sec {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  flex-shrink: 0;
+}
+
+.lifetime-price-box {
+  text-align: right;
+}
+
+.lt-currency {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-right: 2px;
+}
+
+.lt-price {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #fbbf24;
+  line-height: 1;
+}
+
+.lt-period {
+  display: block;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.lifetime-subscribe-btn-custom {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #000000;
+  border: none;
+  padding: 14px 28px;
+  font-size: 0.95rem;
+  font-weight: 850;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.15);
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  white-space: nowrap;
+}
+
+.lifetime-subscribe-btn-custom:hover {
+  opacity: 0.92;
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.25);
+}
+
+.lifetime-subscribe-btn-custom:active {
+  transform: scale(0.97);
+}
+
+/* PLANS COMPARISON SECTION */
+.plans-comparison-section {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
+}
+
+.comparison-table-wrapper {
+  overflow-x: auto;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.comparison-table th, 
+.comparison-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
+}
+
+.comparison-table th {
+  font-weight: 800;
+  color: var(--text-primary, #1e293b);
+  background: var(--bg-secondary, #f8fafc);
+}
+
+.comparison-table th:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.comparison-table th:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.comparison-table td {
+  color: var(--text-secondary, #475569);
+}
+
+.comparison-table tr:hover td {
+  background: var(--bg-hover, rgba(0,0,0,0.01));
+}
+
+.comparison-table td:first-child {
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+}
+
+.comparison-table .check-val {
+  font-weight: 700;
+}
+
+.comparison-table .cross-val {
+  font-weight: 500;
+}
+
+.text-green {
+  color: #10b981 !important;
+}
+
+.text-red {
+  color: #ef4444 !important;
+}
+
+.text-muted {
+  color: var(--text-muted, #94a3b8) !important;
+}
+
+/* LOADING & SPINNER */
+.subscribe-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-color, rgba(0,0,0,0.08));
+  border-top-color: #ea580c;
+  border-radius: 50%;
+  animation: spinAd 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+/* MOCK PAYMENT OVERLAY */
+.mock-payment-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(5px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.mock-payment-container {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px 30px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+
+.mock-payment-state h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 24px 0 10px 0;
+}
+
+.mock-payment-state p {
+  font-size: 0.9rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mock-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f1f5f9;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spinAd 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+/* RAZORPAY REPLICA SCREEN */
+.razorpay-replica {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rzp-shield-container {
+  width: 65px;
+  height: 65px;
+  background: #0f62fe;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(15, 98, 254, 0.4);
+}
+
+.rzp-shield-icon {
+  font-size: 2.2rem;
+  color: #ffffff;
+}
+
+.rzp-shield-num {
+  position: absolute;
+  color: #0f62fe;
+  font-size: 1.15rem;
+  font-weight: 950;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -52%);
+  z-index: 10;
+}
+
+.rzp-processing-indicator {
+  width: 180px;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 25px 0 5px 0;
+  position: relative;
+}
+
+.rzp-progress-line {
+  width: 90px;
+  height: 100%;
+  background: #0f62fe;
+  border-radius: 2px;
+  position: absolute;
+  animation: slideRzp 1.4s infinite ease-in-out;
+}
+
+.rzp-footer {
+  margin-top: 35px;
+  border-top: 1px solid #f1f5f9;
+  width: 100%;
+  padding-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.rzp-brand {
+  color: #0f62fe;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+/* SUCCESS CHECKMARK */
+.payment-success .success-checkmark-circle {
+  width: 70px;
+  height: 70px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
+}
+
+.payment-success .success-icon {
+  font-size: 2.2rem;
+  color: #ffffff;
+}
+
+/* FAILED CROSS */
+.payment-failed .failed-cross-circle {
+  width: 70px;
+  height: 70px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+  color: #ffffff;
+  font-size: 3rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.retry-payment-btn {
+  margin-top: 30px;
+  background-color: #475569;
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.retry-payment-btn:hover {
+  background-color: #334155;
+}
+
+/* KEYFRAMES */
+@keyframes spinAd {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes slideRzp {
+  0% { left: -90px; }
+  100% { left: 180px; }
+}
+
+@keyframes pulseCoin {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* RESPONSIVE LAYOUT OVERRIDES */
+@media (max-width: 860px) {
+  .brand-features-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .standard-plans-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+
+  .lifetime-horizontal-card-custom {
+    padding: 30px 24px;
+  }
+
+  .lifetime-card-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .lifetime-left-sec p {
+    max-width: 100%;
+  }
+
+  .lifetime-right-sec {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+
+  .lifetime-price-box {
+    text-align: center;
+  }
+
+  .lifetime-subscribe-btn-custom {
+    width: 100%;
+  }
+
+  .subscribe-hero-section h1 {
+    font-size: 1.8rem;
+  }
+
+  .subscribe-hero-section p {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-features-row {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-table th, 
+  .comparison-table td {
+    padding: 12px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+/* DARK MODE OVERRIDES */
+.dark-theme .subscribe-plans-page {
+  background-color: #0f172a;
+}
+
+.dark-theme .brand-feature-card,
+.dark-theme .store-plan-card,
+.dark-theme .plans-comparison-section {
+  background-color: #1e293b;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark-theme .brand-feature-card h4,
+.dark-theme .store-plan-name,
+.dark-theme .store-currency,
+.dark-theme .store-amount,
+.dark-theme .section-title {
+  color: #ffffff;
+}
+
+.dark-theme .brand-feature-card p,
+.dark-theme .plan-benefit-item-custom,
+.dark-theme .comparison-table td {
+  color: #cbd5e1;
+}
+
+.dark-theme .comparison-table th {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
+.dark-theme .comparison-table td:first-child {
+  color: #ffffff;
+}
+
+.dark-theme .coins-redeem-container {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(251, 191, 36, 0.03) 100%);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.dark-theme .coins-text {
+  color: #fbbf24;
+}
+
+.dark-theme .comparison-table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.02);
+}

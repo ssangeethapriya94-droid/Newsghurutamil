@@ -16,6 +16,8 @@ function Videos() {
   const [category, setCategory] = useState("Politics");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isTrending, setIsTrending] = useState(false);
+  const [language, setLanguage] = useState("ta");
+  const [languageFilter, setLanguageFilter] = useState("all");
 
   // Uploading states
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -30,6 +32,7 @@ function Videos() {
   const [editCategory, setEditCategory] = useState("Politics");
   const [editIsFeatured, setEditIsFeatured] = useState(false);
   const [editIsTrending, setEditIsTrending] = useState(false);
+  const [editLanguage, setEditLanguage] = useState("ta");
   const [editUploadingVideo, setEditUploadingVideo] = useState(false);
   const [editUploadingThumbnail, setEditUploadingThumbnail] = useState(false);
 
@@ -39,7 +42,7 @@ function Videos() {
   const fetchVideos = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/api/videos");
+      const res = await API.get(`/api/videos?language=${languageFilter}`);
       setVideos(res.data || []);
     } catch (error) {
       console.error("Fetch videos error:", error);
@@ -51,6 +54,9 @@ function Videos() {
 
   useEffect(() => {
     fetchVideos();
+  }, [languageFilter]);
+
+  useEffect(() => {
     const handleResize = () => setIsLargeScreen(window.innerWidth >= 1024);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -163,7 +169,8 @@ function Videos() {
         description: description.trim(),
         category,
         isFeatured,
-        isTrending
+        isTrending,
+        language
       });
 
       // Clear fields
@@ -174,6 +181,7 @@ function Videos() {
       setCategory("Politics");
       setIsFeatured(false);
       setIsTrending(false);
+      setLanguage("ta");
 
       // Reset file input fields
       const fileInputs = document.querySelectorAll('input[type="file"]');
@@ -201,7 +209,8 @@ function Videos() {
         description: editDescription.trim(),
         category: editCategory,
         isFeatured: editIsFeatured,
-        isTrending: editIsTrending
+        isTrending: editIsTrending,
+        language: editLanguage
       });
       setEditingId(null);
       alert("Video updated successfully");
@@ -236,6 +245,7 @@ function Videos() {
     setEditCategory(vid.category || "Politics");
     setEditIsFeatured(vid.isFeatured || false);
     setEditIsTrending(vid.isTrending || false);
+    setEditLanguage(vid.language || "ta");
   };
 
   // Checks if URL is YouTube link or direct video file
@@ -267,10 +277,23 @@ function Videos() {
 
   return (
     <div className="reporter-my-articles">
-      <div className="header-actions">
-        <h2>🎥 Video News Management</h2>
-        <div className="header-subtitle">
-          Upload video clips and news logs for the video marquee track.
+      <div className="header-actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h2>🎥 Video News Management</h2>
+          <div className="header-subtitle">
+            Upload video clips and news logs for the video marquee track.
+          </div>
+        </div>
+        <div>
+          <select 
+            value={languageFilter} 
+            onChange={(e) => setLanguageFilter(e.target.value)} 
+            style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "14px", cursor: "pointer" }}
+          >
+            <option value="all">All Languages</option>
+            <option value="ta">Tamil</option>
+            <option value="en">English</option>
+          </select>
         </div>
       </div>
 
@@ -278,15 +301,15 @@ function Videos() {
       <form onSubmit={handleCreate} className="categories-create-form" style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "stretch", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
         <h3 style={{ margin: 0, color: "var(--text-main)", fontSize: "1.1rem" }}>Add New Video</h3>
         
-        {/* Row 1: Title & Category */}
-        <div style={{ display: "grid", gridTemplateColumns: isLargeScreen ? "2.5fr 1fr" : "1fr", gap: "15px" }}>
+        {/* Row 1: Title & Category & Language */}
+        <div style={{ display: "grid", gridTemplateColumns: isLargeScreen ? "2.5fr 1fr 1fr" : "1fr", gap: "15px" }}>
           <div className="form-group" style={{ flex: "none", minWidth: "auto", margin: 0 }}>
-            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Video Title (Tamil)</label>
+            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Video Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. தமிழக பட்ஜெட் 2026: முக்கிய அறிவிப்புகள்..."
+              placeholder="Enter video news headline..."
               style={{ padding: "10px 14px", fontSize: "14px", height: "40px" }}
             />
           </div>
@@ -313,6 +336,27 @@ function Videos() {
               <option value="Technology">Technology (தொழில்நுட்பம்)</option>
               <option value="Business">Business (வணிகம்)</option>
               <option value="General">General (பொது)</option>
+            </select>
+          </div>
+
+          <div className="form-group" style={{ flex: "none", minWidth: "auto", margin: 0 }}>
+            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Language</label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              style={{
+                padding: "10px 14px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                outline: "none",
+                fontSize: "14px",
+                backgroundColor: "var(--card-bg)",
+                color: "var(--text-main)",
+                height: "40px"
+              }}
+            >
+              <option value="ta">Tamil</option>
+              <option value="en">English</option>
             </select>
           </div>
         </div>
@@ -422,6 +466,7 @@ function Videos() {
                 <th style={{ width: "120px" }}>Thumbnail</th>
                 <th>Video Title</th>
                 <th>Category</th>
+                <th>Language</th>
                 <th>Badges</th>
                 <th>Views</th>
                 <th style={{ width: "220px" }}>Actions</th>
@@ -504,6 +549,32 @@ function Videos() {
                       </select>
                     ) : (
                       <span className="category-tag">{vid.category}</span>
+                    )}
+                  </td>
+                  <td>
+                    {editingId === vid._id ? (
+                      <select
+                        value={editLanguage}
+                        onChange={(e) => setEditLanguage(e.target.value)}
+                        style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)" }}
+                      >
+                        <option value="ta">Tamil</option>
+                        <option value="en">English</option>
+                      </select>
+                    ) : (
+                      <span 
+                        style={{
+                          background: vid.language === "en" ? "#e0f2fe" : "#fef3c7",
+                          color: vid.language === "en" ? "#0369a1" : "#b45309",
+                          fontSize: "11px",
+                          fontWeight: "600",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          textTransform: "uppercase"
+                        }}
+                      >
+                        {vid.language === "en" ? "English" : "Tamil"}
+                      </span>
                     )}
                   </td>
                   <td>

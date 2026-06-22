@@ -19,7 +19,7 @@ API.interceptors.request.use(
 );
 
 const fixImageUrls = (data) => {
-  if (typeof data === 'string' && data.startsWith('/uploads/')) {
+  if (typeof data === 'string' && (data.startsWith('/uploads/') || data.startsWith('/images/'))) {
     return API.defaults.baseURL + data;
   }
   if (!data || typeof data !== 'object') return data;

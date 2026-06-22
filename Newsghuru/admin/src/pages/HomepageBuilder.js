@@ -9,6 +9,7 @@ function HomepageBuilder() {
   const [shortList, setShortList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [languageBuilder, setLanguageBuilder] = useState("ta");
 
   // Tab state: "sections", "sidebar", "trending", "mostread"
   const [activeTab, setActiveTab] = useState("sections");
@@ -34,7 +35,7 @@ function HomepageBuilder() {
     try {
       setLoading(true);
       // Fetch Homepage Config
-      const configRes = await API.get("/api/homepage-config");
+      const configRes = await API.get(`/api/homepage-config?language=${languageBuilder}`);
       const currentConfig = configRes.data || {};
       setConfig(currentConfig);
 
@@ -54,11 +55,11 @@ function HomepageBuilder() {
 
       setMostReadSettings(currentConfig.mostReadSettings || { limit: 5, showViews: true, minViews: 0 });
 
-      // Fetch news, videos, shorts
+      // Fetch news, videos, shorts matching target language
       const [newsRes, videoRes, shortRes] = await Promise.all([
-        API.get("/api/news"),
-        API.get("/api/videos"),
-        API.get("/api/shorts")
+        API.get(`/api/news?language=${languageBuilder}`),
+        API.get(`/api/videos?language=${languageBuilder}`),
+        API.get(`/api/shorts?language=${languageBuilder}`)
       ]);
 
       // Only published news should be selectable
@@ -76,7 +77,7 @@ function HomepageBuilder() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [languageBuilder]);
 
   const handleSave = async () => {
     try {
@@ -95,7 +96,8 @@ function HomepageBuilder() {
           ...wid,
           order: idx + 1
         })),
-        mostReadSettings
+        mostReadSettings,
+        language: languageBuilder
       };
 
       const res = await API.put("/api/homepage-config", payload);
@@ -258,7 +260,27 @@ function HomepageBuilder() {
   return (
     <div className="reporter-my-articles">
       <div className="header-actions">
-        <h2>🛠️ Dynamic Homepage & Sidebar Builder</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          <h2>🛠️ Dynamic Homepage & Sidebar Builder</h2>
+          <select
+            value={languageBuilder}
+            onChange={(e) => setLanguageBuilder(e.target.value)}
+            style={{
+              padding: "10px 14px",
+              borderRadius: "8px",
+              border: "1px solid var(--border-color)",
+              outline: "none",
+              fontSize: "14px",
+              backgroundColor: "var(--card-bg)",
+              color: "var(--text-main)",
+              height: "40px",
+              cursor: "pointer"
+            }}
+          >
+            <option value="ta">Tamil Website Homepage</option>
+            <option value="en">English Website Homepage</option>
+          </select>
+        </div>
         <button 
           onClick={handleSave} 
           className="btn-primary add-category-btn" 

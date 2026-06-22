@@ -13,6 +13,7 @@ function AllAds() {
   const [searchTerm, setSearchTerm] = useState("");
   const [positionFilter, setPositionFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState((location.state && location.state.statusFilter) || "all");
+  const [languageFilter, setLanguageFilter] = useState("all");
   const [previewAd, setPreviewAd] = useState(null);
 
   const role = localStorage.getItem("role");
@@ -42,7 +43,7 @@ function AllAds() {
   const fetchAds = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/api/ads");
+      const res = await API.get(`/api/ads?language=${languageFilter}`);
       if (res.data.success) {
         setAds(res.data.ads);
       }
@@ -56,7 +57,7 @@ function AllAds() {
 
   useEffect(() => {
     fetchAds();
-  }, []);
+  }, [languageFilter]);
 
   const handleToggleActive = async (id, title, currentState) => {
     try {
@@ -275,6 +276,22 @@ function AllAds() {
           </select>
         </div>
 
+        {/* Language Filter */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-muted)" }}><FiSliders /> Language:</span>
+          <select 
+            value={languageFilter} 
+            onChange={(e) => setLanguageFilter(e.target.value)}
+            className="dropdown-field"
+            style={{ padding: "8px 12px", borderRadius: "10px", fontSize: "14px" }}
+          >
+            <option value="all">All Languages</option>
+            <option value="both">Both (Tamil + English)</option>
+            <option value="ta">Tamil Only</option>
+            <option value="en">English Only</option>
+          </select>
+        </div>
+
         {/* Add Ad Button */}
         {(role === "admin" || role === "editor") && (
         <button 
@@ -329,7 +346,20 @@ function AllAds() {
                     </td>
                     <td>
                       <div>
-                        <span style={{ fontWeight: 700, fontSize: "14px", display: "block" }}>{ad.title}</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontWeight: 700, fontSize: "14px" }}>{ad.title}</span>
+                          <span style={{
+                            background: ad.language === "en" ? "#e0f2fe" : ad.language === "ta" ? "#fef3c7" : "#f1f5f9",
+                            color: ad.language === "en" ? "#0369a1" : ad.language === "ta" ? "#b45309" : "#475569",
+                            fontSize: "10px",
+                            fontWeight: "bold",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            textTransform: "uppercase"
+                          }}>
+                            {ad.language === "en" ? "English" : ad.language === "ta" ? "Tamil" : "Both"}
+                          </span>
+                        </div>
                         <span style={{ fontSize: "12px", color: "var(--text-muted)", display: "block" }}>
                           Advertiser: <strong>{ad.advertiserName}</strong> {ad.companyName && `(${ad.companyName})`}
                         </span>

@@ -34,7 +34,8 @@ const DEFAULT_SIDEBAR_WIDGETS = [
 // GET /api/homepage-config - Get the homepage layout and references
 router.get("/", async (req, res) => {
   try {
-    let config = await HomepageConfig.findOne()
+    const lang = req.query.language || "ta";
+    let config = await HomepageConfig.findOne({ language: lang })
       .populate("heroStory")
       .populate("trendingStories")
       .populate("editorPicks")
@@ -55,12 +56,13 @@ router.get("/", async (req, res) => {
           limit: 5,
           showViews: true,
           minViews: 0
-        }
+        },
+        language: lang
       });
       await config.save();
       
       // Populate it again
-      config = await HomepageConfig.findOne()
+      config = await HomepageConfig.findOne({ language: lang })
         .populate("heroStory")
         .populate("trendingStories")
         .populate("editorPicks")
@@ -124,9 +126,10 @@ router.get("/", async (req, res) => {
 // PUT /api/homepage-config - Update homepage layout (Admin only)
 router.put("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
-    const { heroStory, trendingStories, editorPicks, featuredVideos, featuredShorts, sections, sidebarWidgets, mostReadSettings } = req.body;
+    const { heroStory, trendingStories, editorPicks, featuredVideos, featuredShorts, sections, sidebarWidgets, mostReadSettings, language } = req.body;
+    const lang = language || req.query.language || "ta";
     
-    let config = await HomepageConfig.findOne();
+    let config = await HomepageConfig.findOne({ language: lang });
     if (!config) {
       config = new HomepageConfig({
         sections: DEFAULT_SECTIONS,
@@ -135,7 +138,8 @@ router.put("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
           limit: 5,
           showViews: true,
           minViews: 0
-        }
+        },
+        language: lang
       });
     }
 
@@ -159,7 +163,7 @@ router.put("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
     await config.save();
 
     // Return the populated updated config
-    const updatedConfig = await HomepageConfig.findOne()
+    const updatedConfig = await HomepageConfig.findOne({ language: lang })
       .populate("heroStory")
       .populate("trendingStories")
       .populate("editorPicks")

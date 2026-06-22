@@ -8,6 +8,7 @@ function AllNews() {
   const navigate = useNavigate();
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [languageFilter, setLanguageFilter] = useState("all");
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -16,12 +17,12 @@ function AllNews() {
   // FETCH NEWS
   useEffect(() => {
     fetchNews();
-  }, []);
+  }, [languageFilter]);
 
   const fetchNews = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/api/news");
+      const res = await API.get(`/api/news?language=${languageFilter}`);
       setNews(res.data || []);
     } catch (error) {
       console.error("Fetch Error:", error);
@@ -182,6 +183,16 @@ function AllNews() {
       <div className="all-news-header">
         <h1 className="all-news-title">All News</h1>
         <div className="header-actions">
+          {/* LANGUAGE FILTER */}
+          <select 
+            value={languageFilter} 
+            onChange={(e) => setLanguageFilter(e.target.value)} 
+            style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", marginRight: "10px", fontSize: "14px", cursor: "pointer" }}
+          >
+            <option value="all">All Languages</option>
+            <option value="ta">Tamil</option>
+            <option value="en">English</option>
+          </select>
           <div className="news-count">Total: {news.length}</div>
 
           {/* SELECT MODE TOGGLE */}
@@ -297,7 +308,22 @@ function AllNews() {
 
                         {/* CONTENT */}
                         <div className="news-content">
-                          <span className="news-category">{item.category}</span>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "5px" }}>
+                            <span className="news-category">{item.category}</span>
+                            <span 
+                              style={{
+                                background: item.language === "en" ? "#e0f2fe" : "#fef3c7",
+                                color: item.language === "en" ? "#0369a1" : "#b45309",
+                                fontSize: "11px",
+                                fontWeight: "600",
+                                padding: "2px 6px",
+                                borderRadius: "4px",
+                                textTransform: "uppercase"
+                              }}
+                            >
+                              {item.language === "en" ? "English" : "Tamil"}
+                            </span>
+                          </div>
                           <h2 className="news-title">{item.title}</h2>
                           <p className="news-description">{item.description?.substring(0, 140)}...</p>
 

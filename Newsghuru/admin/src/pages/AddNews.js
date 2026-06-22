@@ -17,6 +17,7 @@ function AddNews() {
     tags: "",
     seoKeywords: "",
     date: new Date().toISOString().split("T")[0],
+    language: "ta",
   });
 
   const [categories, setCategories] = useState([]);
@@ -24,14 +25,14 @@ function AddNews() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await API.get("/api/categories");
+        const res = await API.get(`/api/categories?language=${formData.language}`);
         setCategories(res.data || []);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     };
     fetchCategories();
-  }, []);
+  }, [formData.language]);
 
   const [coverImage, setCoverImage] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
@@ -197,6 +198,7 @@ function AddNews() {
       newsData.append("tags", formData.tags);
       newsData.append("seoKeywords", formData.seoKeywords);
       newsData.append("status", "published");
+      newsData.append("language", formData.language);
       
       if (coverImage) {
         newsData.append("coverImage", coverImage);
@@ -294,6 +296,14 @@ function AddNews() {
           <div className="form-group full-width">
             <label>Subtitle</label>
             <input type="text" name="subtitle" className={errors.subtitle ? "error-input" : ""} value={formData.subtitle} onChange={handleChange} placeholder="Enter subtitle" />
+          </div>
+
+          <div className="form-group">
+            <label>Language <span className="required">*</span></label>
+            <select name="language" value={formData.language} onChange={handleChange}>
+              <option value="ta">Tamil</option>
+              <option value="en">English</option>
+            </select>
           </div>
 
           <div className="form-group">

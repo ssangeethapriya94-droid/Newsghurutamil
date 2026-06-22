@@ -1,0 +1,72 @@
+/* =========================================
+   GOOGLE FONT
+========================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Noto+Sans+Tamil:wght@300;400;500;600;700;800&family=Mukta+Malar:wght@300;400;500;600;700;800&display=swap");
+
+/* =========================================
+   ROOT VARIABLES
+========================================= */
+
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #121212;
+  --bg-card: rgba(18, 18, 18, 0.6);
+  --bg-header: rgba(10, 10, 10, 0.85);
+  --bg-nav: linear-gradient(90deg, #ea580c, #f59e0b, #ef4444);
+  --bg-sidebar: #121212;
+  --bg-hover: #1e1e1e;
+
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  --border-color: rgba(255,255,255,0.08);
+
+  --accent-blue: #ea580c;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --brand-gradient: linear-gradient(90deg, #ea580c, #f59e0b, #ef4444);
+
+  --shadow-color: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+  --font-serif: "Mukta Malar", "Noto Sans Tamil", sans-serif;
+  --font-sans: "Mukta Malar", "Noto Sans Tamil", sans-serif;
+  --border-radius-sm: 6px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 20px;
+}
+
+/* =========================================
+   LIGHT THEME
+========================================= */
+
+.light-theme {
+
+  --bg-primary: #f3f7fc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-header: rgba(255,255,255,0.96);
+  --bg-nav: linear-gradient(90deg, #ea580c, #f59e0b, #ef4444);
+  --bg-sidebar: #ffffff;
+  --bg-hover: #eef4ff;
+
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+
+  --border-color: rgba(0,0,0,0.08);
+
+  --accent-blue: #ea580c;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --brand-gradient: linear-gradient(90deg, #ea580c, #f59e0b, #ef4444);
+
+  --shadow-color: rgba(0,0,0,0.06);
+
+  --font-serif: "Mukta Malar", "Noto Sans Tamil", sans-serif;
+  --font-sans: "Mukta Malar", "Noto Sans Tamil", sans-serif;
+  --border-radius-sm: 6px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 20px;
+}

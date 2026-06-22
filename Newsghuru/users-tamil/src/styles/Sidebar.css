@@ -1,0 +1,287 @@
+/* =========================================
+   OVERLAY
+========================================= */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 2500;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.3s ease;
+}
+
+/* =========================================
+   SIDEBAR
+========================================= */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -340px;
+  width: 320px;
+  height: 100vh;
+  z-index: 2501;
+  transition: 0.35s ease;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.show-sidebar {
+  left: 0;
+}
+
+/* =========================================
+   SIDEBAR HEADER
+========================================= */
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sidebar-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.sidebar-header h2 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.close-icon {
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.close-icon:hover {
+  transform: rotate(90deg);
+  color: crimson;
+}
+
+/* =========================================
+   SIDEBAR MENU
+========================================= */
+
+.sidebar-menu {
+  flex: 1;
+  padding: 20px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* =========================================
+   SIDEBAR ITEM
+========================================= */
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-decoration: none;
+  padding: 16px 18px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.sidebar-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-item:hover {
+  transform: translateX(6px);
+}
+
+/* =========================================
+   ACTIVE SIDEBAR ITEM
+========================================= */
+
+.active-sidebar-item {
+  background: var(--accent-orange)!important;
+  color: #fff !important;
+  box-shadow: 0 10px 25px rgba(220, 20, 60, 0.35);
+}
+
+.active-sidebar-item:hover {
+  transform: translateX(0px);
+}
+
+/* =========================================
+   SIDEBAR FOOTER
+========================================= */
+
+.sidebar-footer {
+  padding: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-footer p {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* =========================================
+   DARK THEME
+========================================= */
+
+.dark-theme .sidebar {
+  background: var(--bg-primary);
+  color: #fff;
+  box-shadow: 8px 0 30px rgba(0, 0, 0, 0.35);
+}
+
+.dark-theme .sidebar-item {
+  color: #cbd5e1;
+}
+
+.dark-theme .sidebar-item:hover {
+  background: var(--bg-secondary);
+  color: #fff;
+}
+
+.dark-theme .sidebar-footer p {
+  color: #94a3b8;
+}
+
+/* =========================================
+   LIGHT THEME
+========================================= */
+
+.light-theme .sidebar {
+  background: #ffffff;
+  color: #111827;
+  box-shadow: 8px 0 30px rgba(0, 0, 0, 0.12);
+}
+
+.light-theme .sidebar-header {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.light-theme .sidebar-item {
+  color: #374151;
+}
+
+.light-theme .sidebar-item:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.light-theme .sidebar-footer {
+  border-top: 1px solid #e5e7eb;
+}
+
+.light-theme .sidebar-footer p {
+  color: #6b7280;
+}
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--accent-orange);
+  border-radius: 20px;
+}
+
+/* =========================================
+   ANIMATION
+========================================= */
+
+@keyframes fadeIn {
+
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .sidebar {
+    width: 290px;
+    left: -310px;
+  }
+
+  .show-sidebar {
+    left: 0;
+  }
+
+  .sidebar-header {
+    padding: 20px 18px;
+  }
+
+  .sidebar-logo {
+    width: 45px;
+    height: 45px;
+  }
+
+  .sidebar-header h2 {
+    font-size: 20px;
+  }
+
+  .sidebar-item {
+    padding: 15px 16px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .sidebar {
+    width: 270px;
+    left: -290px;
+  }
+
+  .show-sidebar {
+    left: 0;
+  }
+
+  .sidebar-header h2 {
+    font-size: 18px;
+  }
+
+  .sidebar-item {
+    gap: 12px;
+    font-size: 14px;
+  }
+
+  .sidebar-icon {
+    font-size: 16px;
+  }
+
+  .sidebar-footer p {
+    font-size: 13px;
+  }
+}

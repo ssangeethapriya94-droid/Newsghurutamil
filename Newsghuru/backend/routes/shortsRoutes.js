@@ -35,6 +35,11 @@ router.get("/", async (req, res) => {
       };
     }
     
+    const lang = req.query.language || "ta";
+    if (lang !== "all") {
+      query.language = lang;
+    }
+    
     const shorts = await Short.find(query).sort({ createdAt: -1 });
     res.json(shorts);
   } catch (error) {
@@ -60,7 +65,7 @@ router.get("/:id", async (req, res) => {
 // POST /api/shorts - Create a short (Admin and Editor)
 router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
-    const { title, thumbnail, videoUrl, category, description, isFeatured, isEnabled, status } = req.body;
+    const { title, thumbnail, videoUrl, category, description, isFeatured, isEnabled, status, language } = req.body;
     if (!title || !thumbnail || !videoUrl) {
       return res.status(400).json({ message: "Title, thumbnail, and video URL are required" });
     }
@@ -78,7 +83,8 @@ router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res
       isFeatured: !!isFeatured,
       isEnabled: req.user.role === "admin" ? (isEnabled !== undefined ? !!isEnabled : true) : false,
       status: shortStatus,
-      createdBy: req.user._id
+      createdBy: req.user._id,
+      language: language || "ta"
     });
 
     const saved = await short.save();
@@ -111,7 +117,7 @@ router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res
 // PUT /api/shorts/:id - Update a short (Admin and Editor)
 router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
-    const { title, thumbnail, videoUrl, category, description, isFeatured, isEnabled, status } = req.body;
+    const { title, thumbnail, videoUrl, category, description, isFeatured, isEnabled, status, language } = req.body;
     const short = await Short.findById(req.params.id);
     if (!short) {
       return res.status(404).json({ message: "Short not found" });
@@ -131,6 +137,7 @@ router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, r
     if (category !== undefined) short.category = category;
     if (description !== undefined) short.description = description;
     if (isFeatured !== undefined) short.isFeatured = !!isFeatured;
+    if (language !== undefined) short.language = language;
     
     if (req.user.role === "admin") {
       if (isEnabled !== undefined) short.isEnabled = !!isEnabled;

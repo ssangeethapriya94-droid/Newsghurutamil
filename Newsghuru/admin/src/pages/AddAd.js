@@ -28,7 +28,8 @@ function AddAd() {
     startDate: "",
     startTime: "00:00",
     endDate: "",
-    endTime: "23:59"
+    endTime: "23:59",
+    language: "both"
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -89,7 +90,8 @@ function AddAd() {
               startDate: fmtDate(ad.startDate),
               startTime: ad.startTime || "00:00",
               endDate: fmtDate(ad.endDate),
-              endTime: ad.endTime || "23:59"
+              endTime: ad.endTime || "23:59",
+              language: ad.language || "both"
             });
             if (ad.image) {
               const fullUrl = ad.image.startsWith("http") ? ad.image : `${API.defaults.baseURL || "http://localhost:5000"}${ad.image}`;
@@ -429,7 +431,7 @@ function AddAd() {
         <div className="form-card" style={{ background: "var(--card-bg)", padding: "24px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
           <h3 style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "10px", marginBottom: "20px", color: "var(--text-main)" }}>4. Placement & Settings</h3>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "20px" }}>
             <div className="form-group">
               <label>Ad Position / Location *</label>
               <select name="position" value={formData.position} onChange={handleInputChange}>
@@ -449,6 +451,15 @@ function AddAd() {
                 <option value="High">High (More Display Frequency)</option>
                 <option value="Medium">Medium (Regular Frequency)</option>
                 <option value="Low">Low (Less Display Frequency)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Targeting Language *</label>
+              <select name="language" value={formData.language} onChange={handleInputChange}>
+                <option value="both">Both (Tamil + English)</option>
+                <option value="ta">Tamil Only</option>
+                <option value="en">English Only</option>
               </select>
             </div>
 

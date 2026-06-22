@@ -24,6 +24,12 @@ const notificationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    language: {
+      type: String,
+      enum: ["ta", "en", "hi", "te", "ml"],
+      default: "ta",
+      required: true,
+    },
   },
   {
     timestamps: true,

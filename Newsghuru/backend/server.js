@@ -519,6 +519,7 @@ app.use((req, res, next) => {
 
 // Static Uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 // Routes
 app.use("/api/news", newsRoutes);

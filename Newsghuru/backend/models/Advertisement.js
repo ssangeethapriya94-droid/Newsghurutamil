@@ -132,6 +132,12 @@ const advertisementSchema = new mongoose.Schema(
     rejectionReason: {
       type: String,
       default: ""
+    },
+    language: {
+      type: String,
+      enum: ["ta", "en", "both", "hi", "te", "ml"],
+      default: "both",
+      required: true
     }
   },
   {

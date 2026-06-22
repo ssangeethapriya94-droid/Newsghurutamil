@@ -8,13 +8,20 @@ const categorySchema = new mongoose.Schema({
   slug: {
     type: String,
     required: true,
-    unique: true,
     lowercase: true,
+  },
+  language: {
+    type: String,
+    enum: ["ta", "en", "hi", "te", "ml"],
+    default: "ta",
+    required: true,
   },
   createdAt: {
     type: Date,
     default: Date.now,
   }
 });
+
+categorySchema.index({ slug: 1, language: 1 }, { unique: true });
 
 module.exports = mongoose.model("Category", categorySchema);

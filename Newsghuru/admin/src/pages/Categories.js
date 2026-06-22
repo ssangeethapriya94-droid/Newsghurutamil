@@ -6,15 +6,18 @@ function Categories() {
   const [categories, setCategories] = useState([]);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [language, setLanguage] = useState("ta");
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
   const [editSlug, setEditSlug] = useState("");
+  const [editLanguage, setEditLanguage] = useState("ta");
+  const [languageFilter, setLanguageFilter] = useState("all");
 
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/api/categories");
+      const res = await API.get(`/api/categories?language=${languageFilter}`);
       setCategories(res.data || []);
     } catch (error) {
       console.error("Fetch categories error:", error);
@@ -26,7 +29,7 @@ function Categories() {
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [languageFilter]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -39,6 +42,7 @@ function Categories() {
       await API.post("/api/categories", {
         name: name.trim(),
         slug: slug.trim().toLowerCase(),
+        language,
       });
       setName("");
       setSlug("");
@@ -60,6 +64,7 @@ function Categories() {
       await API.put(`/api/categories/${id}`, {
         name: editName.trim(),
         slug: editSlug.trim().toLowerCase(),
+        language: editLanguage,
       });
       setEditingId(null);
       alert("Category updated successfully");
@@ -89,6 +94,7 @@ function Categories() {
     setEditingId(cat._id);
     setEditName(cat.name);
     setEditSlug(cat.slug);
+    setEditLanguage(cat.language || "ta");
   };
 
   // Helper auto-slug generation
@@ -106,10 +112,23 @@ function Categories() {
 
   return (
     <div className="reporter-my-articles">
-      <div className="header-actions">
-        <h2>🏷️ Categories CRUD</h2>
-        <div className="header-subtitle">
-          Manage news taxonomy and slugs.
+      <div className="header-actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h2>🏷️ Categories CRUD</h2>
+          <div className="header-subtitle">
+            Manage news taxonomy and slugs.
+          </div>
+        </div>
+        <div>
+          <select 
+            value={languageFilter} 
+            onChange={(e) => setLanguageFilter(e.target.value)} 
+            style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "14px", cursor: "pointer" }}
+          >
+            <option value="all">All Languages</option>
+            <option value="ta">Tamil</option>
+            <option value="en">English</option>
+          </select>
         </div>
       </div>
 
@@ -133,6 +152,13 @@ function Categories() {
             placeholder="e.g. sports"
           />
         </div>
+        <div className="form-group">
+          <label>Language</label>
+          <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}>
+            <option value="ta">Tamil</option>
+            <option value="en">English</option>
+          </select>
+        </div>
         <div className="form-submit">
           <button type="submit" className="btn-primary add-category-btn">
             Add Category
@@ -152,6 +178,7 @@ function Categories() {
               <tr>
                 <th>Category Name</th>
                 <th>Slug</th>
+                <th>Language</th>
                 <th style={{ width: "220px" }}>Actions</th>
               </tr>
             </thead>
@@ -180,6 +207,32 @@ function Categories() {
                       />
                     ) : (
                       <span className="category-tag">{cat.slug}</span>
+                    )}
+                  </td>
+                  <td>
+                    {editingId === cat._id ? (
+                      <select 
+                        value={editLanguage} 
+                        onChange={(e) => setEditLanguage(e.target.value)}
+                        style={{ padding: "4px 8px", borderRadius: "4px", border: "1px solid #ccc" }}
+                      >
+                        <option value="ta">Tamil</option>
+                        <option value="en">English</option>
+                      </select>
+                    ) : (
+                      <span 
+                        style={{
+                          background: cat.language === "en" ? "#e0f2fe" : "#fef3c7",
+                          color: cat.language === "en" ? "#0369a1" : "#b45309",
+                          fontSize: "11px",
+                          fontWeight: "600",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          textTransform: "uppercase"
+                        }}
+                      >
+                        {cat.language === "en" ? "English" : "Tamil"}
+                      </span>
                     )}
                   </td>
                   <td>

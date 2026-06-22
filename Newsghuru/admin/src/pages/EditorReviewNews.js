@@ -19,6 +19,7 @@ function EditorReviewNews() {
     fullDescription: "",
     tags: "",
     seoKeywords: "",
+    language: "ta",
   });
 
   const [article, setArticle] = useState(null);
@@ -43,17 +44,17 @@ function EditorReviewNews() {
   const [galleryFiles, setGalleryFiles] = useState([]);
   const [categories, setCategories] = useState([]);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await API.get("/api/categories");
-        setCategories(res.data || []);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-    fetchCategories();
-  }, []);
+    useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+          const res = await API.get(`/api/categories?language=${formData.language}`);
+          setCategories(res.data || []);
+        } catch (error) {
+          console.error("Error fetching categories:", error);
+        }
+      };
+      fetchCategories();
+    }, [formData.language]);
 
   const stripHtml = (html) => {
     const tmp = document.createElement("DIV");
@@ -159,6 +160,7 @@ function EditorReviewNews() {
             fullDescription: found.description || "",
             tags: found.tags || "",
             seoKeywords: found.seoKeywords || "",
+            language: found.language || "ta",
           });
           setCoverImage(found.coverImage || found.image || null);
           setGalleryImages(found.galleryImages || []);
@@ -239,6 +241,7 @@ function EditorReviewNews() {
       data.append("fullDescription", formData.fullDescription);
       data.append("tags", formData.tags);
       data.append("seoKeywords", formData.seoKeywords);
+      data.append("language", formData.language);
 
       if (coverFile) {
         data.append("coverImage", coverFile);
@@ -427,6 +430,14 @@ function EditorReviewNews() {
             <label>Subtitle <span className="required">*</span></label>
             <input type="text" name="subtitle" className={errors.subtitle ? "error-input" : ""} value={formData.subtitle} onChange={handleChange} />
             {errors.subtitle && <span className="error-text">{errors.subtitle}</span>}
+          </div>
+
+          <div className="form-group">
+            <label>Language / மொழி <span className="required">*</span></label>
+            <select name="language" value={formData.language} onChange={handleChange}>
+              <option value="ta">Tamil / தமிழ்</option>
+              <option value="en">English / ஆங்கிலம்</option>
+            </select>
           </div>
 
           <div className="form-group">

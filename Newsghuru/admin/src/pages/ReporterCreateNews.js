@@ -19,6 +19,7 @@ function ReporterCreateNews() {
     fullDescription: "",
     tags: "",
     seoKeywords: "",
+    language: "ta",
   });
 
   const [coverImage, setCoverImage] = useState(null);
@@ -35,14 +36,14 @@ function ReporterCreateNews() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await API.get("/api/categories");
+        const res = await API.get(`/api/categories?language=${formData.language}`);
         setCategories(res.data || []);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     };
     fetchCategories();
-  }, []);
+  }, [formData.language]);
 
   useEffect(() => {
     if (isEditMode) {
@@ -59,6 +60,7 @@ function ReporterCreateNews() {
             fullDescription: article.description || "",
             tags: article.tags || "",
             seoKeywords: article.seoKeywords || "",
+            language: article.language || "ta",
           });
           setCoverImage(article.coverImage || article.image || null);
           setGalleryImages(article.galleryImages || []);
@@ -147,6 +149,7 @@ function ReporterCreateNews() {
       formDataToSend.append("tags", formData.tags);
       formDataToSend.append("seoKeywords", formData.seoKeywords);
       formDataToSend.append("status", status);
+      formDataToSend.append("language", formData.language);
 
       if (coverFile) {
         formDataToSend.append("coverImage", coverFile);
@@ -180,6 +183,7 @@ function ReporterCreateNews() {
               fullDescription: "",
               tags: "",
               seoKeywords: "",
+              language: "ta",
             });
             setCoverImage(null);
             setCoverFile(null);
@@ -226,7 +230,7 @@ function ReporterCreateNews() {
           <div className="status-badge pending">Status: Pending Editor Review</div>
           <button className="btn-primary mt-4" onClick={() => {
             setIsSubmitted(false);
-            setFormData({title: "", subtitle: "", category: "", location: "", shortDescription: "", fullDescription: "", tags: "", seoKeywords: ""});
+            setFormData({title: "", subtitle: "", category: "", location: "", shortDescription: "", fullDescription: "", tags: "", seoKeywords: "", language: "ta"});
             setCoverImage(null);
             setCoverFile(null);
             setGalleryImages([]);
@@ -273,6 +277,14 @@ function ReporterCreateNews() {
             <label>Subtitle <span className="required">*</span></label>
             <input type="text" name="subtitle" className={errors.subtitle ? "error-input" : ""} value={formData.subtitle} onChange={handleChange} placeholder="Enter subtitle" />
             {errors.subtitle && <span className="error-text">{errors.subtitle}</span>}
+          </div>
+
+          <div className="form-group">
+            <label>Language / மொழி <span className="required">*</span></label>
+            <select name="language" value={formData.language} onChange={handleChange}>
+              <option value="ta">Tamil / தமிழ்</option>
+              <option value="en">English / ஆங்கிலம்</option>
+            </select>
           </div>
 
           <div className="form-group">

@@ -8,11 +8,17 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     const page = parseInt(req.query.page);
     const limit = parseInt(req.query.limit) || 10;
+    const query = { recipientId: req.user._id };
+
+    const lang = req.query.language || "ta";
+    if (lang !== "all") {
+      query.language = lang;
+    }
 
     if (page) {
       const skip = (page - 1) * limit;
-      const total = await Notification.countDocuments({ recipientId: req.user._id });
-      const notifications = await Notification.find({ recipientId: req.user._id })
+      const total = await Notification.countDocuments(query);
+      const notifications = await Notification.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
@@ -27,7 +33,7 @@ router.get("/", verifyToken, async (req, res) => {
         }
       });
     } else {
-      const notifications = await Notification.find({ recipientId: req.user._id })
+      const notifications = await Notification.find(query)
         .sort({ createdAt: -1 })
         .limit(50);
       res.json(notifications);

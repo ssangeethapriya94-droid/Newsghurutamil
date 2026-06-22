@@ -43,6 +43,7 @@ function Shorts() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isEnabled, setIsEnabled] = useState(role === "admin");
   const [status, setStatus] = useState(role === "editor" ? "Draft" : "Published");
+  const [language, setLanguage] = useState("ta");
 
   // Uploading states
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -57,9 +58,11 @@ function Shorts() {
   const [editIsEnabled, setEditIsEnabled] = useState(true);
   const [editStatus, setEditStatus] = useState("Draft");
   const [editUploadingVideo, setEditUploadingVideo] = useState(false);
+  const [editLanguage, setEditLanguage] = useState("ta");
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState((location.state && location.state.statusFilter) || "all");
+  const [languageFilter, setLanguageFilter] = useState("all");
 
   // Preview Modal state
   const [previewShort, setPreviewShort] = useState(null);
@@ -111,7 +114,7 @@ function Shorts() {
   const fetchShorts = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/api/shorts");
+      const res = await API.get(`/api/shorts?language=${languageFilter}`);
       setShorts(res.data || []);
     } catch (error) {
       console.error("Fetch shorts error:", error);
@@ -123,6 +126,9 @@ function Shorts() {
 
   useEffect(() => {
     fetchShorts();
+  }, [languageFilter]);
+
+  useEffect(() => {
     const handleResize = () => setIsLargeScreen(window.innerWidth >= 1024);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -203,7 +209,8 @@ function Shorts() {
         description: description.trim(),
         isFeatured,
         isEnabled: role === "admin" ? isEnabled : false,
-        status: role === "editor" ? status : "Published"
+        status: role === "editor" ? status : "Published",
+        language
       });
 
       // Clear fields
@@ -214,6 +221,7 @@ function Shorts() {
       setIsFeatured(false);
       setIsEnabled(role === "admin");
       setStatus(role === "editor" ? "Draft" : "Published");
+      setLanguage("ta");
 
       // Reset file input fields
       const fileInputs = document.querySelectorAll('input[type="file"]');
@@ -240,7 +248,8 @@ function Shorts() {
         videoUrl: editVideoUrl.trim(),
         category: editCategory,
         description: editDescription.trim(),
-        isFeatured: editIsFeatured
+        isFeatured: editIsFeatured,
+        language: editLanguage
       };
 
       if (role === "admin") {
@@ -359,6 +368,7 @@ function Shorts() {
     setEditIsFeatured(sh.isFeatured || false);
     setEditIsEnabled(sh.isEnabled || false);
     setEditStatus(sh.status || "Draft");
+    setEditLanguage(sh.language || "ta");
   };
 
   const getStatusStyle = (statusVal, isEnabledVal) => {
@@ -482,7 +492,7 @@ function Shorts() {
         </div>
 
         {/* Row 3: Caption / Mini Description & Status Selection (Editor) */}
-        <div style={{ display: "grid", gridTemplateColumns: role === "editor" ? "3fr 1fr" : "1fr", gap: "15px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: role === "editor" ? "2fr 1fr 1fr" : "3fr 1fr", gap: "15px" }}>
           <div className="form-group" style={{ flex: "none", minWidth: "auto", margin: 0 }}>
             <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Caption / Mini Description</label>
             <input
@@ -501,6 +511,27 @@ function Shorts() {
                 height: "40px"
               }}
             />
+          </div>
+
+          <div className="form-group" style={{ flex: "none", minWidth: "auto", margin: 0 }}>
+            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Language</label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              style={{
+                padding: "10px 14px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                outline: "none",
+                fontSize: "14px",
+                backgroundColor: "var(--card-bg)",
+                color: "var(--text-main)",
+                height: "40px"
+              }}
+            >
+              <option value="ta">Tamil</option>
+              <option value="en">English</option>
+            </select>
           </div>
 
           {role === "editor" && (
@@ -578,6 +609,20 @@ function Shorts() {
             <option value="Approved">Approved</option>
             <option value="Published">Published</option>
             <option value="Rejected">Rejected</option>
+          </select>
+
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "5px", marginLeft: "15px" }}>
+            Language:
+          </span>
+          <select
+            value={languageFilter}
+            onChange={(e) => setLanguageFilter(e.target.value)}
+            className="dropdown-field"
+            style={{ padding: "8px 12px", borderRadius: "8px", fontSize: "14px" }}
+          >
+            <option value="all">All Languages</option>
+            <option value="ta">Tamil</option>
+            <option value="en">English</option>
           </select>
         </div>
 
@@ -695,6 +740,14 @@ function Shorts() {
                             style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px" }}
                             placeholder="Caption"
                           />
+                          <select
+                            value={editLanguage}
+                            onChange={(e) => setEditLanguage(e.target.value)}
+                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px" }}
+                          >
+                            <option value="ta">Tamil</option>
+                            <option value="en">English</option>
+                          </select>
                           {role === "editor" ? (
                             <select
                               value={editStatus}
@@ -720,7 +773,20 @@ function Shorts() {
                         </div>
                       ) : (
                         <div>
-                          <div style={{ fontWeight: 600, color: "var(--text-main)" }}>{sh.title}</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span style={{ fontWeight: 600, color: "var(--text-main)" }}>{sh.title}</span>
+                            <span style={{
+                              background: sh.language === "en" ? "#e0f2fe" : "#fef3c7",
+                              color: sh.language === "en" ? "#0369a1" : "#b45309",
+                              fontSize: "10px",
+                              fontWeight: "bold",
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              textTransform: "uppercase"
+                            }}>
+                              {sh.language === "en" ? "English" : "Tamil"}
+                            </span>
+                          </div>
                           <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
                             {sh.description || "No caption written."}
                           </div>

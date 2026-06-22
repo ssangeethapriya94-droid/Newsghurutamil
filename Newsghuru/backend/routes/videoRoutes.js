@@ -6,7 +6,12 @@ const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 // GET /api/videos - Get all videos
 router.get("/", async (req, res) => {
   try {
-    const videos = await Video.find().sort({ createdAt: -1 });
+    const query = {};
+    const lang = req.query.language || "ta";
+    if (lang !== "all") {
+      query.language = lang;
+    }
+    const videos = await Video.find(query).sort({ createdAt: -1 });
     res.json(videos);
   } catch (error) {
     console.error("Error fetching videos:", error);
@@ -34,7 +39,7 @@ router.get("/:id", async (req, res) => {
 // POST /api/videos - Create a video (Admin only)
 router.post("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
-    const { title, thumbnail, youtubeUrl, description, category, isFeatured, isTrending } = req.body;
+    const { title, thumbnail, youtubeUrl, description, category, isFeatured, isTrending, language } = req.body;
     if (!title || !thumbnail || !youtubeUrl) {
       return res.status(400).json({ message: "Title, thumbnail, and YouTube URL are required" });
     }
@@ -46,7 +51,8 @@ router.post("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
       description,
       category,
       isFeatured: !!isFeatured,
-      isTrending: !!isTrending
+      isTrending: !!isTrending,
+      language: language || "ta"
     });
 
     const saved = await video.save();
@@ -60,7 +66,7 @@ router.post("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
 // PUT /api/videos/:id - Update a video (Admin only)
 router.put("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
-    const { title, thumbnail, youtubeUrl, description, category, isFeatured, isTrending, views } = req.body;
+    const { title, thumbnail, youtubeUrl, description, category, isFeatured, isTrending, views, language } = req.body;
     const video = await Video.findById(req.params.id);
     if (!video) {
       return res.status(404).json({ message: "Video not found" });
@@ -74,6 +80,7 @@ router.put("/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
     if (isFeatured !== undefined) video.isFeatured = !!isFeatured;
     if (isTrending !== undefined) video.isTrending = !!isTrending;
     if (views !== undefined) video.views = Number(views);
+    if (language !== undefined) video.language = language;
 
     const updated = await video.save();
     res.json(updated);

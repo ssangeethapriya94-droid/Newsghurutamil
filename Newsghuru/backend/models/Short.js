@@ -63,6 +63,12 @@ const shortSchema = new mongoose.Schema(
     rejectionReason: {
       type: String,
       default: ""
+    },
+    language: {
+      type: String,
+      enum: ["ta", "en", "hi", "te", "ml"],
+      default: "ta",
+      required: true
     }
   },
   {
