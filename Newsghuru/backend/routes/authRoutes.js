@@ -221,6 +221,10 @@ router.post("/users/subscribe", verifyToken, async (req, res) => {
     if (fcmToken) {
       user.fcmToken = fcmToken;
     }
+    
+    const lang = req.query.language || req.body.language || "ta";
+    user.language = lang;
+
     await user.save();
 
     res.json({

@@ -48,10 +48,10 @@ const logFCM = (message) => {
 const sendFCMPushNotification = async (news) => {
   logFCM(`📣 sendFCMPushNotification helper triggered for news article: "${news.title}" (ID: ${news._id})`);
   try {
+    const newsLang = news.language || "ta";
     const subscribedUsers = await User.find({
       fcmToken: { $nin: [null, ""] }
     });
-    
     logFCM(`🔍 Found ${subscribedUsers.length} users with notifications enabled in DB.`);
     
     const tokens = subscribedUsers
@@ -75,12 +75,27 @@ const sendFCMPushNotification = async (news) => {
     const imageUrl = isValidImageUrl(news.image) ? news.image : null;
 
     if (tokens.length > 0 && messaging) {
-      const newsLink = `${process.env.FRONTEND_URL || "http://localhost:3001"}/news/${news._id}`;
+      const frontendUrl = newsLang === "en" 
+        ? (process.env.FRONTEND_URL || "http://localhost:3001")
+        : (process.env.FRONTEND_URL_TA || "http://localhost:3002");
+      
+      const newsLink = `${frontendUrl}/news/${news._id}`;
+      
+      const isEnglish = newsLang === "en";
+      const titleText = isEnglish ? "📰 NewsGhuru — New Article" : "📰 நியூஸ் குரு — புதிய செய்தி";
+      const bodyText = isEnglish 
+        ? (news.title || "New article published. Tap to read.")
+        : (news.title || "புதிய செய்தி வெளியிடப்பட்டது. படிக்க தொடவும்.");
+      const bodyWebText = isEnglish
+        ? (news.title || "New article published.")
+        : (news.title || "புதிய செய்தி வெளியிடப்பட்டது.");
+      const faviconFile = isEnglish ? "faviconeng.png" : "favicontam.png";
+
       const message = {
         // Top-level notification: NO imageUrl — FCM rejects non-https external URLs
         notification: {
-          title: "📰 NewsGhuru — புதிய செய்தி",
-          body: news.title || "புதிய செய்தி வெளியிடப்பட்டது. படிக்க தொடவும்.",
+          title: titleText,
+          body: bodyText,
         },
         data: {
           link: newsLink,
@@ -90,10 +105,10 @@ const sendFCMPushNotification = async (news) => {
         },
         webpush: {
           notification: {
-            title: "📰 NewsGhuru — புதிய செய்தி",
-            body: news.title || "புதிய செய்தி வெளியிடப்பட்டது.",
-            icon: `${process.env.FRONTEND_URL || "http://localhost:3001"}/favicontam.png`,
-            badge: `${process.env.FRONTEND_URL || "http://localhost:3001"}/favicontam.png`,
+            title: titleText,
+            body: bodyWebText,
+            icon: `${frontendUrl}/${faviconFile}`,
+            badge: `${frontendUrl}/${faviconFile}`,
             requireInteraction: false,
             ...(imageUrl ? { image: imageUrl } : {}),
           },

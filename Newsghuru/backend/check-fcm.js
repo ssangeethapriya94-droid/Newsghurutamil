@@ -20,7 +20,7 @@ async function run() {
   console.log("✅ MongoDB connected\n");
 
   const allUsers = await User.find({}, {
-    email: 1, isSubscribed: 1, notificationEnabled: 1, fcmToken: 1
+    email: 1, isSubscribed: 1, notificationEnabled: 1, fcmToken: 1, language: 1
   });
 
   console.log(`📊 Total users in DB: ${allUsers.length}`);
@@ -41,7 +41,7 @@ async function run() {
     const tokenType = isOldToken ? "⚠️ OLD FORMAT" : isNewToken ? "✅ NEW FORMAT" : "";
 
     console.log(`👤 ${email}`);
-    console.log(`   isSubscribed: ${hasSub} | notificationEnabled: ${hasEnable}`);
+    console.log(`   isSubscribed: ${hasSub} | notificationEnabled: ${hasEnable} | language: ${u.language || "undefined (legacy -> ta)"}`);
     console.log(`   FCM Token: ${tokenSnippet} ${tokenType}`);
 
     if (!hasToken) noToken++;
