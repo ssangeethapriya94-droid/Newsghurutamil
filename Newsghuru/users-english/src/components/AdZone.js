@@ -55,7 +55,7 @@ export const clearAdCache = () => {
   adSettingsPromise = null;
 };
 
-function AdZone({ position }) {
+function AdZone({ position, className, style }) {
   const navigate = useNavigate();
   const instanceId = useRef(Math.random().toString());
   const [ads, setAds] = useState([]);
@@ -293,7 +293,8 @@ function AdZone({ position }) {
         return {
           ...baseStyle,
           maxWidth: "300px",
-          margin: "15px auto"
+          margin: "15px auto",
+          padding: "12px"
         };
       case "SECTION_BANNER":
         return {
@@ -361,8 +362,12 @@ function AdZone({ position }) {
   const adClickTrackUrl = `${API.defaults.baseURL || "http://localhost:5000"}/api/ads/${currentAd._id}/click`;
   const imgUrl = currentAd.image.startsWith("http") ? currentAd.image : `${API.defaults.baseURL || "http://localhost:5000"}${currentAd.image}`;
 
+  const containerClass = position === "SIDEBAR"
+    ? `premium-widget-card ad-zone-${position.toLowerCase()} ${className || ""}`
+    : `ad-zone-${position.toLowerCase()} ${className || ""}`;
+
   return (
-    <div style={getContainerStyle()} className={`ad-zone-${position.toLowerCase()}`}>
+    <div style={{ ...getContainerStyle(), ...style }} className={containerClass}>
       <div style={{ 
         width: "100%", 
         height: "auto", 

@@ -92,7 +92,7 @@ const Sidebar = ({ sidebar, setSidebar }) => {
         <div className="sidebar-header">
           <div className="sidebar-logo-section">
             <img
-              src="/NEWS GHURU LOGO PNG.png"
+              src="/NEWS GHURU LOGO English.png"
               alt="Logo"
               className="sidebar-logo"
             />

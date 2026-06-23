@@ -53,6 +53,11 @@ const photoStorySchema = new mongoose.Schema(
     rejectionReason: {
       type: String,
       default: ""
+    },
+    language: {
+      type: String,
+      enum: ["ta", "en"],
+      default: "ta"
     }
   },
   {

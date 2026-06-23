@@ -25,13 +25,34 @@ router.get("/", async (req, res) => {
       }
     }
 
+    const conditions = [];
+
     if (!isAdminOrEditor) {
-      query = {
+      conditions.push({
         $or: [
           { status: "Published" },
           { status: { $exists: false } }
         ]
-      };
+      });
+    }
+
+    const language = req.query.language || req.query.lang;
+    if (language && language !== "all") {
+      if (language === "ta") {
+        conditions.push({
+          $or: [
+            { language: "ta" },
+            { language: { $exists: false } },
+            { language: null }
+          ]
+        });
+      } else {
+        conditions.push({ language: language });
+      }
+    }
+
+    if (conditions.length > 0) {
+      query = { $and: conditions };
     }
 
     const stories = await PhotoStory.find(query).sort({ createdAt: -1 });
@@ -59,7 +80,7 @@ router.get("/:id", async (req, res) => {
 // POST /api/photo-stories - Create a photo story (Admin and Editor)
 router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
-    const { title, description, coverImage, images, isFeatured, status } = req.body;
+    const { title, description, coverImage, images, isFeatured, status, language } = req.body;
     if (!title || !coverImage) {
       return res.status(400).json({ message: "Title and cover image are required" });
     }
@@ -75,6 +96,7 @@ router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res
       images: Array.isArray(images) ? images : [],
       isFeatured: req.user.role === "admin" ? !!isFeatured : false,
       status: storyStatus,
+      language: ["ta", "en"].includes(language) ? language : "ta",
       createdBy: req.user._id
     });
 
@@ -108,7 +130,7 @@ router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res
 // PUT /api/photo-stories/:id - Update a photo story (Admin and Editor)
 router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
   try {
-    const { title, description, coverImage, images, isFeatured, status } = req.body;
+    const { title, description, coverImage, images, isFeatured, status, language } = req.body;
     const story = await PhotoStory.findById(req.params.id);
     if (!story) {
       return res.status(404).json({ message: "Photo story not found" });
@@ -126,6 +148,7 @@ router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, r
     if (description !== undefined) story.description = description;
     if (coverImage !== undefined) story.coverImage = coverImage;
     if (images !== undefined) story.images = Array.isArray(images) ? images : [];
+    if (language !== undefined && ["ta", "en"].includes(language)) story.language = language;
     
     if (req.user.role === "admin") {
       if (isFeatured !== undefined) story.isFeatured = !!isFeatured;

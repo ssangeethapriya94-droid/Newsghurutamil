@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import API from "../config/api";
 import "../styles/ReporterMyArticles.css";
-import { FaTimes, FaEye } from "react-icons/fa";
+import { FaTimes, FaEye, FaEdit } from "react-icons/fa";
 import { FiSliders } from "react-icons/fi";
 
 function Shorts() {
@@ -59,6 +59,9 @@ function Shorts() {
   const [editStatus, setEditStatus] = useState("Draft");
   const [editUploadingVideo, setEditUploadingVideo] = useState(false);
   const [editLanguage, setEditLanguage] = useState("ta");
+
+  // Edit Modal state
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState((location.state && location.state.statusFilter) || "all");
@@ -261,6 +264,7 @@ function Shorts() {
 
       await API.put(`/api/shorts/${id}`, updateData);
       setEditingId(null);
+      setShowEditModal(false);
       alert("Short updated successfully");
       fetchShorts();
     } catch (error) {
@@ -369,6 +373,7 @@ function Shorts() {
     setEditIsEnabled(sh.isEnabled || false);
     setEditStatus(sh.status || "Draft");
     setEditLanguage(sh.language || "ta");
+    setShowEditModal(true);
   };
 
   const getStatusStyle = (statusVal, isEnabledVal) => {
@@ -712,156 +717,48 @@ function Shorts() {
                       )}
                     </td>
                     <td>
-                      {editingId === sh._id ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                          <input
-                            type="text"
-                            value={editTitle}
-                            onChange={(e) => setEditTitle(e.target.value)}
-                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "14px" }}
-                            placeholder="Title"
-                          />
-                          <div style={{ background: "rgba(255,255,255,0.02)", padding: "10px", borderRadius: "6px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "6px" }}>
-                            <label style={{ fontSize: "11px", fontWeight: "bold" }}>Edit Video File:</label>
-                            <input type="file" accept="video/*" onChange={handleEditVideoUpload} style={{ fontSize: "11px" }} />
-                            {editUploadingVideo && <span style={{ fontSize: "11px", color: "orange" }}>Uploading video...</span>}
-                            <input
-                              type="text"
-                              value={editVideoUrl}
-                              onChange={(e) => setEditVideoUrl(e.target.value)}
-                              style={{ padding: "4px 8px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "11px" }}
-                              placeholder="Video Link/URL"
-                            />
-                          </div>
-                          <input
-                            type="text"
-                            value={editDescription}
-                            onChange={(e) => setEditDescription(e.target.value)}
-                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px" }}
-                            placeholder="Caption"
-                          />
-                          <select
-                            value={editLanguage}
-                            onChange={(e) => setEditLanguage(e.target.value)}
-                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)", fontSize: "12px" }}
-                          >
-                            <option value="ta">Tamil</option>
-                            <option value="en">English</option>
-                          </select>
-                          {role === "editor" ? (
-                            <select
-                              value={editStatus}
-                              onChange={(e) => setEditStatus(e.target.value)}
-                              style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)" }}
-                            >
-                              <option value="Draft">Draft</option>
-                              <option value="Pending Approval">Pending Approval</option>
-                            </select>
-                          ) : (
-                            <select
-                              value={editStatus}
-                              onChange={(e) => setEditStatus(e.target.value)}
-                              style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)" }}
-                            >
-                              <option value="Draft">Draft</option>
-                              <option value="Pending Approval">Pending Approval</option>
-                              <option value="Approved">Approved</option>
-                              <option value="Published">Published</option>
-                              <option value="Rejected">Rejected</option>
-                            </select>
-                          )}
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontWeight: 600, color: "var(--text-main)" }}>{sh.title}</span>
+                          <span style={{
+                            background: sh.language === "en" ? "#e0f2fe" : "#fef3c7",
+                            color: sh.language === "en" ? "#0369a1" : "#b45309",
+                            fontSize: "10px",
+                            fontWeight: "bold",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            textTransform: "uppercase"
+                          }}>
+                            {sh.language === "en" ? "English" : "Tamil"}
+                          </span>
                         </div>
-                      ) : (
-                        <div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span style={{ fontWeight: 600, color: "var(--text-main)" }}>{sh.title}</span>
-                            <span style={{
-                              background: sh.language === "en" ? "#e0f2fe" : "#fef3c7",
-                              color: sh.language === "en" ? "#0369a1" : "#b45309",
-                              fontSize: "10px",
-                              fontWeight: "bold",
-                              padding: "2px 6px",
-                              borderRadius: "4px",
-                              textTransform: "uppercase"
-                            }}>
-                              {sh.language === "en" ? "English" : "Tamil"}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
-                            {sh.description || "No caption written."}
-                          </div>
-                          {sh.rejectionReason && resolvedStatus === "Rejected" && (
-                            <div style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px" }}>
-                              Rejection Reason: {sh.rejectionReason}
-                            </div>
-                          )}
+                        <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
+                          {sh.description || "No caption written."}
                         </div>
+                        {sh.rejectionReason && resolvedStatus === "Rejected" && (
+                          <div style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px" }}>
+                            Rejection Reason: {sh.rejectionReason}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <span className="category-tag">{sh.category}</span>
+                    </td>
+                    <td>
+                      {sh.isFeatured ? (
+                        <span className="status-badge badge-published" style={{ textAlign: "center" }}>Featured</span>
+                      ) : (
+                        <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Standard</span>
                       )}
                     </td>
                     <td>
-                      {editingId === sh._id ? (
-                        <select
-                          value={editCategory}
-                          onChange={(e) => setEditCategory(e.target.value)}
-                          style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid var(--border-color)" }}
-                        >
-                          <option value="General">General</option>
-                          <option value="Politics">Politics</option>
-                          <option value="Sports">Sports</option>
-                          <option value="Cinema">Cinema</option>
-                          <option value="Business">Business</option>
-                        </select>
-                      ) : (
-                        <span className="category-tag">{sh.category}</span>
-                      )}
+                      <span style={getStatusStyle(sh.status, sh.isEnabled)}>
+                        {resolvedStatus}
+                      </span>
                     </td>
                     <td>
-                      {editingId === sh._id ? (
-                        <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
-                          <input type="checkbox" checked={editIsFeatured} onChange={(e) => setEditIsFeatured(e.target.checked)} />
-                          Featured
-                        </label>
-                      ) : (
-                        sh.isFeatured ? (
-                          <span className="status-badge badge-published" style={{ textAlign: "center" }}>Featured</span>
-                        ) : (
-                          <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Standard</span>
-                        )
-                      )}
-                    </td>
-                    <td>
-                      {editingId === sh._id ? (
-                        role === "admin" ? (
-                          <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
-                            <input type="checkbox" checked={editIsEnabled} onChange={(e) => setEditIsEnabled(e.target.checked)} />
-                            Enabled
-                          </label>
-                        ) : null
-                      ) : (
-                        <span style={getStatusStyle(sh.status, sh.isEnabled)}>
-                          {resolvedStatus}
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      {editingId === sh._id ? (
-                        <div style={{ display: "flex", gap: "10px" }}>
-                          <button
-                            className="action-btn edit"
-                            onClick={() => handleUpdate(sh._id)}
-                            style={{ color: "#10b981" }}
-                          >
-                            Save
-                          </button>
-                          <button
-                            className="action-btn delete"
-                            onClick={() => setEditingId(null)}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap", whiteSpace: "nowrap" }}>
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap", whiteSpace: "nowrap" }}>
                           
                           {/* Toggle Active state (Admin only) */}
                           {role === "admin" && (
@@ -994,8 +891,7 @@ function Shorts() {
                             </button>
                           )}
 
-                        </div>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -1004,6 +900,141 @@ function Shorts() {
           </table>
         )}
       </div>
+
+      {/* EDIT MODAL POPUP */}
+      {showEditModal && editingId && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.7)", zIndex: 999998,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "20px"
+        }} onClick={(e) => { if (e.target === e.currentTarget) { setShowEditModal(false); setEditingId(null); } }}>
+          <div style={{
+            background: "var(--card-bg, #1e1e2e)",
+            padding: "28px", borderRadius: "14px",
+            width: "100%", maxWidth: "580px",
+            border: "1px solid var(--border-color, #334155)",
+            position: "relative",
+            color: "var(--text-main)",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            boxShadow: "0 25px 60px rgba(0,0,0,0.5)"
+          }}>
+            {/* Modal Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "22px", borderBottom: "1px solid var(--border-color)", paddingBottom: "14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <FaEdit style={{ color: "var(--accent-orange)", fontSize: "18px" }} />
+                <h3 style={{ margin: 0, color: "var(--text-main)", fontSize: "1.15rem", fontWeight: 700 }}>Edit Short Reel</h3>
+              </div>
+              <button
+                onClick={() => { setShowEditModal(false); setEditingId(null); }}
+                style={{ background: "rgba(239,68,68,0.15)", border: "1.5px solid rgba(239,68,68,0.5)", color: "#dc2626", fontSize: "20px", fontWeight: 700, lineHeight: 1, cursor: "pointer", borderRadius: "8px", width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Form Fields */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px", color: "var(--text-muted)" }}>Title</label>
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "14px", backgroundColor: "var(--card-bg)", color: "var(--text-main)", boxSizing: "border-box" }}
+                  placeholder="Short Title"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px", color: "var(--text-muted)" }}>Video File</label>
+                <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px dashed var(--border-color)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <input type="file" accept="video/*" onChange={handleEditVideoUpload} style={{ fontSize: "13px", color: "var(--text-main)" }} />
+                  {editUploadingVideo && <span style={{ fontSize: "12px", color: "var(--accent-orange)" }}>Uploading video...</span>}
+                  <input
+                    type="text"
+                    value={editVideoUrl}
+                    onChange={(e) => setEditVideoUrl(e.target.value)}
+                    style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "12px", backgroundColor: "var(--card-bg)", color: "var(--text-main)" }}
+                    placeholder="Or paste Video URL directly"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px", color: "var(--text-muted)" }}>Caption / Description</label>
+                <input
+                  type="text"
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "14px", backgroundColor: "var(--card-bg)", color: "var(--text-main)", boxSizing: "border-box" }}
+                  placeholder="Caption"
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px", color: "var(--text-muted)" }}>Category</label>
+                  <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "14px", backgroundColor: "var(--card-bg)", color: "var(--text-main)" }}>
+                    <option value="General">General</option>
+                    <option value="Politics">Politics</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Cinema">Cinema</option>
+                    <option value="Business">Business</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px", color: "var(--text-muted)" }}>Language</label>
+                  <select value={editLanguage} onChange={(e) => setEditLanguage(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "14px", backgroundColor: "var(--card-bg)", color: "var(--text-main)" }}>
+                    <option value="ta">Tamil (தமிழ்)</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px", color: "var(--text-muted)" }}>Status</label>
+                <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "14px", backgroundColor: "var(--card-bg)", color: "var(--text-main)" }}>
+                  <option value="Draft">Draft</option>
+                  <option value="Pending Approval">Pending Approval</option>
+                  {role === "admin" && <option value="Approved">Approved</option>}
+                  {role === "admin" && <option value="Published">Published</option>}
+                  {role === "admin" && <option value="Rejected">Rejected</option>}
+                </select>
+              </div>
+
+              <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", cursor: "pointer", fontWeight: 600 }}>
+                  <input type="checkbox" checked={editIsFeatured} onChange={(e) => setEditIsFeatured(e.target.checked)} style={{ width: "16px", height: "16px" }} />
+                  Featured Short
+                </label>
+                {role === "admin" && (
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", cursor: "pointer", fontWeight: 600 }}>
+                    <input type="checkbox" checked={editIsEnabled} onChange={(e) => setEditIsEnabled(e.target.checked)} style={{ width: "16px", height: "16px" }} />
+                    Enabled
+                  </label>
+                )}
+              </div>
+
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", marginTop: "8px", paddingTop: "16px", borderTop: "1px solid var(--border-color)" }}>
+                <button
+                  onClick={() => { setShowEditModal(false); setEditingId(null); }}
+                  style={{ padding: "10px 22px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "transparent", color: "var(--text-main)", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUpdate(editingId)}
+                  style={{ padding: "10px 22px", borderRadius: "8px", background: "var(--accent-orange, #f97316)", color: "white", border: "none", fontSize: "14px", fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 12px rgba(249,115,22,0.3)" }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* PREVIEW SHORTS MODAL OPTION */}
       {previewShort && (

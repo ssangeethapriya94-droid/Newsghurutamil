@@ -40,7 +40,7 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId) {
 
     const notificationOptions = {
       body: bodyText,
-      icon: "/favicontam.png",
+      icon: "/faviconeng.png",
       image: imageUrl,
       data: {
         link: linkUrl

@@ -30,7 +30,7 @@ const Footer = ({ visitorCount }) => {
         <div className="footer-brand-col">
           <div className="footer-logo-container">
             <img
-              src="/NEWS GHURU LOGO PNG.png"
+              src="/NEWS GHURU LOGO English.png"
               alt="News Ghuru Logo"
               className="footer-logo"
             />

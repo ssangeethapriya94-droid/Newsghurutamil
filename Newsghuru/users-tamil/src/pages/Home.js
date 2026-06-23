@@ -31,6 +31,7 @@ const Home = () => {
     const dataStr = localStorage.getItem("readerData");
     if (dataStr) readerData = JSON.parse(dataStr);
   } catch (e) {}
+  const isPremium = !!(token && readerData?.isPremium);
 
   useSEO({
     title: "நியூஸ் குரு | தமிழ் செய்திகள்",
@@ -72,7 +73,7 @@ const Home = () => {
 
   // Dynamically calculate extra advertisements based on left column vs base sidebar height
   useEffect(() => {
-    if (!isLargeScreen) {
+    if (!isLargeScreen || isPremium) {
       setExtraAdsCount(0);
       return;
     }
@@ -956,7 +957,7 @@ const Home = () => {
               
               {/* Badge for total images */}
               <div style={{ position: "absolute", top: "10px", right: "10px", background: "rgba(0,0,0,0.7)", color: "white", padding: "4px 8px", borderRadius: "15px", fontSize: "11px", fontWeight: "bold", zIndex: 2, display: "flex", alignItems: "center", gap: "4px" }}>
-                <FaImage size={10} /> {(story.images || []).length} படங்கள்
+                <FaImage size={10} /> {(story.images || []).length} {(story.images || []).length === 1 ? 'படம்' : 'படங்கள்'}
               </div>
 
               <div style={{ position: "absolute", bottom: "12px", left: "12px", right: "12px", zIndex: 2, color: "white" }}>
@@ -1026,29 +1027,24 @@ const Home = () => {
 
     switch (widget.id) {
       case "ad1":
-        return (
-          <div key={widget.id} className="premium-widget-card" style={{ padding: "12px" }}>
-            <AdZone position="SIDEBAR" />
-          </div>
-        );
+        if (isPremium) return null;
+        return <AdZone key={widget.id} position="SIDEBAR" />;
       case "ad2":
-        return (
-          <div key={widget.id} className="premium-widget-card" style={{ padding: "12px" }}>
-            <AdZone position="SIDEBAR" />
-          </div>
-        );
+        if (isPremium) return null;
+        return <AdZone key={widget.id} position="SIDEBAR" />;
       case "ad3":
+        if (isPremium) return null;
         return (
-          <div key={widget.id} className="premium-widget-card sticky-ad-wrapper" style={{ position: "sticky", top: "80px", padding: "12px", zIndex: 10 }}>
-            <AdZone position="SIDEBAR" />
-          </div>
+          <AdZone 
+            key={widget.id} 
+            position="SIDEBAR" 
+            className="sticky-ad-wrapper" 
+            style={{ position: "sticky", top: "80px", zIndex: 10 }} 
+          />
         );
       case "ad4":
-        return (
-          <div key={widget.id} className="premium-widget-card" style={{ padding: "12px" }}>
-            <AdZone position="SIDEBAR" />
-          </div>
-        );
+        if (isPremium) return null;
+        return <AdZone key={widget.id} position="SIDEBAR" />;
       case "trending":
         return renderTrendingWidget(widget.titleTa || "டிரெண்டிங் செய்திகள்");
       case "mostRead":
@@ -1452,30 +1448,27 @@ const Home = () => {
             ) : (
               // Fallback default sidebar widgets if homepageConfig isn't loaded/migrated
               <>
-                <div className="premium-widget-card" style={{ padding: "12px" }}>
-                  <AdZone position="SIDEBAR" />
-                </div>
+                {!isPremium && <AdZone key="fb-ad-1" position="SIDEBAR" />}
                 {renderTrendingWidget("டிரெண்டிங் செய்திகள்")}
-                <div className="premium-widget-card" style={{ padding: "12px" }}>
-                  <AdZone position="SIDEBAR" />
-                </div>
+                {!isPremium && <AdZone key="fb-ad-2" position="SIDEBAR" />}
                 {renderMostReadWidget("அதிகம் வாசிக்கப்பட்டவை")}
-                <div className="premium-widget-card sticky-ad-wrapper" style={{ position: "sticky", top: "80px", padding: "12px", zIndex: 10 }}>
-                  <AdZone position="SIDEBAR" />
-                </div>
-                <div className="premium-widget-card" style={{ padding: "12px" }}>
-                  <AdZone position="SIDEBAR" />
-                </div>
+                {!isPremium && (
+                  <AdZone 
+                    key="fb-ad-3" 
+                    position="SIDEBAR" 
+                    className="sticky-ad-wrapper" 
+                    style={{ position: "sticky", top: "80px", zIndex: 10 }} 
+                  />
+                )}
+                {!isPremium && <AdZone key="fb-ad-4" position="SIDEBAR" />}
                 {renderSidebarCinemaWidget("சினிமா செய்திகள்")}
               </>
             )}
           </div>
 
           {/* Dynamically appended extra ads based on page height */}
-          {isLargeScreen && Array.from({ length: extraAdsCount }).map((_, idx) => (
-            <div key={`extra-ad-${idx}`} className="premium-widget-card" style={{ padding: "12px" }}>
-              <AdZone position="SIDEBAR" />
-            </div>
+          {!isPremium && isLargeScreen && Array.from({ length: extraAdsCount }).map((_, idx) => (
+            <AdZone key={`extra-ad-${idx}`} position="SIDEBAR" />
           ))}
         </aside>
       </div>
@@ -1606,7 +1599,7 @@ const Home = () => {
               {activePhotoStory.images && (
                 <div style={{ marginTop: "15px", color: "white" }}>
                   <div style={{ fontSize: "14px", fontWeight: "bold", color: "var(--accent-orange)" }}>
-                    చిత్రం {photoStoryIndex + 1} of {activePhotoStory.images.length}
+                    படம் {photoStoryIndex + 1} / {activePhotoStory.images.length}
                   </div>
                   <p style={{ fontSize: "13px", opacity: 0.9, marginTop: "8px", maxWidth: "600px", margin: "8px auto 0 auto" }}>
                     {activePhotoStory.description}

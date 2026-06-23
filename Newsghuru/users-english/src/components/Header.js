@@ -100,7 +100,7 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
             <FaBars />
           </div>
           <img
-            src="/NEWS GHURU LOGO PNG.png"
+            src="/NEWS GHURU LOGO English.png"
             alt="News Ghuru Logo"
             className="brand-logo-img"
           />
@@ -108,9 +108,11 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
         </div>
 
         {/* HEADER ADVERTISEMENT BANNER */}
-        <div className="header-ad-zone">
-          <AdZone position="HEADER_BANNER" />
-        </div>
+        {!readerData?.isPremium && (
+          <div className="header-ad-zone">
+            <AdZone position="HEADER_BANNER" />
+          </div>
+        )}
 
         <div className="main-bar-actions">
           {/* SEARCH OVERLAY TRIGGER */}

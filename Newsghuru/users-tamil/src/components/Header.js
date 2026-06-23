@@ -108,9 +108,11 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
         </div>
 
         {/* HEADER ADVERTISEMENT BANNER */}
-        <div className="header-ad-zone">
-          <AdZone position="HEADER_BANNER" />
-        </div>
+        {!readerData?.isPremium && (
+          <div className="header-ad-zone">
+            <AdZone position="HEADER_BANNER" />
+          </div>
+        )}
 
         <div className="main-bar-actions">
           {/* SEARCH OVERLAY TRIGGER */}

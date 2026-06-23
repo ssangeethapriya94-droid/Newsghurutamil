@@ -200,7 +200,7 @@ const SubscribePlans = () => {
           name: "NewsGhuru Premium",
           description: "Premium Digital News Subscription",
           // Use absolute URL so Razorpay can load it in their modal
-          image: `${window.location.origin}/NEWS GHURU LOGO PNG.png`,
+          image: `${window.location.origin}/NEWS GHURU LOGO English.png`,
           order_id: orderId,
           handler: async function (response) {
             // Payment done — show our processing overlay
