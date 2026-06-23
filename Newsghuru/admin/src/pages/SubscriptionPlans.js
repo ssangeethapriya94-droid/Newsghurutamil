@@ -13,6 +13,8 @@ function SubscriptionPlans() {
   const [duration, setDuration] = useState("1 Month");
   const [durationMonths, setDurationMonths] = useState(1);
   const [isRecommended, setIsRecommended] = useState(false);
+  const [language, setLanguage] = useState("ta");
+  const [filterLanguage, setFilterLanguage] = useState("ta");
   
   // Benefits management list
   const [benefits, setBenefits] = useState([]);
@@ -57,6 +59,7 @@ function SubscriptionPlans() {
     setDuration("1 Month");
     setDurationMonths(1);
     setIsRecommended(false);
+    setLanguage("ta");
     setBenefits([]);
     setNewBenefit("");
     setEditingId(null);
@@ -76,7 +79,8 @@ function SubscriptionPlans() {
       duration: duration.trim(),
       durationMonths: Number(durationMonths),
       isRecommended,
-      benefits
+      benefits,
+      language
     };
 
     try {
@@ -102,6 +106,7 @@ function SubscriptionPlans() {
     setDuration(plan.duration);
     setDurationMonths(plan.durationMonths);
     setIsRecommended(plan.isRecommended || false);
+    setLanguage(plan.language || "ta");
     setBenefits(plan.benefits || []);
   };
 
@@ -131,15 +136,51 @@ function SubscriptionPlans() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 350px", gap: "30px", alignItems: "start" }}>
         {/* LEFT PANEL: PLANS LIST */}
         <div>
+          {/* Language tabs */}
+          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+            <button
+              onClick={() => setFilterLanguage("ta")}
+              style={{
+                background: filterLanguage === "ta" ? "#ea580c" : "#f1f5f9",
+                color: filterLanguage === "ta" ? "#ffffff" : "#475569",
+                border: "none",
+                padding: "8px 16px",
+                borderRadius: "20px",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              Tamil Plans
+            </button>
+            <button
+              onClick={() => setFilterLanguage("en")}
+              style={{
+                background: filterLanguage === "en" ? "#ea580c" : "#f1f5f9",
+                color: filterLanguage === "en" ? "#ffffff" : "#475569",
+                border: "none",
+                padding: "8px 16px",
+                borderRadius: "20px",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              English Plans
+            </button>
+          </div>
+
           {loading && plans.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>Loading plans...</div>
-          ) : plans.length === 0 ? (
+          ) : plans.filter(p => (p.language || "ta") === filterLanguage).length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "#64748b", background: "#f8fafc", border: "1px dashed #cbd5e1", borderRadius: "8px" }}>
-              No subscription plans configured. Fill the form to add one.
+              No subscription plans configured for this language. Fill the form to add one.
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px" }}>
-              {plans.map((plan) => (
+              {plans
+                .filter(p => (p.language || "ta") === filterLanguage)
+                .map((plan) => (
                 <div 
                   key={plan._id} 
                   style={{
@@ -218,6 +259,19 @@ function SubscriptionPlans() {
           </h3>
           
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "0.8rem", fontWeight: "700", color: "#475569" }}>Language *</label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                style={{ padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: "5px", fontSize: "0.88rem" }}
+                required
+              >
+                <option value="ta">Tamil</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "0.8rem", fontWeight: "700", color: "#475569" }}>Plan Name *</label>
               <input 

@@ -7,6 +7,7 @@ function ContactQueries() {
   const [queries, setQueries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedQuery, setSelectedQuery] = useState(null);
+  const [languageFilter, setLanguageFilter] = useState("all");
 
   const fetchQueries = async () => {
     try {
@@ -57,20 +58,37 @@ function ContactQueries() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  const filteredQueries = queries.filter((q) => {
+    if (languageFilter === "all") return true;
+    const qLang = q.language || "ta";
+    return qLang === languageFilter;
+  });
+
   return (
     <div className="contact-queries-page">
-      <div className="header-actions">
+      <div className="header-actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <h2><FaEnvelopeOpenText /> Contact Queries & Subscriptions</h2>
           <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>
             Manage messages and subscription requests from users.
           </div>
         </div>
+        <div>
+          <select 
+            value={languageFilter} 
+            onChange={(e) => setLanguageFilter(e.target.value)} 
+            style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px", outline: "none", cursor: "pointer", background: "white", color: "var(--text-main)", fontWeight: 500 }}
+          >
+            <option value="all">All Languages</option>
+            <option value="ta">Tamil</option>
+            <option value="en">English</option>
+          </select>
+        </div>
       </div>
 
       {loading ? (
         <div style={{ padding: "40px", textAlign: "center" }}>Loading queries...</div>
-      ) : queries.length === 0 ? (
+      ) : filteredQueries.length === 0 ? (
         <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)", border: "2px dashed var(--border-color)", borderRadius: "8px" }}>
           No contact queries found.
         </div>
@@ -82,16 +100,32 @@ function ContactQueries() {
                 <th>Date</th>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Language</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {queries.map((q) => (
+              {filteredQueries.map((q) => (
                 <tr key={q._id}>
                   <td>{formatDate(q.createdAt)}</td>
                   <td style={{ fontWeight: 600 }}>{q.name}</td>
                   <td>{q.email}</td>
+                  <td>
+                    <span 
+                      style={{
+                        background: q.language === "en" ? "#e0f2fe" : "#fef3c7",
+                        color: q.language === "en" ? "#0369a1" : "#b45309",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        textTransform: "uppercase"
+                      }}
+                    >
+                      {q.language === "en" ? "English" : "Tamil"}
+                    </span>
+                  </td>
                   <td>
                     <span className={`status-badge status-${q.status.toLowerCase()}`}>
                       {q.status}

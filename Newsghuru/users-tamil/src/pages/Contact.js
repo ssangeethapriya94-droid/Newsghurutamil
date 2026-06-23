@@ -30,7 +30,7 @@ const Contact = () => {
     e.preventDefault();
     if (form.name && form.email && form.message) {
       try {
-        await API.post("/api/contact", form);
+        await API.post("/api/contact", { ...form, language: "ta" });
         setSubmitted(true);
         setForm({ name: "", email: "", message: "" });
         setTimeout(() => setSubmitted(false), 5000);

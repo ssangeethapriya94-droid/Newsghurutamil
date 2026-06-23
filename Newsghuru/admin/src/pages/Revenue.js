@@ -41,12 +41,14 @@ function Revenue() {
     if (!data || !data.transactions) return;
 
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Transaction Date,User Name,User Email,Plan Name,Amount (INR),Payment ID,Order ID,Status\n";
+    csvContent += "Transaction Date,User Name,User Email,Website,Plan Name,Amount (INR),Payment ID,Order ID,Status\n";
 
     data.transactions.forEach(tx => {
       const date = new Date(tx.createdAt).toLocaleString();
       const userName = tx.userId ? tx.userId.name : "N/A";
       const userEmail = tx.userId ? tx.userId.email : "N/A";
+      const lang = (tx.planId && tx.planId.language) || (tx.userId && tx.userId.language) || "ta";
+      const website = lang === "en" ? "English" : "Tamil";
       const planName = tx.planId ? tx.planId.name : "N/A";
       const amount = tx.amount;
       const paymentId = tx.paymentId;
@@ -57,6 +59,7 @@ function Revenue() {
         `"${date}"`,
         `"${userName}"`,
         `"${userEmail}"`,
+        `"${website}"`,
         `"${planName}"`,
         amount,
         `"${paymentId}"`,
@@ -135,7 +138,7 @@ function Revenue() {
       </div>
 
       {/* METRIC CARDS ROW */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "20px", margin: "25px 0" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px", margin: "25px 0" }}>
         
         {/* Metric 1: Total Revenue */}
         <div style={{
@@ -150,9 +153,49 @@ function Revenue() {
         }}>
           <div>
             <span style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px", color: "#94a3b8", fontWeight: 600 }}>Total Revenue</span>
-            <h3 style={{ fontSize: "28px", margin: "6px 0 0 0", color: "#f97316", fontWeight: 800 }}>₹{metrics.totalRevenue.toLocaleString("en-IN")}</h3>
+            <h3 style={{ fontSize: "28px", margin: "6px 0 0 0", color: "#ea580c", fontWeight: 800 }}>₹{(metrics.totalRevenue || 0).toLocaleString("en-IN")}</h3>
+          </div>
+          <div style={{ background: "rgba(234, 88, 12, 0.15)", padding: "12px", borderRadius: "50%", color: "#ea580c", display: "flex", fontSize: "22px" }}>
+            <FiDollarSign />
+          </div>
+        </div>
+
+        {/* Metric 1b: Tamil Website Revenue */}
+        <div style={{
+          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+          borderRadius: "12px",
+          padding: "20px",
+          color: "white",
+          boxShadow: "0 10px 20px rgba(0,0,0,0.05)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <div>
+            <span style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px", color: "#94a3b8", fontWeight: 600 }}>Tamil Website Revenue</span>
+            <h3 style={{ fontSize: "28px", margin: "6px 0 0 0", color: "#f97316", fontWeight: 800 }}>₹{(metrics.tamilRevenue || 0).toLocaleString("en-IN")}</h3>
           </div>
           <div style={{ background: "rgba(249, 115, 22, 0.15)", padding: "12px", borderRadius: "50%", color: "#f97316", display: "flex", fontSize: "22px" }}>
+            <FiDollarSign />
+          </div>
+        </div>
+
+        {/* Metric 1c: English Website Revenue */}
+        <div style={{
+          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+          borderRadius: "12px",
+          padding: "20px",
+          color: "white",
+          boxShadow: "0 10px 20px rgba(0,0,0,0.05)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <div>
+            <span style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px", color: "#94a3b8", fontWeight: 600 }}>English Website Revenue</span>
+            <h3 style={{ fontSize: "28px", margin: "6px 0 0 0", color: "#3b82f6", fontWeight: 800 }}>₹{(metrics.englishRevenue || 0).toLocaleString("en-IN")}</h3>
+          </div>
+          <div style={{ background: "rgba(59, 130, 246, 0.15)", padding: "12px", borderRadius: "50%", color: "#3b82f6", display: "flex", fontSize: "22px" }}>
             <FiDollarSign />
           </div>
         </div>
@@ -170,7 +213,7 @@ function Revenue() {
         }}>
           <div>
             <span style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px", color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>Monthly Revenue (June)</span>
-            <h3 style={{ fontSize: "28px", margin: "6px 0 0 0", color: "white", fontWeight: 800 }}>₹{metrics.monthlyRevenue.toLocaleString("en-IN")}</h3>
+            <h3 style={{ fontSize: "28px", margin: "6px 0 0 0", color: "white", fontWeight: 800 }}>₹{(metrics.monthlyRevenue || 0).toLocaleString("en-IN")}</h3>
           </div>
           <div style={{ background: "rgba(255, 255, 255, 0.2)", padding: "12px", borderRadius: "50%", color: "white", display: "flex", fontSize: "22px" }}>
             <FiTrendingUp />
@@ -332,6 +375,7 @@ function Revenue() {
               <tr>
                 <th>Date & Time</th>
                 <th>Subscriber Details</th>
+                <th>Website</th>
                 <th>Purchased Plan</th>
                 <th style={{ textAlign: "right" }}>Amount</th>
                 <th>Payment ID</th>
@@ -354,6 +398,36 @@ function Revenue() {
                         {tx.userId ? tx.userId.email : "N/A"}
                       </span>
                     </div>
+                  </td>
+                  <td>
+                    {(() => {
+                      const lang = (tx.planId && tx.planId.language) || (tx.userId && tx.userId.language) || "ta";
+                      return lang === "en" ? (
+                        <span style={{
+                          background: "#e8f0fe",
+                          color: "#1a73e8",
+                          padding: "4px 10px",
+                          borderRadius: "12px",
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          display: "inline-block"
+                        }}>
+                          English
+                        </span>
+                      ) : (
+                        <span style={{
+                          background: "#fdf0ea",
+                          color: "#ea580c",
+                          padding: "4px 10px",
+                          borderRadius: "12px",
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          display: "inline-block"
+                        }}>
+                          Tamil
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td>
                     <span className="category-tag" style={{ background: "rgba(234, 88, 12, 0.1)", color: "#ea580c" }}>

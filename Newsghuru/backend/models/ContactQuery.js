@@ -30,6 +30,11 @@ const contactQuerySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  language: {
+    type: String,
+    enum: ["ta", "en"],
+    default: "ta",
+  },
 });
 
 module.exports = mongoose.model("ContactQuery", contactQuerySchema);

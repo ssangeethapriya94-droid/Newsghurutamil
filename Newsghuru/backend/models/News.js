@@ -126,6 +126,11 @@ const newsSchema =
       required: true,
     },
 
+    sendBrowserNotification: {
+      type: Boolean,
+      default: false,
+    },
+
   },
   {
     timestamps: true,

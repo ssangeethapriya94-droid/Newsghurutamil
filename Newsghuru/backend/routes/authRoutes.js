@@ -34,12 +34,7 @@ router.post("/login", async (req, res) => {
     }
 
     // Check if premium subscription has expired
-    if (user.isPremium && user.premiumValidUntil && new Date() > user.premiumValidUntil) {
-      user.isPremium = false;
-      user.premiumValidUntil = null;
-      user.premiumPlan = null;
-      await user.save();
-    }
+    await user.checkSubscription();
 
     // 4. Generate JWT Token
     const payload = {
@@ -62,6 +57,8 @@ router.post("/login", async (req, res) => {
         isPremium: user.isPremium,
         premiumValidUntil: user.premiumValidUntil,
         premiumPlan: user.premiumPlan,
+        upcomingPlan: user.upcomingPlan,
+        upcomingValidUntil: user.upcomingValidUntil,
       },
     });
   } catch (error) {
@@ -101,18 +98,17 @@ router.post("/register", async (req, res) => {
 // GET /api/users/profile - Get currently logged-in user's profile
 router.get("/users/profile", verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("-password").populate("premiumPlan");
+    let user = await User.findById(req.user._id).select("-password");
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
     // Check if premium subscription has expired
-    if (user.isPremium && user.premiumValidUntil && new Date() > user.premiumValidUntil) {
-      user.isPremium = false;
-      user.premiumValidUntil = null;
-      user.premiumPlan = null;
-      await user.save();
-    }
+    await user.checkSubscription();
+
+    // Populate plans
+    await user.populate("premiumPlan");
+    await user.populate("upcomingPlan");
 
     res.json({
       success: true,

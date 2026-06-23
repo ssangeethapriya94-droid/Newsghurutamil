@@ -11,8 +11,8 @@ const router = express.Router();
 // GET /api/subscription/plans - Get all plans (public)
 router.get("/plans", async (req, res) => {
   try {
-    let plans = await SubscriptionPlan.find().sort({ price: 1 });
-    if (plans.length === 0) {
+    const totalPlans = await SubscriptionPlan.countDocuments();
+    if (totalPlans === 0) {
       const defaultPlans = [
         {
           name: "1 Month",
@@ -23,7 +23,8 @@ router.get("/plans", async (req, res) => {
             "பிரீமியம் கட்டுரைகள்",
             "விளம்பரமற்ற வாசிப்பு"
           ],
-          isRecommended: false
+          isRecommended: false,
+          language: "ta"
         },
         {
           name: "6 Months",
@@ -34,7 +35,8 @@ router.get("/plans", async (req, res) => {
             "பிரீமியம் கட்டுரைகள்",
             "விளம்பரமற்ற வாசிப்பு"
           ],
-          isRecommended: false
+          isRecommended: false,
+          language: "ta"
         },
         {
           name: "1 Year",
@@ -45,7 +47,8 @@ router.get("/plans", async (req, res) => {
             "பிரீமியம் கட்டுரைகள்",
             "விளம்பரமற்ற வாசிப்பு"
           ],
-          isRecommended: true
+          isRecommended: true,
+          language: "ta"
         },
         {
           name: "LIFETIME",
@@ -56,13 +59,74 @@ router.get("/plans", async (req, res) => {
             "பிரீமியம் கட்டுரைகள்",
             "விளம்பரமற்ற வாசிப்பு"
           ],
-          isRecommended: false
+          isRecommended: false,
+          language: "ta"
+        },
+        // English plans
+        {
+          name: "1 Month",
+          price: 129,
+          duration: "Month",
+          durationMonths: 1,
+          benefits: [
+            "Premium Articles",
+            "Ad-free Reading"
+          ],
+          isRecommended: false,
+          language: "en"
+        },
+        {
+          name: "6 Months",
+          price: 749,
+          duration: "6 Months",
+          durationMonths: 6,
+          benefits: [
+            "Premium Articles",
+            "Ad-free Reading"
+          ],
+          isRecommended: false,
+          language: "en"
+        },
+        {
+          name: "1 Year",
+          price: 999,
+          duration: "Year",
+          durationMonths: 12,
+          benefits: [
+            "Premium Articles",
+            "Ad-free Reading"
+          ],
+          isRecommended: true,
+          language: "en"
+        },
+        {
+          name: "LIFETIME",
+          price: 9999,
+          duration: "Lifetime",
+          durationMonths: 999,
+          benefits: [
+            "Lifetime Articles",
+            "Ad-free Reading"
+          ],
+          isRecommended: false,
+          language: "en"
         }
       ];
-      plans = await SubscriptionPlan.insertMany(defaultPlans);
-      console.log("✅ Auto-seeded subscription plans inside GET /plans route (no magazines/newspapers)");
+      await SubscriptionPlan.insertMany(defaultPlans);
+      console.log("✅ Auto-seeded subscription plans inside GET /plans route for both English and Tamil");
     }
     
+    const { language } = req.query;
+    let query = {};
+    if (language) {
+      if (language === "ta") {
+        query = { $or: [{ language: "ta" }, { language: { $exists: false } }] };
+      } else {
+        query = { language };
+      }
+    }
+
+    const plans = await SubscriptionPlan.find(query).sort({ price: 1 });
     res.json({ success: true, plans });
   } catch (error) {
     console.error("Fetch plans error:", error);
@@ -73,14 +137,15 @@ router.get("/plans", async (req, res) => {
 // POST /api/subscription/plans - Create a new plan (Admin only)
 router.post("/plans", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
-    const { name, price, duration, durationMonths, benefits, isRecommended } = req.body;
+    const { name, price, duration, durationMonths, benefits, isRecommended, language } = req.body;
     if (!name || !price || !duration) {
       return res.status(400).json({ success: false, message: "Name, price, and duration are required" });
     }
 
-    const planExists = await SubscriptionPlan.findOne({ name });
+    const targetLanguage = language || "ta";
+    const planExists = await SubscriptionPlan.findOne({ name, language: targetLanguage });
     if (planExists) {
-      return res.status(400).json({ success: false, message: "Plan with this name already exists" });
+      return res.status(400).json({ success: false, message: `Plan with this name already exists for language: ${targetLanguage}` });
     }
 
     const newPlan = new SubscriptionPlan({
@@ -89,7 +154,8 @@ router.post("/plans", verifyToken, authorizeRoles("admin"), async (req, res) => 
       duration,
       durationMonths: durationMonths || 1,
       benefits: benefits || [],
-      isRecommended: !!isRecommended
+      isRecommended: !!isRecommended,
+      language: targetLanguage
     });
 
     await newPlan.save();
@@ -103,7 +169,7 @@ router.post("/plans", verifyToken, authorizeRoles("admin"), async (req, res) => 
 // PUT /api/subscription/plans/:id - Update a plan (Admin only)
 router.put("/plans/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
-    const { name, price, duration, durationMonths, benefits, isRecommended } = req.body;
+    const { name, price, duration, durationMonths, benefits, isRecommended, language } = req.body;
     const plan = await SubscriptionPlan.findById(req.params.id);
     if (!plan) {
       return res.status(404).json({ success: false, message: "Subscription plan not found" });
@@ -115,6 +181,7 @@ router.put("/plans/:id", verifyToken, authorizeRoles("admin"), async (req, res) 
     if (durationMonths !== undefined) plan.durationMonths = durationMonths;
     if (benefits) plan.benefits = benefits;
     if (isRecommended !== undefined) plan.isRecommended = isRecommended;
+    if (language) plan.language = language;
 
     await plan.save();
     res.json({ success: true, message: "Subscription plan updated successfully", plan });
@@ -268,12 +335,22 @@ router.post("/verify-payment", verifyToken, async (req, res) => {
     }
 
     const durationMonths = plan.durationMonths || 1;
-    const validUntil = new Date();
-    validUntil.setMonth(validUntil.getMonth() + durationMonths);
+    if (user.isPremium && user.premiumValidUntil && new Date() < user.premiumValidUntil) {
+      const upcomingValidUntil = new Date(user.premiumValidUntil);
+      upcomingValidUntil.setMonth(upcomingValidUntil.getMonth() + durationMonths);
+      
+      user.upcomingPlan = plan._id;
+      user.upcomingValidUntil = upcomingValidUntil;
+    } else {
+      const validUntil = new Date();
+      validUntil.setMonth(validUntil.getMonth() + durationMonths);
 
-    user.isPremium = true;
-    user.premiumPlan = plan._id;
-    user.premiumValidUntil = validUntil;
+      user.isPremium = true;
+      user.premiumPlan = plan._id;
+      user.premiumValidUntil = validUntil;
+      user.upcomingPlan = null;
+      user.upcomingValidUntil = null;
+    }
     await user.save();
 
     // Record the transaction
@@ -335,12 +412,22 @@ router.post("/verify-mock-payment", verifyToken, async (req, res) => {
     }
 
     const durationMonths = plan.durationMonths || 1;
-    const validUntil = new Date();
-    validUntil.setMonth(validUntil.getMonth() + durationMonths);
+    if (user.isPremium && user.premiumValidUntil && new Date() < user.premiumValidUntil) {
+      const upcomingValidUntil = new Date(user.premiumValidUntil);
+      upcomingValidUntil.setMonth(upcomingValidUntil.getMonth() + durationMonths);
+      
+      user.upcomingPlan = plan._id;
+      user.upcomingValidUntil = upcomingValidUntil;
+    } else {
+      const validUntil = new Date();
+      validUntil.setMonth(validUntil.getMonth() + durationMonths);
 
-    user.isPremium = true;
-    user.premiumPlan = plan._id;
-    user.premiumValidUntil = validUntil;
+      user.isPremium = true;
+      user.premiumPlan = plan._id;
+      user.premiumValidUntil = validUntil;
+      user.upcomingPlan = null;
+      user.upcomingValidUntil = null;
+    }
     await user.save();
 
     // Record the transaction
@@ -373,24 +460,24 @@ router.post("/verify-mock-payment", verifyToken, async (req, res) => {
 // GET /api/subscription/status - Get current user's subscription status
 router.get("/status", verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("-password").populate("premiumPlan");
+    const user = await User.findById(req.user._id).select("-password");
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Auto-expire premium if needed
-    if (user.isPremium && user.premiumValidUntil && new Date() > user.premiumValidUntil) {
-      user.isPremium = false;
-      user.premiumValidUntil = null;
-      user.premiumPlan = null;
-      await user.save();
-    }
+    // Auto-expire/transition premium if needed
+    await user.checkSubscription();
+
+    await user.populate("premiumPlan");
+    await user.populate("upcomingPlan");
 
     res.json({
       success: true,
       isPremium: user.isPremium,
       premiumValidUntil: user.premiumValidUntil,
-      premiumPlan: user.premiumPlan
+      premiumPlan: user.premiumPlan,
+      upcomingPlan: user.upcomingPlan,
+      upcomingValidUntil: user.upcomingValidUntil
     });
   } catch (error) {
     console.error("Subscription status error:", error);
@@ -439,14 +526,24 @@ router.post("/webhook", express.raw({ type: "application/json" }), async (req, r
         const user = await User.findById(userId);
         const plan = await SubscriptionPlan.findById(planId);
 
-        if (user && plan && !user.isPremium) {
+        if (user && plan) {
           const durationMonths = plan.durationMonths || 1;
-          const validUntil = new Date();
-          validUntil.setMonth(validUntil.getMonth() + durationMonths);
+          if (user.isPremium && user.premiumValidUntil && new Date() < user.premiumValidUntil) {
+            const upcomingValidUntil = new Date(user.premiumValidUntil);
+            upcomingValidUntil.setMonth(upcomingValidUntil.getMonth() + durationMonths);
+            
+            user.upcomingPlan = plan._id;
+            user.upcomingValidUntil = upcomingValidUntil;
+          } else {
+            const validUntil = new Date();
+            validUntil.setMonth(validUntil.getMonth() + durationMonths);
 
-          user.isPremium = true;
-          user.premiumPlan = plan._id;
-          user.premiumValidUntil = validUntil;
+            user.isPremium = true;
+            user.premiumPlan = plan._id;
+            user.premiumValidUntil = validUntil;
+            user.upcomingPlan = null;
+            user.upcomingValidUntil = null;
+          }
           await user.save();
 
           // Record the transaction
@@ -481,12 +578,23 @@ router.get("/admin/revenue", verifyToken, authorizeRoles("admin"), async (req, r
   try {
     // Fetch all successful transactions
     const transactions = await Transaction.find({ status: "Success" })
-      .populate("userId", "name email")
-      .populate("planId", "name price")
+      .populate("userId", "name email language")
+      .populate("planId", "name price language")
       .sort({ createdAt: -1 });
 
     // Metrics calculation
     const totalRevenue = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+
+    let tamilRevenue = 0;
+    let englishRevenue = 0;
+    transactions.forEach(tx => {
+      const lang = (tx.planId && tx.planId.language) || (tx.userId && tx.userId.language) || "ta";
+      if (lang === "en") {
+        englishRevenue += tx.amount;
+      } else {
+        tamilRevenue += tx.amount;
+      }
+    });
 
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -533,6 +641,8 @@ router.get("/admin/revenue", verifyToken, authorizeRoles("admin"), async (req, r
       success: true,
       metrics: {
         totalRevenue,
+        tamilRevenue,
+        englishRevenue,
         monthlyRevenue,
         activeSubscriptions,
         totalPlansSold

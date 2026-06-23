@@ -6,7 +6,8 @@ import {
 import { 
   FiFileText, FiClock, FiCheckCircle, FiXCircle, 
   FiUsers, FiZap, FiPlusSquare, FiEye, FiMoreVertical, 
-  FiArrowRight, FiList, FiSliders, FiTv, FiHeart, FiActivity
+  FiArrowRight, FiList, FiSliders, FiTv, FiHeart, FiActivity,
+  FiCamera
 } from "react-icons/fi";
 import "../styles/AdminDashboard.css";
 import { useNavigate } from "react-router-dom";
@@ -256,6 +257,17 @@ function AdminDashboard() {
           <div className="metric-details">
             <h3>Pending Shorts</h3>
             <p className="value">{stats.pendingNewsShortsCount || 0}</p>
+            <span className="trend-text green-trend">Needs admin review</span>
+          </div>
+        </div>
+
+        <div className="metric-card orange-glow" onClick={() => navigate("/admin/photo-stories", { state: { statusFilter: "Pending Approval" } })} style={{ cursor: "pointer" }}>
+          <div className="metric-icon-bg bg-orange">
+            <FiCamera />
+          </div>
+          <div className="metric-details">
+            <h3>Pending Stories</h3>
+            <p className="value">{stats.pendingPhotoStoriesCount || 0}</p>
             <span className="trend-text green-trend">Needs admin review</span>
           </div>
         </div>

@@ -58,6 +58,15 @@ const userSchema = new mongoose.Schema({
     ref: "SubscriptionPlan",
     default: null,
   },
+  upcomingPlan: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "SubscriptionPlan",
+    default: null,
+  },
+  upcomingValidUntil: {
+    type: Date,
+    default: null,
+  },
   notificationEnabled: {
     type: Boolean,
     default: false,
@@ -96,6 +105,25 @@ userSchema.pre("save", async function () {
 // Method to compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Method to check and transition subscription status if expired
+userSchema.methods.checkSubscription = async function () {
+  if (this.isPremium && this.premiumValidUntil && new Date() > this.premiumValidUntil) {
+    if (this.upcomingPlan) {
+      this.premiumPlan = this.upcomingPlan;
+      this.premiumValidUntil = this.upcomingValidUntil;
+      this.upcomingPlan = null;
+      this.upcomingValidUntil = null;
+      this.isPremium = true;
+      console.log(`✅ Transitioned user ${this.email} to upcoming plan.`);
+    } else {
+      this.isPremium = false;
+      this.premiumValidUntil = null;
+      this.premiumPlan = null;
+    }
+    await this.save();
+  }
 };
 
 module.exports = mongoose.model("User", userSchema);

@@ -21,6 +21,7 @@ function AddNews() {
   });
 
   const [categories, setCategories] = useState([]);
+  const [sendBrowserNotification, setSendBrowserNotification] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -199,6 +200,7 @@ function AddNews() {
       newsData.append("seoKeywords", formData.seoKeywords);
       newsData.append("status", "published");
       newsData.append("language", formData.language);
+      newsData.append("sendBrowserNotification", sendBrowserNotification);
       
       if (coverImage) {
         newsData.append("coverImage", coverImage);
@@ -396,6 +398,17 @@ function AddNews() {
                   </div>
                 ))}
               </div>
+            </div>
+            <div className="form-group full-width" style={{ marginTop: '15px', marginBottom: '15px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
+                <input 
+                  type="checkbox" 
+                  checked={sendBrowserNotification} 
+                  onChange={(e) => setSendBrowserNotification(e.target.checked)} 
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                />
+                Send Browser Push Notification
+              </label>
             </div>
           </div>
 

@@ -102,7 +102,7 @@ const SubscribePlans = () => {
   // Fetch plans on mount to overwrite with latest DB config if available
   useEffect(() => {
     setLoading(true);
-    API.get("/api/subscription/plans")
+    API.get("/api/subscription/plans?language=en")
       .then((res) => {
         if (res.data && res.data.success && res.data.plans && res.data.plans.length > 0) {
           setPlans(res.data.plans);
@@ -377,13 +377,25 @@ const SubscribePlans = () => {
                 ))
               );
 
+              const isUpcoming = userData?.isPremium && (
+                userData.upcomingPlan === plan._id ||
+                userData.upcomingPlan?._id === plan._id ||
+                (typeof userData.upcomingPlan === "object" && userData.upcomingPlan !== null && (
+                  userData.upcomingPlan.durationMonths === plan.durationMonths ||
+                  userData.upcomingPlan.duration === plan.duration ||
+                  userData.upcomingPlan.name?.toLowerCase() === plan.name?.toLowerCase()
+                ))
+              );
+
               return (
                 <div 
                   key={plan._id} 
-                  className={`store-plan-card ${isActive ? "store-active" : isRec ? "store-recommended" : ""}`}
+                  className={`store-plan-card ${isActive ? "store-active" : isUpcoming ? "store-upcoming" : isRec ? "store-recommended" : ""}`}
                 >
                   {isActive ? (
                     <div className="store-rec-badge active-plan-badge">ACTIVE PLAN</div>
+                  ) : isUpcoming ? (
+                    <div className="store-rec-badge upcoming-plan-badge" style={{ background: "#3b82f6" }}>UPCOMING PLAN</div>
                   ) : (
                     isRec && <div className="store-rec-badge">RECOMMENDED</div>
                   )}
@@ -407,11 +419,11 @@ const SubscribePlans = () => {
 
                   <button 
                     className="store-subscribe-btn"
-                    onClick={() => !isActive && handleSubscribe(plan._id)}
-                    disabled={isActive}
-                    style={isActive ? { background: "#10b981", cursor: "default", boxShadow: "none" } : {}}
+                    onClick={() => !isActive && !isUpcoming && handleSubscribe(plan._id)}
+                    disabled={isActive || isUpcoming}
+                    style={isActive ? { background: "#10b981", cursor: "default", boxShadow: "none" } : isUpcoming ? { background: "#3b82f6", cursor: "default", boxShadow: "none" } : {}}
                   >
-                    {isActive ? "Active Plan" : "Subscribe Now"}
+                    {isActive ? "Active Plan" : isUpcoming ? "Upcoming Plan" : "Subscribe Now"}
                   </button>
 
                   <div className="store-plan-footer">
@@ -436,10 +448,21 @@ const SubscribePlans = () => {
               userData.premiumPlan.name?.toLowerCase() === lifetimePlan.name?.toLowerCase()
             ))
           );
+
+          const isLifetimeUpcoming = userData?.isPremium && (
+            userData.upcomingPlan === lifetimePlan._id || 
+            userData.upcomingPlan?._id === lifetimePlan._id ||
+            (typeof userData.upcomingPlan === "object" && userData.upcomingPlan !== null && (
+              userData.upcomingPlan.durationMonths === lifetimePlan.durationMonths ||
+              userData.upcomingPlan.duration === lifetimePlan.duration ||
+              userData.upcomingPlan.name?.toLowerCase() === lifetimePlan.name?.toLowerCase()
+            ))
+          );
+
           return (
-            <div className={`lifetime-horizontal-card-custom ${isLifetimeActive ? "lifetime-active" : ""}`}>
-              <div className="lifetime-badge-glow">
-                {isLifetimeActive ? "ACTIVE LIFETIME PLAN" : "LIFETIME ACCESS"}
+            <div className={`lifetime-horizontal-card-custom ${isLifetimeActive ? "lifetime-active" : isLifetimeUpcoming ? "lifetime-upcoming" : ""}`}>
+              <div className="lifetime-badge-glow" style={isLifetimeUpcoming ? { background: "#3b82f6" } : {}}>
+                {isLifetimeActive ? "ACTIVE LIFETIME PLAN" : isLifetimeUpcoming ? "UPCOMING LIFETIME PLAN" : "LIFETIME ACCESS"}
               </div>
               <div className="lifetime-card-content">
                 <div className="lifetime-left-sec">
@@ -455,11 +478,11 @@ const SubscribePlans = () => {
                   </div>
                   <button 
                     className="lifetime-subscribe-btn-custom"
-                    onClick={() => !isLifetimeActive && handleSubscribe(lifetimePlan._id)}
-                    disabled={isLifetimeActive}
-                    style={isLifetimeActive ? { background: "#10b981", cursor: "default", boxShadow: "none" } : {}}
+                    onClick={() => !isLifetimeActive && !isLifetimeUpcoming && handleSubscribe(lifetimePlan._id)}
+                    disabled={isLifetimeActive || isLifetimeUpcoming}
+                    style={isLifetimeActive ? { background: "#10b981", cursor: "default", boxShadow: "none" } : isLifetimeUpcoming ? { background: "#3b82f6", cursor: "default", boxShadow: "none" } : {}}
                   >
-                    {isLifetimeActive ? "Active Plan" : "Subscribe Lifetime"}
+                    {isLifetimeActive ? "Active Plan" : isLifetimeUpcoming ? "Upcoming Plan" : "Subscribe Lifetime"}
                   </button>
                 </div>
               </div>

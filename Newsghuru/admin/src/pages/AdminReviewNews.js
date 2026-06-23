@@ -24,6 +24,7 @@ function AdminReviewNews() {
     seo: false
   });
   const [publishComment, setPublishComment] = useState("");
+  const [sendBrowserNotification, setSendBrowserNotification] = useState(false);
 
   const fetchArticleDetails = async () => {
     try {
@@ -90,7 +91,8 @@ function AdminReviewNews() {
   const handlePublish = async () => {
     try {
       await API.put(`/api/news/admin/publish/${id}`, {
-        comment: publishComment
+        comment: publishComment,
+        sendBrowserNotification: sendBrowserNotification
       });
       setShowVerifyModal(false);
       alert("Article published live! 🎉");
@@ -212,6 +214,21 @@ function AdminReviewNews() {
                 value={publishComment}
                 onChange={(e) => setPublishComment(e.target.value)}
               ></textarea>
+            </div>
+
+            <div style={{marginTop: '20px'}}>
+              <label style={{fontWeight: 600, fontSize: '14px', color: 'var(--text-main)'}}>Notification Settings</label>
+              <div style={{marginTop: '8px'}}>
+                <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', color: 'var(--text-main)'}}>
+                  <input 
+                    type="checkbox" 
+                    checked={sendBrowserNotification} 
+                    onChange={(e) => setSendBrowserNotification(e.target.checked)} 
+                    style={{width: '18px', height: '18px', cursor: 'pointer'}}
+                  />
+                  Send Browser Push Notification
+                </label>
+              </div>
             </div>
 
             <div className="modal-actions" style={{justifyContent: 'center', marginTop: '30px'}}>

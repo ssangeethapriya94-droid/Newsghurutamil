@@ -3,8 +3,7 @@ const mongoose = require("mongoose");
 const subscriptionPlanSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   price: {
     type: Number,
@@ -22,6 +21,12 @@ const subscriptionPlanSchema = new mongoose.Schema({
   benefits: {
     type: [String],
     default: []
+  },
+  language: {
+    type: String,
+    enum: ["ta", "en"],
+    default: "ta",
+    required: true
   },
   isRecommended: {
     type: Boolean,

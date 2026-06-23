@@ -119,7 +119,8 @@ const seedSubscriptionPlans = async () => {
           "பிரீமியம் கட்டுரைகள்",
           "விளம்பரமற்ற வாசிப்பு"
         ],
-        isRecommended: false
+        isRecommended: false,
+        language: "ta"
       },
       {
         name: "6 Months",
@@ -130,7 +131,8 @@ const seedSubscriptionPlans = async () => {
           "பிரீமியம் கட்டுரைகள்",
           "விளம்பரமற்ற வாசிப்பு"
         ],
-        isRecommended: false
+        isRecommended: false,
+        language: "ta"
       },
       {
         name: "1 Year",
@@ -141,7 +143,8 @@ const seedSubscriptionPlans = async () => {
           "பிரீமியம் கட்டுரைகள்",
           "விளம்பரமற்ற வாசிப்பு"
         ],
-        isRecommended: true
+        isRecommended: true,
+        language: "ta"
       },
       {
         name: "LIFETIME",
@@ -152,11 +155,61 @@ const seedSubscriptionPlans = async () => {
           "பிரீமியம் கட்டுரைகள்",
           "விளம்பரமற்ற வாசிப்பு"
         ],
-        isRecommended: false
+        isRecommended: false,
+        language: "ta"
+      },
+      // English plans
+      {
+        name: "1 Month",
+        price: 129,
+        duration: "1 Month",
+        durationMonths: 1,
+        benefits: [
+          "Premium Articles",
+          "Ad-free Reading"
+        ],
+        isRecommended: false,
+        language: "en"
+      },
+      {
+        name: "6 Months",
+        price: 749,
+        duration: "6 Months",
+        durationMonths: 6,
+        benefits: [
+          "Premium Articles",
+          "Ad-free Reading"
+        ],
+        isRecommended: false,
+        language: "en"
+      },
+      {
+        name: "1 Year",
+        price: 999,
+        duration: "1 Year",
+        durationMonths: 12,
+        benefits: [
+          "Premium Articles",
+          "Ad-free Reading"
+        ],
+        isRecommended: true,
+        language: "en"
+      },
+      {
+        name: "LIFETIME",
+        price: 9999,
+        duration: "LIFETIME",
+        durationMonths: 999,
+        benefits: [
+          "Lifetime Articles",
+          "Ad-free Reading"
+        ],
+        isRecommended: false,
+        language: "en"
       }
     ];
     await SubscriptionPlan.insertMany(defaultPlans);
-    console.log("✅ Default Subscription Plans seeded in MongoDB (no magazines/newspapers)");
+    console.log("✅ Default Subscription Plans seeded in MongoDB for both Tamil and English");
   } catch (error) {
     console.error("❌ Seeding subscription plans failed:", error.message);
   }
@@ -168,75 +221,78 @@ const seedTransactions = async () => {
     const User = require("./models/User");
     const SubscriptionPlan = require("./models/SubscriptionPlan");
 
-    // Clear existing records to ensure exactly 5 transaction samples
+    // Clear existing transaction records
     await Transaction.deleteMany({});
+    
+    // Clear existing mock reader users to re-seed clean multilingual readers
+    await User.deleteMany({ role: "reader" });
 
-    const transactionCount = await Transaction.countDocuments();
-    if (transactionCount === 0) {
-      console.log("🌱 Seeding mock transactions for revenue dashboard...");
+    console.log("🌱 Seeding mock transactions for revenue dashboard...");
 
-      // Get some plans
-      const plans = await SubscriptionPlan.find();
-      if (plans.length === 0) {
-        console.log("No subscription plans found. Skipping transaction seeding.");
-        return;
-      }
-
-      // Create/Get some users
-      let users = await User.find({ role: "reader" }).limit(10);
-      if (users.length === 0) {
-        // Create 5 reader users
-        const dummyUsers = [
-          { name: "கார்த்திக் ராஜ்", email: "karthik@gmail.com", password: "password123", role: "reader" },
-          { name: "பிரியா மோகன்", email: "priya@gmail.com", password: "password123", role: "reader" },
-          { name: "சரவணன் குமார்", email: "saravanan@gmail.com", password: "password123", role: "reader" },
-          { name: "திவ்யா சுந்தர்", email: "divya@gmail.com", password: "password123", role: "reader" },
-          { name: "அருண் பிரசாத்", email: "arun@gmail.com", password: "password123", role: "reader" }
-        ];
-        users = await User.insertMany(dummyUsers);
-        console.log("✅ Seeded 5 reader users for subscription transactions");
-      }
-
-      // Make some of these users premium in user collection to make it sync
-      const premiumUsers = users.slice(0, 3);
-      for (const u of premiumUsers) {
-        u.isPremium = true;
-        u.premiumPlan = plans[Math.floor(Math.random() * plans.length)]._id;
-        const validUntil = new Date();
-        validUntil.setMonth(validUntil.getMonth() + 6);
-        u.premiumValidUntil = validUntil;
-        await u.save();
-      }
-
-      // Now create mock transactions over the last 6 months
-      const mockTransactions = [];
-      const now = new Date();
-
-      // Create exactly 5 successful mock transactions
-      for (let i = 0; i < 5; i++) {
-        const randomUser = users[Math.floor(Math.random() * users.length)];
-        const randomPlan = plans[Math.floor(Math.random() * plans.length)];
-        
-        // Random date in the last 6 months
-        const txDate = new Date();
-        txDate.setMonth(now.getMonth() - Math.floor(Math.random() * 6));
-        txDate.setDate(Math.floor(Math.random() * 28) + 1);
-
-        mockTransactions.push({
-          userId: randomUser._id,
-          planId: randomPlan._id,
-          amount: randomPlan.price,
-          paymentId: `pay_mock_${Math.random().toString(36).substr(2, 9)}`,
-          orderId: `order_mock_${Math.random().toString(36).substr(2, 9)}`,
-          status: "Success",
-          createdAt: txDate,
-          updatedAt: txDate
-        });
-      }
-
-      await Transaction.insertMany(mockTransactions);
-      console.log(`✅ Seeded ${mockTransactions.length} transaction records`);
+    // Get some plans
+    const plans = await SubscriptionPlan.find();
+    if (plans.length === 0) {
+      console.log("No subscription plans found. Skipping transaction seeding.");
+      return;
     }
+
+    // Create 6 reader users (3 Tamil, 3 English)
+    const dummyUsers = [
+      { name: "கார்த்திக் ராஜ்", email: "karthik@gmail.com", password: "password123", role: "reader", language: "ta" },
+      { name: "பிரியா மோகன்", email: "priya@gmail.com", password: "password123", role: "reader", language: "ta" },
+      { name: "சரவணன் குமார்", email: "saravanan@gmail.com", password: "password123", role: "reader", language: "ta" },
+      { name: "John Doe", email: "john@gmail.com", password: "password123", role: "reader", language: "en" },
+      { name: "Sarah Smith", email: "sarah@gmail.com", password: "password123", role: "reader", language: "en" },
+      { name: "Alex Jones", email: "alex@gmail.com", password: "password123", role: "reader", language: "en" }
+    ];
+    const users = await User.insertMany(dummyUsers);
+    console.log("✅ Seeded 6 multilingual reader users for subscription transactions");
+
+    // Make some of these users premium in user collection to make it sync
+    const premiumUsers = [users[0], users[1], users[3], users[4]];
+    for (const u of premiumUsers) {
+      const userLang = u.language || "ta";
+      const langPlans = plans.filter(p => (p.language || "ta") === userLang);
+      const chosenPlan = langPlans.length > 0 ? langPlans[Math.floor(Math.random() * langPlans.length)] : plans[Math.floor(Math.random() * plans.length)];
+      
+      u.isPremium = true;
+      u.premiumPlan = chosenPlan._id;
+      const validUntil = new Date();
+      validUntil.setMonth(validUntil.getMonth() + 6);
+      u.premiumValidUntil = validUntil;
+      await u.save();
+    }
+
+    // Now create mock transactions over the last 6 months
+    const mockTransactions = [];
+    const now = new Date();
+
+    // Create exactly 8 successful mock transactions (some Tamil, some English)
+    for (let i = 0; i < 8; i++) {
+      const randomUser = users[Math.floor(Math.random() * users.length)];
+      const userLang = randomUser.language || "ta";
+      const langPlans = plans.filter(p => (p.language || "ta") === userLang);
+      const randomPlan = langPlans.length > 0 ? langPlans[Math.floor(Math.random() * langPlans.length)] : plans[Math.floor(Math.random() * plans.length)];
+      
+      // Random date in the last 6 months
+      const txDate = new Date();
+      txDate.setMonth(now.getMonth() - Math.floor(Math.random() * 6));
+      txDate.setDate(Math.floor(Math.random() * 28) + 1);
+
+      mockTransactions.push({
+        userId: randomUser._id,
+        planId: randomPlan._id,
+        amount: randomPlan.price,
+        paymentId: `pay_mock_${Math.random().toString(36).substr(2, 9)}`,
+        orderId: `order_mock_${Math.random().toString(36).substr(2, 9)}`,
+        status: "Success",
+        createdAt: txDate,
+        updatedAt: txDate
+      });
+    }
+
+    await Transaction.insertMany(mockTransactions);
+    console.log(`✅ Seeded ${mockTransactions.length} transaction records`);
   } catch (error) {
     console.error("❌ Seeding transactions failed:", error.message);
   }

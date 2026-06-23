@@ -47,6 +47,10 @@ const logFCM = (message) => {
 // Helper to send FCM notifications to all subscribed users
 const sendFCMPushNotification = async (news) => {
   logFCM(`📣 sendFCMPushNotification helper triggered for news article: "${news.title}" (ID: ${news._id})`);
+  if (!news.sendBrowserNotification) {
+    logFCM(`ℹ️ FCM Delivery skipped: sendBrowserNotification is false or undefined for news ID: ${news._id}`);
+    return;
+  }
   try {
     const newsLang = news.language || "ta";
     const subscribedUsers = await User.find({
@@ -223,6 +227,7 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
       adminId: finalStatus === "published" ? req.user._id : undefined,
       publishedAt: finalStatus === "published" ? newsDate : undefined,
       language: language || "ta",
+      sendBrowserNotification: req.body.sendBrowserNotification === true || req.body.sendBrowserNotification === "true",
     });
 
     const savedNews = await news.save();
@@ -784,6 +789,7 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
   try {
     const Advertisement = require("../models/Advertisement");
     const Short = require("../models/Short");
+    const PhotoStory = require("../models/PhotoStory");
 
     const totalNews = await News.countDocuments();
     const pendingApproval = await News.countDocuments({ status: "pending_admin_verification" });
@@ -794,6 +800,7 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
     const totalUsers = await User.countDocuments();
     const pendingAdvertisementsCount = await Advertisement.countDocuments({ status: "Pending Approval" });
     const pendingNewsShortsCount = await Short.countDocuments({ status: "Pending Approval" });
+    const pendingPhotoStoriesCount = await PhotoStory.countDocuments({ status: "Pending Approval" });
     
     // Category distribution stats
     const categoriesData = await News.aggregate([
@@ -904,6 +911,7 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
       subscribersCount,
       pendingAdvertisementsCount,
       pendingNewsShortsCount,
+      pendingPhotoStoriesCount,
       breakingNewsCount,
       weeklyStats,
       recentActivities,
@@ -985,6 +993,10 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
     news.status = "published";
     news.adminId = req.user._id;
     news.publishedAt = new Date();
+    
+    if (req.body.sendBrowserNotification !== undefined) {
+      news.sendBrowserNotification = req.body.sendBrowserNotification === true || req.body.sendBrowserNotification === "true";
+    }
     
     const saved = await news.save();
 

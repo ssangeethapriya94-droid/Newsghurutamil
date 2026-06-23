@@ -8,7 +8,7 @@ const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 // PUBLIC: Submit a new contact query/subscription
 router.post("/", async (req, res) => {
   try {
-    const { name, email, phone, category, message } = req.body;
+    const { name, email, phone, category, message, language } = req.body;
 
     if (!name || !email) {
       return res.status(400).json({ success: false, message: "Name and Email are required" });
@@ -20,6 +20,7 @@ router.post("/", async (req, res) => {
       phone,
       category,
       message,
+      language: language || "ta",
     });
 
     await newQuery.save();
