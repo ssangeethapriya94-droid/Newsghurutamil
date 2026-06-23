@@ -1,0 +1,16 @@
+{
+  "name": "newsghuru-monorepo",
+  "version": "1.0.0",
+  "description": "Monorepo to run Newsghuru backend, admin dashboard, and users frontend concurrently",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix admin && npm install --prefix users-english && npm install --prefix users-tamil",
+    "start:backend": "npm start --prefix backend",
+    "start:admin": "npm start --prefix admin",
+    "start:users-english": "npm start --prefix users-english",
+    "start:users-tamil": "npm start --prefix users-tamil",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:admin\" \"npm run start:users-english\" \"npm run start:users-tamil\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
