@@ -36,7 +36,6 @@ function PhotoStories() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState("");
-  const [imagesText, setImagesText] = useState(""); // Comma separated image URLs
   const [isFeatured, setIsFeatured] = useState(false);
   const [status, setStatus] = useState(role === "editor" ? "Draft" : "Published");
   const [language, setLanguage] = useState("ta");
@@ -46,10 +45,70 @@ function PhotoStories() {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editCoverImage, setEditCoverImage] = useState("");
-  const [editImagesText, setEditImagesText] = useState(""); // Comma separated
+  const [editImages, setEditImages] = useState([]); // Array of existing image URLs
   const [editIsFeatured, setEditIsFeatured] = useState(false);
   const [editStatus, setEditStatus] = useState("Draft");
   const [editLanguage, setEditLanguage] = useState("ta");
+
+  // File upload states
+  const [coverFile, setCoverFile] = useState(null);
+  const [galleryFiles, setGalleryFiles] = useState([]);
+  const [editCoverFile, setEditCoverFile] = useState(null);
+  const [editGalleryFiles, setEditGalleryFiles] = useState([]);
+
+  // File change handlers (Create)
+  const handleCoverChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setCoverFile(file);
+      setCoverImage(URL.createObjectURL(file));
+    }
+  };
+
+  const removeCoverImage = () => {
+    setCoverFile(null);
+    setCoverImage("");
+  };
+
+  const handleGalleryChange = (e) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setGalleryFiles((prev) => prev.concat(filesArray));
+    }
+  };
+
+  const removeGalleryFile = (indexToRemove) => {
+    setGalleryFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  // File change handlers (Edit)
+  const handleEditCoverChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setEditCoverFile(file);
+      setEditCoverImage(URL.createObjectURL(file));
+    }
+  };
+
+  const removeEditCoverImage = () => {
+    setEditCoverFile(null);
+    setEditCoverImage("");
+  };
+
+  const handleEditGalleryChange = (e) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setEditGalleryFiles((prev) => prev.concat(filesArray));
+    }
+  };
+
+  const removeEditExistingImage = (indexToRemove) => {
+    setEditImages((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const removeEditGalleryFile = (indexToRemove) => {
+    setEditGalleryFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState("all");
@@ -79,41 +138,41 @@ function PhotoStories() {
     fetchStories();
   }, []);
 
-  const parseImages = (text) => {
-    return text
-      .split("\n")
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
-      .flatMap(line => line.split(","))
-      .map(url => url.trim())
-      .filter(url => url.startsWith("http") || url.startsWith("/uploads/"));
-  };
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !coverImage.trim()) {
-      alert("Title and cover image URL are required");
+    if (!title.trim()) {
+      alert("Title is required");
+      return;
+    }
+    if (!coverFile) {
+      alert("Cover image is required");
       return;
     }
 
-    const imagesArray = parseImages(imagesText);
-
     try {
-      await API.post("/api/photo-stories", {
-        title: title.trim(),
-        description: description.trim(),
-        coverImage: coverImage.trim(),
-        images: imagesArray,
-        isFeatured: role === "admin" ? isFeatured : false,
-        status: role === "editor" ? status : "Published",
-        language
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", title.trim());
+      formDataToSend.append("description", description.trim());
+      formDataToSend.append("isFeatured", isFeatured);
+      formDataToSend.append("status", role === "editor" ? status : "Published");
+      formDataToSend.append("language", language);
+      formDataToSend.append("coverImage", coverFile);
+
+      galleryFiles.forEach((file) => {
+        formDataToSend.append("galleryImages", file);
+      });
+
+      await API.post("/api/photo-stories", formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
 
       // Clear fields
       setTitle("");
       setDescription("");
       setCoverImage("");
-      setImagesText("");
+      setCoverFile(null);
+      setGalleryFiles([]);
       setIsFeatured(false);
       setStatus(role === "editor" ? "Draft" : "Published");
       setLanguage("ta");
@@ -127,25 +186,39 @@ function PhotoStories() {
   };
 
   const handleUpdate = async (id) => {
-    if (!editTitle.trim() || !editCoverImage.trim()) {
-      alert("Title and cover image cannot be empty");
+    if (!editTitle.trim()) {
+      alert("Title is required");
+      return;
+    }
+    if (!editCoverImage && !editCoverFile) {
+      alert("Cover image cannot be empty");
       return;
     }
 
-    const imagesArray = parseImages(editImagesText);
-
     try {
-      const updateData = {
-        title: editTitle.trim(),
-        description: editDescription.trim(),
-        coverImage: editCoverImage.trim(),
-        images: imagesArray,
-        isFeatured: editIsFeatured,
-        status: editStatus,
-        language: editLanguage
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", editTitle.trim());
+      formDataToSend.append("description", editDescription.trim());
+      formDataToSend.append("isFeatured", editIsFeatured);
+      formDataToSend.append("status", editStatus);
+      formDataToSend.append("language", editLanguage);
+      
+      if (editCoverFile) {
+        formDataToSend.append("coverImage", editCoverFile);
+      } else {
+        formDataToSend.append("coverImage", editCoverImage);
+      }
 
-      await API.put(`/api/photo-stories/${id}`, updateData);
+      formDataToSend.append("images", JSON.stringify(editImages));
+
+      editGalleryFiles.forEach((file) => {
+        formDataToSend.append("galleryImages", file);
+      });
+
+      await API.put(`/api/photo-stories/${id}`, formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
       setEditingId(null);
       setShowEditModal(false);
       alert("Photo story updated successfully");
@@ -238,7 +311,9 @@ function PhotoStories() {
     setEditTitle(st.title);
     setEditDescription(st.description || "");
     setEditCoverImage(st.coverImage);
-    setEditImagesText((st.images || []).join(",\n"));
+    setEditCoverFile(null);
+    setEditImages(st.images || []);
+    setEditGalleryFiles([]);
     setEditIsFeatured(st.isFeatured || false);
     setEditStatus(st.status || "Draft");
     setEditLanguage(st.language || "ta");
@@ -304,128 +379,161 @@ function PhotoStories() {
         </div>
       </div>
 
-      {/* CREATE FORM - shown for both admin and editor */}
-      <form onSubmit={handleCreate} className="categories-create-form" style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "stretch", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
-        <h3 style={{ margin: 0, color: "var(--text-main)", fontSize: "1.1rem" }}>Create New Photo Story</h3>
-        
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
-          <div className="form-group" style={{ minWidth: "auto", margin: 0 }}>
-            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Gallery Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. மதுரை சித்திரை திருவிழா 2026..."
-              style={{ padding: "10px 14px", fontSize: "14px", height: "40px" }}
-            />
-          </div>
-
-          <div className="form-group" style={{ minWidth: "auto", margin: 0 }}>
-            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Cover/Thumbnail URL</label>
-            <input
-              type="text"
-              value={coverImage}
-              onChange={(e) => setCoverImage(e.target.value)}
-              placeholder="e.g. https://images.unsplash.com/cover-image-url"
-              style={{ padding: "10px 14px", fontSize: "14px", height: "40px" }}
-            />
-          </div>
-        </div>
-
-        <div className="form-group" style={{ margin: 0 }}>
-          <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Short Description / Narrative</label>
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Write a brief narrative caption describing the event..."
-            style={{
-              padding: "10px 14px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-color)",
-              outline: "none",
-              fontSize: "14px",
-              backgroundColor: "var(--card-bg)",
-              color: "var(--text-main)",
-              height: "40px"
-            }}
-          />
-        </div>
-
-        <div className="form-group" style={{ margin: 0 }}>
-          <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Gallery Images (URLs - One per line, or comma separated)</label>
-          <textarea
-            value={imagesText}
-            onChange={(e) => setImagesText(e.target.value)}
-            placeholder={"https://images.unsplash.com/photo-1\nhttps://images.unsplash.com/photo-2\nhttps://images.unsplash.com/photo-3"}
-            style={{
-              padding: "10px 14px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-color)",
-              outline: "none",
-              fontSize: "14px",
-              backgroundColor: "var(--card-bg)",
-              color: "var(--text-main)",
-              minHeight: "100px",
-              fontFamily: "monospace"
-            }}
-          />
-          <span style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
-            Provide URLs for the interior slide pages of this photo story. Make sure each starts with http:// or https://
-          </span>
-        </div>
-
-        {/* Row: Language, Status (Editor), Featured (Admin) & Save button */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "15px", marginTop: "5px" }}>
-          <div style={{ display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
-
-            {/* Language selector - shown for both admin and editor */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-main)" }}>Language:</label>
-              <LanguageSelect value={language} onChange={setLanguage} />
+      {/* CREATE FORM - shown only for editor role */}
+      {role === "editor" && (
+        <form onSubmit={handleCreate} className="categories-create-form" style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "stretch", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+          <h3 style={{ margin: 0, color: "var(--text-main)", fontSize: "1.1rem" }}>Create New Photo Story</h3>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
+            <div className="form-group" style={{ minWidth: "auto", margin: 0 }}>
+              <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Gallery Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. மதுரை சித்திரை திருவிழா 2026..."
+                style={{ padding: "10px 14px", fontSize: "14px", height: "40px" }}
+              />
             </div>
 
-            {role === "admin" && (
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", cursor: "pointer", fontWeight: "600" }}>
+            <div className="form-group" style={{ minWidth: "auto", margin: 0 }}>
+              <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Cover/Thumbnail Image</label>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                 <input
-                  type="checkbox"
-                  checked={isFeatured}
-                  onChange={(e) => setIsFeatured(e.target.checked)}
-                  style={{ width: "16px", height: "16px" }}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverChange}
+                  style={{ display: "none" }}
+                  id="cover-upload-create"
                 />
-                Featured Photo Story (Large Highlight Card)
-              </label>
-            )}
-
-            {role === "editor" && (
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-main)" }}>Status:</label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-color)",
-                    outline: "none",
-                    fontSize: "14px",
-                    backgroundColor: "var(--card-bg)",
-                    color: "var(--text-main)",
-                    height: "36px"
-                  }}
-                >
-                  <option value="Draft">Draft</option>
-                  <option value="Pending Approval">Pending Approval</option>
-                </select>
+                <label htmlFor="cover-upload-create" style={{ display: "inline-block", padding: "8px 16px", borderRadius: "8px", background: "var(--accent-orange, #f97316)", color: "white", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>
+                  Upload Cover
+                </label>
+                {coverImage && (
+                  <div style={{ position: "relative", display: "inline-block" }}>
+                    <img src={coverImage} alt="Cover Preview" style={{ height: "40px", borderRadius: "4px", objectFit: "cover", border: "1px solid var(--border-color)" }} />
+                    <button
+                      type="button"
+                      onClick={removeCoverImage}
+                      style={{
+                        position: "absolute", top: "-8px", right: "-8px", background: "#ef4444", color: "white",
+                        border: "none", borderRadius: "50%", width: "16px", height: "16px", display: "flex",
+                        alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "10px"
+                      }}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
-          <button type="submit" className="btn-primary add-category-btn" style={{ height: "40px", padding: "0 22px", fontSize: "14px", margin: 0 }}>
-            {role === "editor" ? "Save Photo Gallery" : "Publish Photo Gallery"}
-          </button>
-        </div>
-      </form>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Short Description / Narrative</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Write a brief narrative caption describing the event..."
+              style={{
+                padding: "10px 14px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                outline: "none",
+                fontSize: "14px",
+                backgroundColor: "var(--card-bg)",
+                color: "var(--text-main)",
+                height: "40px"
+              }}
+            />
+          </div>
+
+          <div className="form-group" style={{ margin: 0 }}>
+            <label style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "var(--text-main)" }}>Gallery Images</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleGalleryChange}
+                style={{ display: "none" }}
+                id="gallery-upload-create"
+              />
+              <label htmlFor="gallery-upload-create" style={{ display: "inline-block", alignSelf: "flex-start", padding: "8px 16px", borderRadius: "8px", background: "var(--accent-orange, #f97316)", color: "white", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>
+                Choose Gallery Images
+              </label>
+              
+              {galleryFiles.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "5px", padding: "10px", borderRadius: "8px", border: "1px dashed var(--border-color)", background: "rgba(255,255,255,0.01)" }}>
+                  {galleryFiles.map((file, index) => {
+                    const url = URL.createObjectURL(file);
+                    return (
+                      <div key={index} style={{ position: "relative", display: "inline-block" }}>
+                        <img src={url} alt={`Gallery Preview ${index}`} style={{ width: "60px", height: "60px", borderRadius: "4px", objectFit: "cover", border: "1px solid var(--border-color)" }} />
+                        <button
+                          type="button"
+                          onClick={() => removeGalleryFile(index)}
+                          style={{
+                            position: "absolute", top: "-5px", right: "-5px", background: "#ef4444", color: "white",
+                            border: "none", borderRadius: "50%", width: "16px", height: "16px", display: "flex",
+                            alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "10px"
+                          }}
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              
+              <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                Upload one or more slides for this photo story.
+              </span>
+            </div>
+          </div>
+
+          {/* Row: Language, Status (Editor) & Save button */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "15px", marginTop: "5px" }}>
+            <div style={{ display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
+
+              {/* Language selector - shown for both admin and editor */}
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-main)" }}>Language:</label>
+                <LanguageSelect value={language} onChange={setLanguage} />
+              </div>
+
+              {role === "editor" && (
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-main)" }}>Status:</label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border-color)",
+                      outline: "none",
+                      fontSize: "14px",
+                      backgroundColor: "var(--card-bg)",
+                      color: "var(--text-main)",
+                      height: "36px"
+                    }}
+                  >
+                    <option value="Draft">Draft</option>
+                    <option value="Pending Approval">Pending Approval</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+            <button type="submit" className="btn-primary add-category-btn" style={{ height: "40px", padding: "0 22px", fontSize: "14px", margin: 0 }}>
+              Save Photo Gallery
+            </button>
+          </div>
+        </form>
+      )}
 
       {/* FILTER CONTROL BAR */}
       <div style={{ display: "flex", gap: "10px", margin: "20px 0 0 0", alignItems: "center", flexWrap: "wrap" }}>
@@ -732,14 +840,35 @@ function PhotoStories() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px", color: "var(--text-muted)" }}>Cover Image URL</label>
-                <input
-                  type="text"
-                  value={editCoverImage}
-                  onChange={(e) => setEditCoverImage(e.target.value)}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "14px", backgroundColor: "var(--card-bg)", color: "var(--text-main)", boxSizing: "border-box" }}
-                  placeholder="https://..."
-                />
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px", color: "var(--text-muted)" }}>Cover Image</label>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEditCoverChange}
+                    style={{ display: "none" }}
+                    id="cover-upload-edit"
+                  />
+                  <label htmlFor="cover-upload-edit" style={{ display: "inline-block", padding: "8px 16px", borderRadius: "8px", background: "var(--accent-orange, #f97316)", color: "white", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>
+                    Choose File
+                  </label>
+                  {editCoverImage && (
+                    <div style={{ position: "relative", display: "inline-block" }}>
+                      <img src={editCoverImage} alt="Cover Preview" style={{ height: "40px", borderRadius: "4px", objectFit: "cover", border: "1px solid var(--border-color)" }} />
+                      <button
+                        type="button"
+                        onClick={removeEditCoverImage}
+                        style={{
+                          position: "absolute", top: "-8px", right: "-8px", background: "#ef4444", color: "white",
+                          border: "none", borderRadius: "50%", width: "16px", height: "16px", display: "flex",
+                          alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "10px"
+                        }}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -754,17 +883,64 @@ function PhotoStories() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px", color: "var(--text-muted)" }}>Gallery Images (one URL per line or comma-separated)</label>
-                <textarea
-                  value={editImagesText}
-                  onChange={(e) => setEditImagesText(e.target.value)}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "13px", backgroundColor: "var(--card-bg)", color: "var(--text-main)", minHeight: "100px", fontFamily: "monospace", boxSizing: "border-box", resize: "vertical" }}
-                  placeholder="https://images.unsplash.com/photo-1
-https://images.unsplash.com/photo-2"
-                />
-                <span style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px", display: "block" }}>
-                  {parseImages(editImagesText).length} {parseImages(editImagesText).length === 1 ? 'image' : 'images'} parsed
-                </span>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px", color: "var(--text-muted)" }}>Gallery Images</label>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleEditGalleryChange}
+                    style={{ display: "none" }}
+                    id="gallery-upload-edit"
+                  />
+                  <label htmlFor="gallery-upload-edit" style={{ display: "inline-block", alignSelf: "flex-start", padding: "8px 16px", borderRadius: "8px", background: "var(--accent-orange, #f97316)", color: "white", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>
+                    Add Images
+                  </label>
+
+                  {(editImages.length > 0 || editGalleryFiles.length > 0) && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "5px", padding: "10px", borderRadius: "8px", border: "1px dashed var(--border-color)", background: "rgba(255,255,255,0.01)" }}>
+                      {editImages.map((src, index) => (
+                        <div key={`existing-${index}`} style={{ position: "relative", display: "inline-block" }}>
+                          <img src={src} alt={`Existing ${index}`} style={{ width: "60px", height: "60px", borderRadius: "4px", objectFit: "cover", border: "1px solid var(--border-color)" }} />
+                          <button
+                            type="button"
+                            onClick={() => removeEditExistingImage(index)}
+                            style={{
+                              position: "absolute", top: "-5px", right: "-5px", background: "#ef4444", color: "white",
+                              border: "none", borderRadius: "50%", width: "16px", height: "16px", display: "flex",
+                              alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "10px"
+                            }}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                      {editGalleryFiles.map((file, index) => {
+                        const url = URL.createObjectURL(file);
+                        return (
+                          <div key={`new-${index}`} style={{ position: "relative", display: "inline-block" }}>
+                            <img src={url} alt={`New ${index}`} style={{ width: "60px", height: "60px", borderRadius: "4px", objectFit: "cover", border: "1px solid var(--border-color)" }} />
+                            <button
+                              type="button"
+                              onClick={() => removeEditGalleryFile(index)}
+                              style={{
+                                position: "absolute", top: "-5px", right: "-5px", background: "#ef4444", color: "white",
+                                border: "none", borderRadius: "50%", width: "16px", height: "16px", display: "flex",
+                                alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "10px"
+                              }}
+                            >
+                              &times;
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  
+                  <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                    Total: {editImages.length} existing + {editGalleryFiles.length} new = {editImages.length + editGalleryFiles.length} {editImages.length + editGalleryFiles.length === 1 ? 'image' : 'images'}
+                  </span>
+                </div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>

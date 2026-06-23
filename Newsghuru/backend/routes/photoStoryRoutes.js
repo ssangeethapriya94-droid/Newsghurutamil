@@ -2,6 +2,28 @@ const express = require("express");
 const router = express.Router();
 const PhotoStory = require("../models/PhotoStory");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, "../uploads");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
+
+const upload = multer({ storage });
+const uploadFields = upload.fields([
+  { name: "coverImage", maxCount: 1 },
+  { name: "galleryImages", maxCount: 20 }
+]);
 
 // GET /api/photo-stories - Get all photo stories (public gets published, admin/editor gets all)
 router.get("/", async (req, res) => {
@@ -78,11 +100,33 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /api/photo-stories - Create a photo story (Admin and Editor)
-router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
+router.post("/", verifyToken, authorizeRoles("admin", "editor"), uploadFields, async (req, res) => {
   try {
-    const { title, description, coverImage, images, isFeatured, status, language } = req.body;
-    if (!title || !coverImage) {
-      return res.status(400).json({ message: "Title and cover image are required" });
+    const { title, description, isFeatured, status, language } = req.body;
+    if (!title) {
+      return res.status(400).json({ message: "Title is required" });
+    }
+
+    const baseUrl = req.protocol + "://" + req.get("host");
+
+    let coverImagePath = req.body.coverImage || "";
+    if (req.files && req.files["coverImage"] && req.files["coverImage"][0]) {
+      coverImagePath = baseUrl + "/uploads/" + req.files["coverImage"][0].filename;
+    }
+
+    if (!coverImagePath) {
+      return res.status(400).json({ message: "Cover image is required" });
+    }
+
+    let galleryImagePaths = [];
+    if (req.files && req.files["galleryImages"]) {
+      galleryImagePaths = req.files["galleryImages"].map(
+        (file) => baseUrl + "/uploads/" + file.filename
+      );
+    } else if (req.body.images) {
+      galleryImagePaths = Array.isArray(req.body.images)
+        ? req.body.images
+        : JSON.parse(req.body.images || "[]");
     }
 
     const storyStatus = req.user.role === "editor"
@@ -92,9 +136,9 @@ router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res
     const story = new PhotoStory({
       title,
       description,
-      coverImage,
-      images: Array.isArray(images) ? images : [],
-      isFeatured: req.user.role === "admin" ? !!isFeatured : false,
+      coverImage: coverImagePath,
+      images: galleryImagePaths,
+      isFeatured: req.user.role === "admin" ? (isFeatured === "true" || isFeatured === true) : false,
       status: storyStatus,
       language: ["ta", "en"].includes(language) ? language : "ta",
       createdBy: req.user._id
@@ -128,7 +172,7 @@ router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res
 });
 
 // PUT /api/photo-stories/:id - Update a photo story (Admin and Editor)
-router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, res) => {
+router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), uploadFields, async (req, res) => {
   try {
     const { title, description, coverImage, images, isFeatured, status, language } = req.body;
     const story = await PhotoStory.findById(req.params.id);
@@ -146,12 +190,34 @@ router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, r
 
     if (title !== undefined) story.title = title;
     if (description !== undefined) story.description = description;
-    if (coverImage !== undefined) story.coverImage = coverImage;
-    if (images !== undefined) story.images = Array.isArray(images) ? images : [];
     if (language !== undefined && ["ta", "en"].includes(language)) story.language = language;
     
+    const baseUrl = req.protocol + "://" + req.get("host");
+
+    if (req.files && req.files["coverImage"] && req.files["coverImage"][0]) {
+      story.coverImage = baseUrl + "/uploads/" + req.files["coverImage"][0].filename;
+    } else if (coverImage !== undefined) {
+      story.coverImage = coverImage;
+    }
+
+    let preservedImages = [];
+    if (images !== undefined) {
+      preservedImages = Array.isArray(images)
+        ? images
+        : JSON.parse(images || "[]");
+    }
+
+    if (req.files && req.files["galleryImages"]) {
+      const newImages = req.files["galleryImages"].map(
+        (file) => baseUrl + "/uploads/" + file.filename
+      );
+      story.images = preservedImages.concat(newImages);
+    } else if (images !== undefined) {
+      story.images = preservedImages;
+    }
+    
     if (req.user.role === "admin") {
-      if (isFeatured !== undefined) story.isFeatured = !!isFeatured;
+      if (isFeatured !== undefined) story.isFeatured = (isFeatured === "true" || isFeatured === true);
       if (status !== undefined) story.status = status;
     } else {
       // Editor can save as draft or submit for approval
