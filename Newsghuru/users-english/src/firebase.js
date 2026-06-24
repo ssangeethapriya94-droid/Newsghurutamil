@@ -47,10 +47,37 @@ export const generateFCMToken = async () => {
       }
 
       const vapidKey = process.env.REACT_APP_VAPID_KEY || process.env.VITE_FIREBASE_VAPID_KEY || "BEAu-2p8M9gZ_XDVJyULFFrSvFn9QGQZOhyh0tIr3m9tA6gG8OFN0J0vyi5UI80zqQS7AflHIWf1l2d9r-OlXbU";
-      const currentToken = await getToken(messaging, {
-        vapidKey: vapidKey,
-        serviceWorkerRegistration: swRegistration || undefined
-      });
+      let currentToken;
+      try {
+        currentToken = await getToken(messaging, {
+          vapidKey: vapidKey,
+          serviceWorkerRegistration: swRegistration || undefined
+        });
+      } catch (tokenError) {
+        console.warn("FCM getToken failed, attempting to reset service worker registration...", tokenError);
+        if (swRegistration) {
+          try {
+            const subscription = await swRegistration.pushManager.getSubscription();
+            if (subscription) {
+              await subscription.unsubscribe();
+            }
+            await swRegistration.unregister();
+            // Re-register and retry
+            await navigator.serviceWorker.register(`/firebase-messaging-sw.js`);
+            const newReady = await navigator.serviceWorker.ready;
+            currentToken = await getToken(messaging, {
+              vapidKey: vapidKey,
+              serviceWorkerRegistration: newReady || undefined
+            });
+          } catch (retryError) {
+            console.error("FCM token generation retry failed:", retryError);
+            throw tokenError;
+          }
+        } else {
+          throw tokenError;
+        }
+      }
+
       if (currentToken) {
         console.log("FCM Token Generated Successfully:", currentToken);
         return currentToken;
