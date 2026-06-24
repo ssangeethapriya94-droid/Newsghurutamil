@@ -237,12 +237,10 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
               end={item.slug === "/"}
               onClick={(e) => {
                 if (item.slug === "/anmigam") {
-                  e.preventDefault();
                   const isTouch = window.matchMedia("(pointer: coarse)").matches;
                   if (isTouch) {
+                    e.preventDefault();
                     setHoveredCategory(hoveredCategory === "/anmigam" ? null : "/anmigam");
-                  } else {
-                    setHoveredCategory("/anmigam");
                   }
                 }
               }}

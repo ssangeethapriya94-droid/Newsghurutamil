@@ -10,6 +10,10 @@ function NotificationBanner() {
   useEffect(() => {
     if (!("Notification" in window)) return;
 
+    if (Notification.permission === "default") {
+      localStorage.removeItem("notif_banner_dismissed");
+    }
+
     // If already granted, silently register token in background (no banner needed)
     // We do this REGARDLESS of the dismissed banner state so the token stays synchronized in the DB!
     if (Notification.permission === "granted") {

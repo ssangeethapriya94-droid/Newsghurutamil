@@ -19,6 +19,8 @@ import Information from "./pages/Information";
 import Account from "./pages/Account";
 import WebsiteSettings from "./pages/WebsiteSettings";
 import Revenue from "./pages/Revenue";
+import { generateFCMToken } from "./firebase";
+import API from "./config/api";
 
 // Placeholder Reporter Pages
 import ReporterCreateNews from "./pages/ReporterCreateNews";
@@ -94,6 +96,39 @@ function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const role = getUserRole();
+
+  React.useEffect(() => {
+    const registerAdminFCM = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const fcmToken = await generateFCMToken();
+          if (fcmToken) {
+            await API.post(
+              "/api/users/subscribe",
+              { fcmToken },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            console.log("FCM Token registered/refreshed successfully for admin/staff user");
+          }
+        } catch (err) {
+          console.error("Failed to register/refresh FCM token for admin/staff user:", err);
+        }
+      }
+    };
+
+    if (Notification.permission === "granted") {
+      registerAdminFCM();
+    } else if (Notification.permission === "default") {
+      const handleFirstClick = () => {
+        registerAdminFCM();
+      };
+      document.addEventListener("click", handleFirstClick, { once: true });
+      return () => document.removeEventListener("click", handleFirstClick);
+    } else {
+      console.warn("Notification permission is denied. Enable it in your browser settings to receive push notifications.");
+    }
+  }, [role]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 

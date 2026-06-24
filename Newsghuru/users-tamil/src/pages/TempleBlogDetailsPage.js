@@ -57,46 +57,7 @@ function TempleBlogDetailsPage() {
   return (
     <div style={{ padding: "30px var(--padding-x)", maxWidth: "800px", margin: "0 auto", minHeight: "80vh" }}>
       
-      {/* Subcategory Navigation Menu */}
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        gap: "15px",
-        marginBottom: "35px",
-        borderBottom: "1px solid var(--border-color)",
-        paddingBottom: "12px"
-      }}>
-        <NavLink 
-          to="/anmigam/rasi-palan" 
-          style={({ isActive }) => ({
-            textDecoration: "none",
-            color: isActive ? "var(--accent-orange)" : "var(--text-secondary)",
-            fontWeight: "700",
-            fontSize: "1.05rem",
-            padding: "6px 18px",
-            borderRadius: "20px",
-            background: isActive ? "rgba(245, 158, 11, 0.12)" : "transparent",
-            transition: "all 0.3s ease"
-          })}
-        >
-          ராசி பலன் (Horoscope)
-        </NavLink>
-        <NavLink 
-          to="/anmigam/temple-blogs" 
-          style={({ isActive }) => ({
-            textDecoration: "none",
-            color: isActive ? "var(--accent-orange)" : "var(--text-secondary)",
-            fontWeight: "700",
-            fontSize: "1.05rem",
-            padding: "6px 18px",
-            borderRadius: "20px",
-            background: isActive ? "rgba(245, 158, 11, 0.12)" : "transparent",
-            transition: "all 0.3s ease"
-          })}
-        >
-          கோவில் பதிவுகள் (Temple Blogs)
-        </NavLink>
-      </div>
+
 
       {/* Back Button */}
       <button 

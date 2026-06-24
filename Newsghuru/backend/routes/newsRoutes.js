@@ -22,7 +22,8 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
+    const sanitized = file.originalname.replace(/\s+/g, '-');
+    cb(null, Date.now() + '-' + sanitized);
   }
 });
 
@@ -86,7 +87,7 @@ const sendFCMPushNotification = async (news) => {
         return false;
       }
     };
-    const imageUrl = isValidImageUrl(news.image) ? news.image : null;
+    const imageUrl = isValidImageUrl(news.image) ? encodeURI(news.image) : null;
 
     if (tokens.length > 0 && messaging) {
       const frontendUrl = newsLang === "en" 
