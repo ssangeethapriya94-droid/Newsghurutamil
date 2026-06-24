@@ -56,10 +56,20 @@ const sendFCMPushNotification = async (news) => {
     const subscribedUsers = await User.find({
       fcmToken: { $nin: [null, ""] }
     });
-    logFCM(`🔍 Found ${subscribedUsers.length} users with notifications enabled in DB.`);
     
-    const tokens = subscribedUsers
-      .map(u => u.fcmToken)
+    const GuestSubscription = require("../models/GuestSubscription");
+    const guestSubs = await GuestSubscription.find({
+      fcmToken: { $nin: [null, ""] }
+    });
+    
+    logFCM(`🔍 Found ${subscribedUsers.length} users and ${guestSubs.length} guests with notifications enabled in DB.`);
+    
+    const allTokens = [
+      ...subscribedUsers.map(u => u.fcmToken),
+      ...guestSubs.map(g => g.fcmToken)
+    ];
+    
+    const tokens = Array.from(new Set(allTokens))
       .filter(t => typeof t === "string" && t.trim() !== "");
     
     logFCM(`🎯 Validated FCM tokens to notify: ${JSON.stringify(tokens)}`);
@@ -227,7 +237,8 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
       adminId: finalStatus === "published" ? req.user._id : undefined,
       publishedAt: finalStatus === "published" ? newsDate : undefined,
       language: language || "ta",
-      sendBrowserNotification: req.body.sendBrowserNotification === true || req.body.sendBrowserNotification === "true",
+      sendBrowserNotification: req.body.sendBrowserNotification === true || req.body.sendBrowserNotification === "true" || req.body.sendNotification === true || req.body.sendNotification === "true",
+      sendNotification: req.body.sendBrowserNotification === true || req.body.sendBrowserNotification === "true" || req.body.sendNotification === true || req.body.sendNotification === "true",
     });
 
     const savedNews = await news.save();
@@ -241,6 +252,7 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
             recipientId: editor._id,
             type: "submitted",
             text: `New article "${savedNews.title}" submitted by Reporter ${req.user.name} is pending review.`,
+            language: savedNews.language || "ta",
           })
         );
         await Promise.all(notificationPromises);
@@ -248,18 +260,24 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
         console.error("Failed to send submission notifications to editors:", notifErr);
       }
     } else if (savedNews.status === "published") {
+      // Direct Admin Publish: Create in-app notification in DB
+      try {
+        await Notification.create({
+          recipientId: savedNews.reporterId,
+          type: "published",
+          text: `Your article "${savedNews.title}" has been published.`,
+          language: savedNews.language || "ta",
+        });
+      } catch (notifErr) {
+        console.error("Failed to create publish notification:", notifErr);
+      }
+
       // Direct Admin Publish: Send push notifications immediately
       await sendFCMPushNotification(savedNews);
 
       // --- NEW EMAIL NOTIFICATION CODE (Runs safely in the background) ---
       try {
-        const users = await User.find({ email: { $exists: true, $ne: "" } }).select("email");
-        const userEmails = users.map(user => user.email).filter(email => email);
-        if (userEmails.length > 0) {
-          sendNewsPublishEmail(userEmails, savedNews);
-        } else {
-          console.log("ℹ️ No users with emails found to notify.");
-        }
+        sendNewsPublishEmail(savedNews.language || "ta");
       } catch (mailErr) {
         console.error("❌ Failed to trigger email notifications:", mailErr);
       }
@@ -614,6 +632,7 @@ router.put("/:id", verifyToken, uploadFields, async (req, res) => {
             recipientId: editor._id,
             type: "submitted",
             text: `Article "${updatedNews.title}" resubmitted by Reporter ${req.user.name} is pending review.`,
+            language: updatedNews.language || "ta",
           })
         );
         await Promise.all(notificationPromises);
@@ -739,6 +758,7 @@ router.put("/editor/reject/:id", verifyToken, authorizeRoles("editor"), async (r
       type: "rejected",
       text: `Your article "${news.title}" was rejected by the Editor.`,
       reason: rejectionReason,
+      language: news.language || "ta",
     });
 
     res.json(savedNews);
@@ -770,6 +790,7 @@ router.put("/editor/approve/:id", verifyToken, authorizeRoles("editor"), async (
           recipientId: admin._id,
           type: "approved",
           text: `Article "${savedNews.title}" has been approved by Editor ${req.user.name} and is pending admin verification.`,
+          language: savedNews.language || "ta",
         })
       );
       await Promise.all(notificationPromises);
@@ -798,6 +819,8 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
     const totalReporters = await User.countDocuments({ role: "reporter" });
     const totalEditors = await User.countDocuments({ role: "editor" });
     const totalUsers = await User.countDocuments();
+    const englishUsers = await User.countDocuments({ language: "en" });
+    const tamilUsers = await User.countDocuments({ $or: [{ language: "ta" }, { language: { $exists: false } }, { language: "" }] });
     const pendingAdvertisementsCount = await Advertisement.countDocuments({ status: "Pending Approval" });
     const pendingNewsShortsCount = await Short.countDocuments({ status: "Pending Approval" });
     const pendingPhotoStoriesCount = await PhotoStory.countDocuments({ status: "Pending Approval" });
@@ -885,6 +908,8 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
     // Total viewers from VisitorStats
     const visitorDoc = await VisitorStats.findOne();
     const totalViewers = visitorDoc ? visitorDoc.count : 0;
+    const englishViewers = visitorDoc ? (visitorDoc.englishCount || 0) : 0;
+    const tamilViewers = visitorDoc ? (visitorDoc.tamilCount || 0) : 0;
 
     // Login users: active in last 15 minutes
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
@@ -906,7 +931,11 @@ router.get("/admin/stats", verifyToken, authorizeRoles("admin"), async (req, res
       totalReporters,
       totalEditors,
       totalUsers,
+      englishUsers,
+      tamilUsers,
       totalViewers,
+      englishViewers,
+      tamilViewers,
       loginUsers,
       subscribersCount,
       pendingAdvertisementsCount,
@@ -994,8 +1023,18 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
     news.adminId = req.user._id;
     news.publishedAt = new Date();
     
-    if (req.body.sendBrowserNotification !== undefined) {
+    logFCM(`[Admin Publish /${req.params.id}] req.body: ${JSON.stringify(req.body)}`);
+    
+    if (req.body.sendNotification !== undefined) {
+      news.sendNotification = req.body.sendNotification === true || req.body.sendNotification === "true";
+      news.sendBrowserNotification = news.sendNotification;
+      logFCM(`[Admin Publish /${req.params.id}] Set from sendNotification: ${news.sendNotification}`);
+    } else if (req.body.sendBrowserNotification !== undefined) {
       news.sendBrowserNotification = req.body.sendBrowserNotification === true || req.body.sendBrowserNotification === "true";
+      news.sendNotification = news.sendBrowserNotification;
+      logFCM(`[Admin Publish /${req.params.id}] Set from sendBrowserNotification: ${news.sendBrowserNotification}`);
+    } else {
+      logFCM(`[Admin Publish /${req.params.id}] Neither sendNotification nor sendBrowserNotification was defined in request body`);
     }
     
     const saved = await news.save();
@@ -1007,6 +1046,7 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
           recipientId: news.reporterId,
           type: "published",
           text: `Your article "${news.title}" has been published by the Admin.`,
+          language: news.language || "ta",
         });
       }
       if (news.editorId) {
@@ -1014,6 +1054,7 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
           recipientId: news.editorId,
           type: "published",
           text: `The article "${news.title}" you approved has been published by the Admin.`,
+          language: news.language || "ta",
         });
       }
     } catch (notifErr) {
@@ -1026,16 +1067,7 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
 
     // --- NEW EMAIL NOTIFICATION CODE (Runs safely in the background) ---
     try {
-      // Fetch all users who have an email
-      const users = await User.find({ email: { $exists: true, $ne: "" } }).select("email");
-      const userEmails = users.map(user => user.email).filter(email => email);
-      
-      if (userEmails.length > 0) {
-        // Send email without "await" so it doesn't slow down the admin's response time
-        sendNewsPublishEmail(userEmails, saved);
-      } else {
-        console.log("ℹ️ No users with emails found to notify.");
-      }
+      sendNewsPublishEmail(saved.language || "ta");
     } catch (mailErr) {
       console.error("❌ Failed to trigger email notifications:", mailErr);
     }
@@ -1077,7 +1109,8 @@ router.put("/admin/reject/:id", verifyToken, authorizeRoles("admin"), async (req
           recipientId: news.editorId,
           type: "rejected",
           text: `The article "${news.title}" you approved was rejected by the Admin. Reason: ${rejectionReason}`,
-          reason: rejectionReason
+          reason: rejectionReason,
+          language: news.language || "ta",
         });
       }
     } catch (notifErr) {

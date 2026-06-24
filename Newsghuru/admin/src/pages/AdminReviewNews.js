@@ -24,7 +24,7 @@ function AdminReviewNews() {
     seo: false
   });
   const [publishComment, setPublishComment] = useState("");
-  const [sendBrowserNotification, setSendBrowserNotification] = useState(false);
+  const [sendNotification, setSendNotification] = useState(false);
 
   const fetchArticleDetails = async () => {
     try {
@@ -92,7 +92,8 @@ function AdminReviewNews() {
     try {
       await API.put(`/api/news/admin/publish/${id}`, {
         comment: publishComment,
-        sendBrowserNotification: sendBrowserNotification
+        sendNotification: sendNotification,
+        sendBrowserNotification: sendNotification
       });
       setShowVerifyModal(false);
       alert("Article published live! 🎉");
@@ -222,8 +223,8 @@ function AdminReviewNews() {
                 <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', color: 'var(--text-main)'}}>
                   <input 
                     type="checkbox" 
-                    checked={sendBrowserNotification} 
-                    onChange={(e) => setSendBrowserNotification(e.target.checked)} 
+                    checked={sendNotification} 
+                    onChange={(e) => setSendNotification(e.target.checked)} 
                     style={{width: '18px', height: '18px', cursor: 'pointer'}}
                   />
                   Send Browser Push Notification

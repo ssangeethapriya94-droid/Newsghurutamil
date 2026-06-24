@@ -129,98 +129,237 @@ const getLogoUrl = () => {
   return "https://raw.githubusercontent.com/ssangeethapriya94-droid/Newsghurutamil/main/Newsghuru/users/public/NEWS%20GHURU%20LOGO%20PNG.png";
 };
 
-const sendNewsPublishEmail = async (userEmails, news) => {
-  if (!userEmails || userEmails.length === 0) {
-    console.log("ℹ️ [EMAIL] No subscribed users found to send notifications to.");
-    return;
-  }
+const sendNewsPublishEmail = async (targetLanguage) => {
+  try {
+    const News = require("../models/News");
+    const User = require("../models/User");
 
-  // Fallback to localhost:3001 if FRONTEND_URL is not provided
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3001";
-  const newsLink = `${frontendUrl}/news/${news._id}`;
-  
-  const formattedDate = new Date(news.publishedAt || news.date || Date.now()).toLocaleDateString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-  });
+    const lang = targetLanguage || "ta";
 
-  const finalImageUrl = getPublicImageUrl(news.coverImage || news.image);
-  const logoUrl = getLogoUrl();
+    // 1. Fetch latest 5 published news for this language
+    const query = { status: "published", language: lang };
+    const latestNews = await News.find(query)
+      .sort({ publishedAt: -1, createdAt: -1 })
+      .limit(5);
 
-  const mailOptions = {
-    from: `"NewsGhuru" <${process.env.SMTP_EMAIL}>`,
-    to: process.env.SMTP_EMAIL,
-    bcc: userEmails, // Use BCC to hide user emails from each other
-    subject: `📰 NewsGhuru Breaking News: ${news.title}`,
-    html: `<!DOCTYPE html>
-<html lang="ta">
+    if (latestNews.length === 0) {
+      console.log(`ℹ️ [EMAIL] No published news found for language: ${lang}. Skipping email newsletter digest.`);
+      return;
+    }
+
+    // 2. Fetch all users who have an email, matching the target language
+    let userQuery = {};
+    if (lang === "en") {
+      userQuery = { email: { $exists: true, $ne: "" }, language: "en" };
+    } else {
+      userQuery = { email: { $exists: true, $ne: "" }, language: { $ne: "en" } };
+    }
+
+    const users = await User.find(userQuery).select("email");
+    const userEmails = users.map(user => user.email).filter(email => email);
+
+    if (userEmails.length === 0) {
+      console.log(`ℹ️ [EMAIL] No users found with language preference matching: ${lang}. Skipping email sending.`);
+      return;
+    }
+
+    // 3. Build newsletter content
+    const isEnglish = (lang === "en");
+    
+    // Frontend URL
+    const frontendUrl = isEnglish 
+      ? (process.env.FRONTEND_URL || "http://localhost:3001")
+      : (process.env.FRONTEND_URL_TA || "http://localhost:3002");
+
+    // Setup attachments array
+    const attachments = [];
+
+    // Logo Attachment
+    const logoFilename = isEnglish ? "NEWS GHURU LOGO English.png" : "NEWS GHURU LOGO PNG.png";
+    const logoLocalPath = isEnglish 
+      ? path.join(__dirname, "../../users-english/public", logoFilename)
+      : path.join(__dirname, "../../users-tamil/public", logoFilename);
+    
+    let logoUrl = "";
+    if (fs.existsSync(logoLocalPath)) {
+      attachments.push({
+        filename: logoFilename,
+        path: logoLocalPath,
+        cid: "brand-logo",
+      });
+      logoUrl = "cid:brand-logo";
+    } else {
+      console.warn(`⚠️ [EMAIL] Local logo not found at: ${logoLocalPath}. Falling back to GitHub URL.`);
+      logoUrl = isEnglish 
+        ? "https://raw.githubusercontent.com/ssangeethapriya94-droid/Newsghurutamil/main/Newsghuru/users-english/public/NEWS%20GHURU%20LOGO%20English.png"
+        : "https://raw.githubusercontent.com/ssangeethapriya94-droid/Newsghurutamil/main/Newsghuru/users-tamil/public/NEWS%20GHURU%20LOGO%20PNG.png";
+    }
+
+    const brandName = isEnglish ? "NewsGhuru" : "நியூஸ் குரு";
+    const slogan = isEnglish 
+      ? "— Your News &nbsp;Your Voice —" 
+      : "— உங்கள் செய்தி &nbsp;உங்கள் குரல் —";
+    const subject = isEnglish
+      ? `📰 NewsGhuru Latest Updates: ${latestNews[0].title}`
+      : `📰 நியூஸ் குரு முக்கிய செய்திகள்: ${latestNews[0].title}`;
+    const preheader = isEnglish
+      ? `NewsGhuru — Latest updates from our website`
+      : `நியூஸ் குரு — இன்றைய முக்கிய செய்திகள்`;
+    const headingText = isEnglish ? "LATEST NEWS" : "முக்கிய செய்திகள்";
+
+    // Build the list of news articles HTML
+    let newsItemsHtml = "";
+    for (let i = 0; i < latestNews.length; i++) {
+      const item = latestNews[i];
+      const newsLink = `${frontendUrl}/news/${item._id}`;
+      const imageUrl = item.coverImage || item.image;
+      let finalSrc = FALLBACK_NEWS_IMAGE;
+
+      if (imageUrl) {
+        if (/^https?:\/\//i.test(imageUrl) && !imageUrl.includes("localhost") && !imageUrl.includes("127.0.0.1")) {
+          // Public absolute URL
+          finalSrc = imageUrl;
+        } else {
+          // Local/localhost upload URL or relative URL
+          let filename = "";
+          if (imageUrl.includes("/uploads/")) {
+            filename = imageUrl.substring(imageUrl.lastIndexOf("/uploads/") + 9);
+          } else if (imageUrl.includes("/images/")) {
+            filename = imageUrl.substring(imageUrl.lastIndexOf("/images/") + 8);
+          } else {
+            filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+          }
+          filename = filename.split("?")[0]; // Remove query params if any
+          
+          const uploadsPath = path.join(__dirname, "../uploads", filename);
+          const imagesPath = path.join(__dirname, "../images", filename);
+          let localPath = "";
+          
+          if (fs.existsSync(uploadsPath)) {
+            localPath = uploadsPath;
+          } else if (fs.existsSync(imagesPath)) {
+            localPath = imagesPath;
+          }
+          
+          if (localPath) {
+            const cid = `news-image-${i}`;
+            attachments.push({
+              filename: filename,
+              path: localPath,
+              cid: cid,
+            });
+            finalSrc = `cid:${cid}`;
+          } else {
+            finalSrc = FALLBACK_NEWS_IMAGE;
+          }
+        }
+      }
+
+      const isLast = (i === latestNews.length - 1);
+
+      newsItemsHtml += `
+        <!-- News Item ${i + 1} -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+          <tr>
+            <td>
+              <a href="${newsLink}" target="_blank" style="text-decoration: none; display: block;">
+                <img
+                  src="${finalSrc}"
+                  alt="${item.title}"
+                  width="540"
+                  style="display: block; width: 100%; max-width: 540px; height: auto; border-radius: 8px; object-fit: cover; margin: 0 auto 14px; border: 0; outline: none;"
+                />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 10px;">
+              <h3 style="margin: 0 0 10px 0; font-size: 18px; line-height: 1.45; font-weight: 700;">
+                <a href="${newsLink}" target="_blank" style="color: #0f172a; text-decoration: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                  ${item.title}
+                </a>
+              </h3>
+            </td>
+          </tr>
+          ${!isLast ? `
+          <tr>
+            <td style="height: 16px;"></td>
+          </tr>
+          <tr>
+            <td style="height: 1px; background-color: #e2e8f0; padding: 0 10px;"></td>
+          </tr>
+          ` : ''}
+        </table>
+      `;
+    }
+
+    const mailOptions = {
+      from: `"${brandName}" <${process.env.SMTP_EMAIL}>`,
+      to: process.env.SMTP_EMAIL,
+      bcc: userEmails, // Use BCC to hide user emails from each other
+      subject: subject,
+      html: `<!DOCTYPE html>
+<html lang="${isEnglish ? 'en' : 'ta'}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NewsGhuru Breaking News</title>
+  <title>${isEnglish ? 'NewsGhuru Updates' : 'நியூஸ் குரு செய்திகள்'}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#f0f4f8;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
 
   <!-- Pre-header invisible text -->
-  <span style="display:none;font-size:1px;color:#f0f4f8;max-height:0;max-width:0;opacity:0;overflow:hidden;">
-    நியூஸ் குரு — ${news.title}
+  <span style="display:none;font-size:1px;color:#f1f5f9;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    ${preheader}
   </span>
 
   <!-- Outer wrapper -->
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f4f8;padding:20px 0;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f1f5f9;padding:24px 0;">
     <tr>
       <td align="center">
 
         <!-- Email Card -->
-        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,0.06);border:1px solid #e2e8f0;">
 
-          <!-- ═══════════════ HEADER ═══════════════ -->
+          <!-- ═══════════════ TOP GRADIENT BAR ═══════════════ -->
           <tr>
-            <td style="background-color:#0f172a;padding:0;">
-              <!-- Top orange accent bar -->
+            <td style="height:6px;background:linear-gradient(90deg,#ea580c 0%,#f97316 50%,#ea580c 100%);"></td>
+          </tr>
+
+          <!-- ═══════════════ HEADER (LIGHT THEME) ═══════════════ -->
+          <tr>
+            <td style="background-color:#ffffff;padding:28px 24px 20px;border-bottom:1px solid #f1f5f9;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="height:5px;background:linear-gradient(90deg,#ea580c 0%,#f97316 50%,#ea580c 100%);"></td>
-                </tr>
-              </table>
-              <!-- Logo + Brand row -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td align="center" style="padding:22px 20px 18px;">
+                  <td align="center">
                     <!-- Logo image -->
                     <img
                       src="${logoUrl}"
-                      alt="நியூஸ் குரு Logo"
-                      width="90"
-                      style="display:block;margin:0 auto 10px;border:0;height:auto;width:90px;"
+                      alt="${brandName} Logo"
+                      width="120"
+                      style="display:block;margin:0 auto 12px;border:0;height:auto;width:120px;"
                     />
-                    <!-- Tamil brand name -->
-                    <div style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:1px;line-height:1.1;margin-bottom:4px;">
-                      நியூஸ் குரு
+                    <!-- Brand name -->
+                    <div style="font-size:26px;font-weight:800;color:#0f172a;letter-spacing:0.5px;line-height:1.2;margin-bottom:6px;font-family:'Outfit','Inter',Helvetica,Arial,sans-serif;">
+                      ${brandName}
                     </div>
-                    <!-- Slogan with orange dashes -->
-                    <div style="color:#f97316;font-size:13px;letter-spacing:2px;font-weight:600;">
-                      — உங்கள் செய்தி &nbsp;உங்கள் குரல் —
+                    <!-- Slogan -->
+                    <div style="color:#ea580c;font-size:13px;letter-spacing:1.5px;font-weight:600;">
+                      ${slogan}
                     </div>
                   </td>
-                </tr>
-              </table>
-              <!-- Bottom orange accent bar -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="height:4px;background:linear-gradient(90deg,#ea580c 0%,#f97316 50%,#ea580c 100%);"></td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- ═══════════════ BREAKING NEWS BADGE ═══════════════ -->
+          <!-- ═══════════════ NEWSLETTER BADGE ═══════════════ -->
           <tr>
-            <td align="center" style="background-color:#ffffff;padding:22px 20px 14px;">
+            <td align="center" style="background-color:#ffffff;padding:20px 24px 10px;">
               <table cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="background-color:#dc2626;border-radius:30px;padding:7px 22px;">
-                    <span style="color:#ffffff;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">
-                      &#9889; BREAKING NEWS
+                  <td style="background-color:#dc2626;border-radius:30px;padding:6px 20px;">
+                    <span style="color:#ffffff;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">
+                      &#9889; ${headingText}
                     </span>
                   </td>
                 </tr>
@@ -228,53 +367,52 @@ const sendNewsPublishEmail = async (userEmails, news) => {
             </td>
           </tr>
 
-          <!-- ═══════════════ FEATURED IMAGE ═══════════════ -->
+          <!-- ═══════════════ NEWS ITEMS LOOP ═══════════════ -->
           <tr>
-            <td style="padding:0 20px;">
-              <img
-                src="${finalImageUrl}"
-                alt="${news.title}"
-                width="560"
-                style="display:block;width:560px;max-width:100%;height:auto;border-radius:10px;object-fit:cover;"
-              />
+            <td style="padding:16px 24px 20px;background-color:#ffffff;">
+              ${newsItemsHtml}
             </td>
           </tr>
 
-          <!-- ═══════════════ CONTENT BODY ═══════════════ -->
+          <!-- ═══════════════ FOOTER (LIGHT THEME) ═══════════════ -->
           <tr>
-            <td style="padding:24px 28px 10px;">
+            <td style="background-color:#f8fafc;padding:32px 24px 28px;border-top:1px solid #e2e8f0;">
 
-              <!-- Category pill -->
-              <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
+              <!-- Follow us text -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
                 <tr>
-                  <td style="background-color:#ea580c;border-radius:30px;padding:5px 16px;">
-                    <span style="color:#ffffff;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">
-                      ${news.category || 'செய்தி'}
-                    </span>
+                  <td align="center">
+                    <span style="color:#475569;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Follow ${brandName}</span>
                   </td>
                 </tr>
               </table>
 
-              <!-- News title -->
-              <h2 style="color:#0f172a;font-size:22px;font-weight:800;line-height:1.35;margin:0 0 10px 0;">
-                ${news.title}
-              </h2>
-
-              <!-- Subtitle -->
-              ${news.subtitle ? `
-              <p style="color:#475569;font-size:15px;line-height:1.55;margin:0 0 14px 0;">
-                ${news.subtitle}
-              </p>
-              ` : ''}
-
-              <!-- Date -->
-              <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:18px;">
+              <!-- Social icons row -->
+              <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 24px;">
                 <tr>
-                  <td valign="middle" style="padding-right:7px;">
-                    <span style="font-size:16px;">&#128197;</span>
+                  <!-- Facebook -->
+                  <td style="padding:0 12px;">
+                    <a href="https://www.facebook.com/share/1JWbyTwjG3/" target="_blank" style="text-decoration:none; display:block;">
+                      <img src="https://img.icons8.com/color/48/facebook-new.png" alt="Facebook" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
+                    </a>
                   </td>
-                  <td valign="middle">
-                    <span style="color:#64748b;font-size:13px;font-weight:600;">${formattedDate}</span>
+                  <!-- X (Twitter) -->
+                  <td style="padding:0 12px;">
+                    <a href="https://x.com/news_ghuruTamil" target="_blank" style="text-decoration:none; display:block;">
+                      <img src="https://img.icons8.com/color/48/twitterx.png" alt="X (Twitter)" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
+                    </a>
+                  </td>
+                  <!-- Instagram -->
+                  <td style="padding:0 12px;">
+                    <a href="https://www.instagram.com/newsghuru_tamil/" target="_blank" style="text-decoration:none; display:block;">
+                      <img src="https://img.icons8.com/color/48/instagram-new.png" alt="Instagram" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
+                    </a>
+                  </td>
+                  <!-- YouTube -->
+                  <td style="padding:0 12px;">
+                    <a href="https://youtube.com/@newsghurutamil" target="_blank" style="text-decoration:none; display:block;">
+                      <img src="https://img.icons8.com/color/48/youtube-play.png" alt="YouTube" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
+                    </a>
                   </td>
                 </tr>
               </table>
@@ -286,105 +424,16 @@ const sendNewsPublishEmail = async (userEmails, news) => {
                 </tr>
               </table>
 
-              <!-- News Summary box -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fff7ed;border-radius:10px;border:1px solid #ffedd5;margin-bottom:26px;">
-                <tr>
-                  <td valign="top" style="padding:16px 12px 16px 16px;width:60px;">
-                    <!-- Newspaper icon circle -->
-                    <table cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td align="center" valign="middle" style="width:48px;height:48px;background-color:#fde8d4;border-radius:50%;border:2px solid #ea580c;">
-                          <span style="font-size:22px;line-height:1;">&#128240;</span>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <td valign="top" style="padding:16px 16px 16px 4px;">
-                    <div style="color:#ea580c;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;">
-                      NEWS SUMMARY
-                    </div>
-                    <div style="color:#374151;font-size:14px;line-height:1.65;">
-                      ${news.shortDescription || news.subtitle || 'Click the button below to read the full coverage of this breaking story on NewsGhuru.'}
-                    </div>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- CTA Button -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
-                <tr>
-                  <td align="center">
-                    <a href="${newsLink}"
-                       style="display:inline-block;background-color:#ea580c;color:#ffffff;font-size:15px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;padding:15px 48px;border-radius:8px;">
-                      READ FULL NEWS &nbsp;&#8594;
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-            </td>
-          </tr>
-
-          <!-- ═══════════════ FOOTER ═══════════════ -->
-          <tr>
-            <td style="background-color:#0f172a;padding:28px 20px 24px;">
-
-              <!-- Follow us text -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
-                <tr>
-                  <td align="center">
-                    <span style="color:#ffffff;font-size:14px;font-weight:700;letter-spacing:0.5px;">Follow NewsGhuru</span>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Social icons row -->
-              <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
-                <tr>
-                  <!-- Facebook -->
-                  <td style="padding:0 10px;">
-                    <a href="https://www.facebook.com/share/1JWbyTwjG3/" target="_blank" style="text-decoration:none; display:block;">
-                      <img src="https://img.icons8.com/color/48/facebook-new.png" alt="Facebook" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
-                    </a>
-                  </td>
-                  <!-- X (Twitter) -->
-                  <td style="padding:0 10px;">
-                    <a href="https://x.com/news_ghuruTamil" target="_blank" style="text-decoration:none; display:block;">
-                      <img src="https://img.icons8.com/color/48/twitterx.png" alt="X (Twitter)" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
-                    </a>
-                  </td>
-                  <!-- Instagram -->
-                  <td style="padding:0 10px;">
-                    <a href="https://www.instagram.com/newsghuru_tamil/" target="_blank" style="text-decoration:none; display:block;">
-                      <img src="https://img.icons8.com/color/48/instagram-new.png" alt="Instagram" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
-                    </a>
-                  </td>
-                  <!-- YouTube -->
-                  <td style="padding:0 10px;">
-                    <a href="https://youtube.com/@newsghurutamil" target="_blank" style="text-decoration:none; display:block;">
-                      <img src="https://img.icons8.com/color/48/youtube-play.png" alt="YouTube" width="32" height="32" style="display:block; border:0; outline:none; width:32px; height:32px;" />
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Divider -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
-                <tr>
-                  <td style="height:1px;background-color:#1e293b;"></td>
-                </tr>
-              </table>
-
               <!-- Copyright -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center">
-                    <p style="color:#94a3b8;font-size:12px;margin:0 0 6px 0;">
-                      © ${new Date().getFullYear()} NewsGhuru. All Rights Reserved.
+                    <p style="color:#64748b;font-size:12px;margin:0 0 8px 0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+                      © ${new Date().getFullYear()} ${brandName}. All Rights Reserved.
                     </p>
-                    <a href="${process.env.FRONTEND_URL || 'http://localhost:3001'}"
-                       style="color:#ea580c;font-size:12px;text-decoration:none;font-weight:600;">
-                      www.newsghuru.com
+                    <a href="${frontendUrl}"
+                       style="color:#ea580c;font-size:13px;text-decoration:none;font-weight:700;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+                      ${isEnglish ? 'www.newsghuru.com' : 'www.newsghuru.in'}
                     </a>
                   </td>
                 </tr>
@@ -393,11 +442,12 @@ const sendNewsPublishEmail = async (userEmails, news) => {
             </td>
           </tr>
 
-          <!-- Unsubscribe notice -->
+          <!-- Unsubscribe / Notice footer -->
           <tr>
-            <td align="center" style="background-color:#f8fafc;padding:12px 20px;">
-              <p style="color:#94a3b8;font-size:11px;margin:0;">
-                You are receiving this email because you are a registered user of NewsGhuru.
+            <td align="center" style="background-color:#f1f5f9;padding:16px 24px;border-top:1px solid #e2e8f0;">
+              <p style="color:#64748b;font-size:11px;margin:0;line-height:1.4;">
+                You are receiving this email because you registered on ${brandName}.<br/>
+                To manage your email preferences, update your settings on our website.
               </p>
             </td>
           </tr>
@@ -411,23 +461,17 @@ const sendNewsPublishEmail = async (userEmails, news) => {
 
 </body>
 </html>`,
-  };
+      attachments: attachments,
+    };
 
-  try {
     const info = await getTransporter().sendMail(mailOptions);
-    console.log(`✅ [EMAIL SUCCESS] Sent notification to ${userEmails.length} subscribed users.`);
+    console.log(`✅ [EMAIL SUCCESS] Sent ${lang} newsletter to ${userEmails.length} subscribed users.`);
     console.log(`   - Accepted: ${info.accepted.length}`);
     if (info.rejected && info.rejected.length > 0) {
       console.log(`   - Failed: ${info.rejected.length}`);
     }
   } catch (error) {
-    console.error(`❌ [EMAIL FAILED] Could not send notifications to users:`);
-    console.error(`   - Error Message: ${error.message}`);
-    console.error(`   - Error Code: ${error.code}`);
-    if (error.response) {
-      console.error(`   - SMTP Response: ${error.response}`);
-    }
-    console.error(`   - Stack Trace: ${error.stack}`);
+    console.error(`❌ [EMAIL FAILED] Could not send newsletter digest:`, error.message);
   }
 };
 

@@ -43,6 +43,12 @@ import Shorts from "./pages/Shorts";
 import PhotoStories from "./pages/PhotoStories";
 import HomepageBuilder from "./pages/HomepageBuilder";
 
+// Anmigam Pages
+import AnmigamRasiPalanList from "./pages/AnmigamRasiPalanList";
+import AnmigamRasiPalanCreate from "./pages/AnmigamRasiPalanCreate";
+import AnmigamTempleBlogsList from "./pages/AnmigamTempleBlogsList";
+import AnmigamTempleBlogCreate from "./pages/AnmigamTempleBlogCreate";
+
 // Advertisement pages
 import AdDashboard from "./pages/AdDashboard";
 import AllAds from "./pages/AllAds";
@@ -268,6 +274,14 @@ function App() {
         <Route path="/admin/shorts" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><Shorts /></Layout></ProtectedRoute>} />
         <Route path="/admin/photo-stories" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><PhotoStories /></Layout></ProtectedRoute>} />
         <Route path="/admin/homepage-builder" element={<ProtectedRoute requiredRole="admin"><Layout><HomepageBuilder /></Layout></ProtectedRoute>} />
+
+        {/* ANMIGAM ROUTES */}
+        <Route path="/admin/anmigam/rasi-palan" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AnmigamRasiPalanList /></Layout></ProtectedRoute>} />
+        <Route path="/admin/anmigam/rasi-palan/new" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AnmigamRasiPalanCreate /></Layout></ProtectedRoute>} />
+        <Route path="/admin/anmigam/rasi-palan/edit/:id" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AnmigamRasiPalanCreate /></Layout></ProtectedRoute>} />
+        <Route path="/admin/anmigam/temple-blogs" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AnmigamTempleBlogsList /></Layout></ProtectedRoute>} />
+        <Route path="/admin/anmigam/temple-blogs/new" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AnmigamTempleBlogCreate /></Layout></ProtectedRoute>} />
+        <Route path="/admin/anmigam/temple-blogs/edit/:id" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AnmigamTempleBlogCreate /></Layout></ProtectedRoute>} />
 
         {/* ADVERTISEMENT MANAGEMENT MODULE ROUTES */}
         <Route path="/admin/ads/dashboard" element={<ProtectedRoute requiredRole="admin"><Layout><AdDashboard /></Layout></ProtectedRoute>} />

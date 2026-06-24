@@ -6,7 +6,7 @@ import {
   FiZap, FiFolder, FiImage, FiUsers, FiMail, 
   FiBell, FiSettings, FiUser, FiLogOut,
   FiSliders, FiLayers, FiPlusCircle, FiInbox, FiBarChart2,
-  FiChevronDown, FiChevronUp, FiVideo, FiTv, FiCamera, FiLayout
+  FiChevronDown, FiChevronUp, FiVideo, FiTv, FiCamera, FiLayout, FiSun
 } from "react-icons/fi";
 import API from "../config/api";
 
@@ -14,6 +14,9 @@ function Sidebar({ isOpen }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [anmigamExpanded, setAnmigamExpanded] = useState(
+    location.pathname.startsWith("/admin/anmigam")
+  );
   const [settingsExpanded, setSettingsExpanded] = useState(
     location.pathname.startsWith("/admin/settings")
   );
@@ -38,6 +41,9 @@ function Sidebar({ isOpen }) {
   useEffect(() => {
     if (location.pathname.startsWith("/admin/settings")) {
       setSettingsExpanded(true);
+    }
+    if (location.pathname.startsWith("/admin/anmigam")) {
+      setAnmigamExpanded(true);
     }
   }, [location.pathname]);
 
@@ -104,6 +110,50 @@ function Sidebar({ isOpen }) {
           <span className="link-icon"><FiImage /></span>
           Media Library
         </NavLink>
+
+        <div className="sidebar-link-group">
+          <button 
+            type="button"
+            className={`sidebar-link ${location.pathname.startsWith("/admin/anmigam") ? "active" : ""}`} 
+            onClick={() => setAnmigamExpanded(!anmigamExpanded)}
+            style={{ 
+              width: "100%",
+              display: "flex", 
+              justifyContent: "space-between", 
+              alignItems: "center", 
+              cursor: "pointer",
+              textAlign: "left",
+              outline: "none",
+              background: "none",
+              border: "none",
+              padding: "10px 16px"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span className="link-icon"><FiSun /></span>
+              Anmigam
+            </div>
+            <span style={{ display: "flex", alignItems: "center", fontSize: "14px" }}>
+              {anmigamExpanded ? <FiChevronUp /> : <FiChevronDown />}
+            </span>
+          </button>
+          {anmigamExpanded && (
+            <div className="sidebar-sublinks">
+              <NavLink 
+                className="sidebar-sublink" 
+                to="/admin/anmigam/rasi-palan"
+              >
+                Rasi Palan
+              </NavLink>
+              <NavLink 
+                className="sidebar-sublink" 
+                to="/admin/anmigam/temple-blogs"
+              >
+                Temple Blogs
+              </NavLink>
+            </div>
+          )}
+        </div>
 
         <div className="sidebar-section">PREMIUM CMS</div>
 

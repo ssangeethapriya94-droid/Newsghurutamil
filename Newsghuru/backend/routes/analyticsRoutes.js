@@ -10,12 +10,27 @@ const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 // Increments global visitor count atomically and returns the new total.
 router.post("/visitors/increment", async (req, res) => {
   try {
+    const { language } = req.body;
+    const incField = { count: 1 };
+    if (language === "en") {
+      incField.englishCount = 1;
+    } else if (language === "ta") {
+      incField.tamilCount = 1;
+    } else {
+      incField.tamilCount = 1; // Default to tamil if unspecified
+    }
+
     const doc = await VisitorStats.findOneAndUpdate(
       {},
-      { $inc: { count: 1 } },
+      { $inc: incField },
       { upsert: true, new: true }
     );
-    res.json({ success: true, count: doc.count });
+    res.json({
+      success: true,
+      count: doc.count,
+      englishCount: doc.englishCount || 0,
+      tamilCount: doc.tamilCount || 0
+    });
   } catch (error) {
     console.error("Visitor increment error:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -27,7 +42,12 @@ router.post("/visitors/increment", async (req, res) => {
 router.get("/visitors", async (req, res) => {
   try {
     const doc = await VisitorStats.findOne();
-    res.json({ success: true, count: doc ? doc.count : 0 });
+    res.json({
+      success: true,
+      count: doc ? doc.count : 0,
+      englishCount: doc ? (doc.englishCount || 0) : 0,
+      tamilCount: doc ? (doc.tamilCount || 0) : 0
+    });
   } catch (error) {
     console.error("Visitor fetch error:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -42,9 +62,13 @@ router.get("/dashboard", verifyToken, authorizeRoles("admin", "editor"), async (
     // Total website visitors
     const visitorDoc = await VisitorStats.findOne();
     const totalViewers = visitorDoc ? visitorDoc.count : 0;
+    const englishViewers = visitorDoc ? (visitorDoc.englishCount || 0) : 0;
+    const tamilViewers = visitorDoc ? (visitorDoc.tamilCount || 0) : 0;
 
-    // Total registered users
+    // Registered users
     const totalUsers = await User.countDocuments();
+    const englishUsers = await User.countDocuments({ language: "en" });
+    const tamilUsers = await User.countDocuments({ $or: [{ language: "ta" }, { language: { $exists: false } }, { language: "" }] });
 
     // Login users: users active in the last 15 minutes
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
@@ -60,7 +84,11 @@ router.get("/dashboard", verifyToken, authorizeRoles("admin", "editor"), async (
     res.json({
       success: true,
       totalViewers,
+      englishViewers,
+      tamilViewers,
       totalUsers,
+      englishUsers,
+      tamilUsers,
       loginUsers,
       subscribersCount,
     });

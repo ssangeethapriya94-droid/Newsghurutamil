@@ -283,14 +283,51 @@ function AdminDashboard() {
           </div>
         </div>
 
-        <div className="metric-card green-glow">
-          <div className="metric-icon-bg bg-green">
-            <FiActivity />
+        <div className="metric-card purple-glow">
+          <div className="metric-icon-bg bg-purple" style={{ position: "relative" }}>
+            <FiUsers />
+            <span style={{ fontSize: "9px", fontWeight: "800", position: "absolute", bottom: "2px", right: "2px", background: "rgba(139, 92, 246, 0.15)", color: "#7c3aed", padding: "1px 3px", borderRadius: "3px", border: "1px solid rgba(139, 92, 246, 0.25)" }}>EN</span>
           </div>
           <div className="metric-details">
-            <h3>Login Users</h3>
-            <p className="value">{stats.loginUsers || 0}</p>
-            <span className="trend-text green-trend">Active last 15 mins</span>
+            <h3>English Users</h3>
+            <p className="value">{stats.englishUsers || 0}</p>
+            <span className="trend-text green-trend">Registered in English</span>
+          </div>
+        </div>
+
+        <div className="metric-card purple-glow">
+          <div className="metric-icon-bg bg-purple" style={{ position: "relative" }}>
+            <FiUsers />
+            <span style={{ fontSize: "9px", fontWeight: "800", position: "absolute", bottom: "2px", right: "2px", background: "rgba(139, 92, 246, 0.15)", color: "#7c3aed", padding: "1px 3px", borderRadius: "3px", border: "1px solid rgba(139, 92, 246, 0.25)" }}>TA</span>
+          </div>
+          <div className="metric-details">
+            <h3>Tamil Users</h3>
+            <p className="value">{stats.tamilUsers || 0}</p>
+            <span className="trend-text green-trend">Registered in Tamil</span>
+          </div>
+        </div>
+
+        <div className="metric-card orange-glow">
+          <div className="metric-icon-bg bg-orange" style={{ position: "relative" }}>
+            <FiEye />
+            <span style={{ fontSize: "9px", fontWeight: "800", position: "absolute", bottom: "2px", right: "2px", background: "rgba(234, 88, 12, 0.15)", color: "#ea580c", padding: "1px 3px", borderRadius: "3px", border: "1px solid rgba(234, 88, 12, 0.25)" }}>EN</span>
+          </div>
+          <div className="metric-details">
+            <h3>English Viewers</h3>
+            <p className="value">{(stats.englishViewers || 0).toLocaleString()}</p>
+            <span className="trend-text green-trend">English portal visits</span>
+          </div>
+        </div>
+
+        <div className="metric-card orange-glow">
+          <div className="metric-icon-bg bg-orange" style={{ position: "relative" }}>
+            <FiEye />
+            <span style={{ fontSize: "9px", fontWeight: "800", position: "absolute", bottom: "2px", right: "2px", background: "rgba(234, 88, 12, 0.15)", color: "#ea580c", padding: "1px 3px", borderRadius: "3px", border: "1px solid rgba(234, 88, 12, 0.25)" }}>TA</span>
+          </div>
+          <div className="metric-details">
+            <h3>Tamil Viewers</h3>
+            <p className="value">{(stats.tamilViewers || 0).toLocaleString()}</p>
+            <span className="trend-text green-trend">Tamil portal visits</span>
           </div>
         </div>
 

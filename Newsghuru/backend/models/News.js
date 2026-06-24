@@ -131,6 +131,11 @@ const newsSchema =
       default: false,
     },
 
+    sendNotification: {
+      type: Boolean,
+      default: false,
+    },
+
   },
   {
     timestamps: true,

@@ -156,6 +156,7 @@ router.post("/", verifyToken, authorizeRoles("admin", "editor"), uploadFields, a
             recipientId: admin._id,
             type: "submitted",
             text: `New photo story "${saved.title}" submitted by Editor ${req.user.name} is pending approval.`,
+            language: saved.language || "ta",
           })
         );
         await Promise.all(notificationPromises);
@@ -242,6 +243,7 @@ router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), uploadFields,
             recipientId: admin._id,
             type: "submitted",
             text: `Photo story "${story.title}" submitted by Editor ${req.user.name} is pending approval.`,
+            language: story.language || "ta",
           })
         );
         await Promise.all(notificationPromises);
@@ -300,7 +302,8 @@ router.put("/:id/approve", verifyToken, authorizeRoles("admin"), async (req, res
         await Notification.create({
           recipientId: story.createdBy,
           type: "approved",
-          text: `Your photo story "${story.title}" has been approved by the Admin.`
+          text: `Your photo story "${story.title}" has been approved by the Admin.`,
+          language: story.language || "ta",
         });
       } catch (notifErr) {
         console.error("Failed to notify creator editor:", notifErr);
@@ -340,7 +343,8 @@ router.put("/:id/reject", verifyToken, authorizeRoles("admin"), async (req, res)
           recipientId: story.createdBy,
           type: "rejected",
           text: `Your photo story "${story.title}" was rejected by the Admin. Reason: ${rejectionReason}`,
-          reason: rejectionReason
+          reason: rejectionReason,
+          language: story.language || "ta",
         });
       } catch (notifErr) {
         console.error("Failed to notify creator editor:", notifErr);
@@ -374,7 +378,8 @@ router.put("/:id/publish", verifyToken, authorizeRoles("admin"), async (req, res
         await Notification.create({
           recipientId: story.createdBy,
           type: "published",
-          text: `Your photo story "${story.title}" has been published by the Admin.`
+          text: `Your photo story "${story.title}" has been published by the Admin.`,
+          language: story.language || "ta",
         });
       } catch (notifErr) {
         console.error("Failed to notify creator editor:", notifErr);

@@ -1,14 +1,24 @@
-import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import "../styles/Sidebar.css";
 import { 
   FiClock, FiCheckSquare, FiCheckCircle, FiXCircle, 
   FiBell, FiUser, FiLogOut, FiTv, FiLayers, FiPlusCircle,
-  FiCamera
+  FiCamera, FiSun, FiChevronUp, FiChevronDown
 } from "react-icons/fi";
 
 function EditorSidebar({ isOpen }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [anmigamExpanded, setAnmigamExpanded] = useState(
+    location.pathname.startsWith("/admin/anmigam")
+  );
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/admin/anmigam")) {
+      setAnmigamExpanded(true);
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -53,6 +63,50 @@ function EditorSidebar({ isOpen }) {
           <span className="link-icon"><FiCamera /></span>
           Photo Stories
         </NavLink>
+
+        <div className="sidebar-link-group">
+          <button 
+            type="button"
+            className={`sidebar-link ${location.pathname.startsWith("/admin/anmigam") ? "active" : ""}`} 
+            onClick={() => setAnmigamExpanded(!anmigamExpanded)}
+            style={{ 
+              width: "100%",
+              display: "flex", 
+              justifyContent: "space-between", 
+              alignItems: "center", 
+              cursor: "pointer",
+              textAlign: "left",
+              outline: "none",
+              background: "none",
+              border: "none",
+              padding: "10px 16px"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span className="link-icon"><FiSun /></span>
+              Anmigam
+            </div>
+            <span style={{ display: "flex", alignItems: "center", fontSize: "14px" }}>
+              {anmigamExpanded ? <FiChevronUp /> : <FiChevronDown />}
+            </span>
+          </button>
+          {anmigamExpanded && (
+            <div className="sidebar-sublinks">
+              <NavLink 
+                className="sidebar-sublink" 
+                to="/admin/anmigam/rasi-palan"
+              >
+                Rasi Palan
+              </NavLink>
+              <NavLink 
+                className="sidebar-sublink" 
+                to="/admin/anmigam/temple-blogs"
+              >
+                Temple Blogs
+              </NavLink>
+            </div>
+          )}
+        </div>
 
         <div className="sidebar-section">ADVERTISEMENTS</div>
 

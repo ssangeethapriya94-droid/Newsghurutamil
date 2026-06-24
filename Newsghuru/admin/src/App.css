@@ -32,7 +32,8 @@ body {
   background: var(--bg-light);
   min-height: 100vh;
   min-width: 0;
-  max-width: 100%;
+  width: calc(100% - 260px);
+  max-width: calc(100% - 260px);
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }

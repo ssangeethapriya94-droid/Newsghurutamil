@@ -328,7 +328,7 @@
   z-index: 999;
 }
 
-.mega-nav-item:hover .mega-dropdown-panel {
+.mega-nav-item-wrapper:hover .mega-dropdown-panel {
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, 0);

@@ -7,6 +7,7 @@ import {
   Routes,
   Route,
   useLocation,
+  Navigate,
 } from "react-router-dom";
 
 import "./styles/global.css";
@@ -50,6 +51,11 @@ import MobileBottomNav from "./components/MobileBottomNav";
 import Tech from "./pages/Tech";
 import GenericCategory from "./pages/GenericCategory";
 import SubscribePlans from "./pages/SubscribePlans";
+
+// Anmigam pages
+import RasiPalanPage from "./pages/RasiPalanPage";
+import TempleBlogsPage from "./pages/TempleBlogsPage";
+import TempleBlogDetailsPage from "./pages/TempleBlogDetailsPage";
 
 /* =========================================
    MAIN LAYOUT
@@ -192,7 +198,7 @@ function App() {
         if (!localStorage.getItem(visitedKey)) {
           // Mark immediately to prevent race conditions / duplicate calls in StrictMode
           localStorage.setItem(visitedKey, "true");
-          const res = await API.post("/api/analytics/visitors/increment");
+          const res = await API.post("/api/analytics/visitors/increment", { language: "ta" });
           if (res.data && res.data.success) {
             setVisitorCount(res.data.count);
           }
@@ -553,6 +559,38 @@ function App() {
           element={
             <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
               <SubscribePlans />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/anmigam"
+          element={<Navigate to="/anmigam/rasi-palan" replace />}
+        />
+
+        <Route
+          path="/anmigam/rasi-palan"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
+              <RasiPalanPage />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/anmigam/temple-blogs"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
+              <TempleBlogsPage />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/anmigam/temple-blogs/:id"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
+              <TempleBlogDetailsPage />
             </Layout>
           }
         />

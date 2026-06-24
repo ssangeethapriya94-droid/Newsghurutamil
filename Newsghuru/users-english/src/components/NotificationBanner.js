@@ -8,18 +8,23 @@ function NotificationBanner() {
   const [status, setStatus] = useState("idle"); // idle | loading | success | denied
 
   useEffect(() => {
+    if (!("Notification" in window)) return;
+
+    // If already granted, silently register token in background (no banner needed)
+    // We do this REGARDLESS of the dismissed banner state so the token stays synchronized in the DB!
+    if (Notification.permission === "granted") {
+      registerToken();
+      return;
+    }
+
     // Show banner only if permission not yet decided and not previously dismissed
     const dismissed = localStorage.getItem("notif_banner_dismissed");
     if (dismissed) return;
-    if (!("Notification" in window)) return;
+
     if (Notification.permission === "default") {
       // Small delay so it doesn't pop immediately on page load
       const timer = setTimeout(() => setVisible(true), 2500);
       return () => clearTimeout(timer);
-    }
-    // If already granted, silently register token in background (no banner needed)
-    if (Notification.permission === "granted") {
-      registerToken();
     }
   }, []);
 
@@ -33,6 +38,11 @@ function NotificationBanner() {
             "/api/users/subscribe",
             { fcmToken },
             { headers: { Authorization: `Bearer ${readerToken}` } }
+          );
+        } else {
+          await API.post(
+            "/api/users/subscribe-guest",
+            { fcmToken, language: "en" }
           );
         }
         // Store token locally for non-logged-in users too (backend can use it)

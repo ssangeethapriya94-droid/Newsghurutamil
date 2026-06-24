@@ -33,6 +33,13 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // Sync language preference if sent
+    const lang = req.query.language || req.body.language;
+    if (lang && ["ta", "en", "hi", "te", "ml"].includes(lang)) {
+      user.language = lang;
+      await user.save();
+    }
+
     // Check if premium subscription has expired
     await user.checkSubscription();
 
@@ -78,12 +85,15 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    const lang = req.query.language || req.body.language || "ta";
+
     // Create new user
     const newUser = new User({
       name,
       email,
       password,
       role: role || "reporter", // default to reporter if not provided
+      language: lang,
     });
 
     await newUser.save();
@@ -101,6 +111,13 @@ router.get("/users/profile", verifyToken, async (req, res) => {
     let user = await User.findById(req.user._id).select("-password");
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Sync language preference if sent
+    const lang = req.query.language || req.body.language;
+    if (lang && ["ta", "en", "hi", "te", "ml"].includes(lang)) {
+      user.language = lang;
+      await user.save();
     }
 
     // Check if premium subscription has expired
@@ -230,6 +247,39 @@ router.post("/users/subscribe", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Subscribe error:", error);
     res.status(500).json({ success: false, message: "Server error during subscription" });
+  }
+});
+
+// POST /api/users/subscribe-guest - Subscribe guest/visitor to notifications
+router.post("/users/subscribe-guest", async (req, res) => {
+  try {
+    const { fcmToken, language } = req.body;
+    if (!fcmToken) {
+      return res.status(400).json({ success: false, message: "FCM Token is required" });
+    }
+
+    const GuestSubscription = require("../models/GuestSubscription");
+
+    // Check if token already exists
+    let subscription = await GuestSubscription.findOne({ fcmToken });
+    if (!subscription) {
+      subscription = new GuestSubscription({
+        fcmToken,
+        language: language || "ta"
+      });
+      await subscription.save();
+    } else if (subscription.language !== language) {
+      subscription.language = language || "ta";
+      await subscription.save();
+    }
+
+    res.json({
+      success: true,
+      message: "Guest subscription successful",
+    });
+  } catch (error) {
+    console.error("Guest subscribe error:", error);
+    res.status(500).json({ success: false, message: "Server error during guest subscription" });
   }
 });
 

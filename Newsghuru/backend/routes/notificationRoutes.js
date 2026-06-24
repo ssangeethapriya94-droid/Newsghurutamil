@@ -10,8 +10,8 @@ router.get("/", verifyToken, async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const query = { recipientId: req.user._id };
 
-    const lang = req.query.language || "ta";
-    if (lang !== "all") {
+    const lang = req.query.language;
+    if (lang && lang !== "all") {
       query.language = lang;
     }
 

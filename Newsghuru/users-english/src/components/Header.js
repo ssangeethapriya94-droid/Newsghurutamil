@@ -88,6 +88,7 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     { name: "Education",     slug: "/education",     icon: <FaGraduationCap /> },
     { name: "Politics",      slug: "/politics",      icon: <FaLandmark /> },
     { name: "Cinema",        slug: "/cinema",        icon: <FaFilm /> },
+    { name: "Spiritual",     slug: "/anmigam",       icon: <FaOm /> },
   ];
 
   return (
@@ -226,7 +227,7 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
             className="mega-nav-item-wrapper"
             onMouseEnter={() => handleCategoryHover(item.slug)}
             onMouseLeave={() => setHoveredCategory(null)}
-            style={{ height: "100%" }}
+            style={{ height: "100%", position: "relative" }}
           >
             <NavLink
               to={item.slug}
@@ -234,6 +235,17 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
                 isActive ? "mega-nav-item active" : "mega-nav-item"
               }
               end={item.slug === "/"}
+              onClick={(e) => {
+                if (item.slug === "/anmigam") {
+                  e.preventDefault();
+                  const isTouch = window.matchMedia("(pointer: coarse)").matches;
+                  if (isTouch) {
+                    setHoveredCategory(hoveredCategory === "/anmigam" ? null : "/anmigam");
+                  } else {
+                    setHoveredCategory("/anmigam");
+                  }
+                }
+              }}
             >
               <span style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}>
                 {item.icon}
@@ -241,8 +253,20 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
               <span>{item.name}</span>
             </NavLink>
 
+            {/* SPIRITUAL CUSTOM DROPDOWN */}
+            {hoveredCategory === "/anmigam" && item.slug === "/anmigam" && (
+              <div className="mega-dropdown-panel" style={{ minWidth: "220px", width: "auto", padding: "12px 0", display: "flex", flexDirection: "column", left: "auto", right: "0", transform: "none" }}>
+                <NavLink to="/anmigam/rasi-palan" className="mega-dropdown-sublink" onClick={() => setHoveredCategory(null)}>
+                  Horoscope
+                </NavLink>
+                <NavLink to="/anmigam/temple-blogs" className="mega-dropdown-sublink" onClick={() => setHoveredCategory(null)}>
+                  Temple Blogs
+                </NavLink>
+              </div>
+            )}
+
             {/* MEGA DROP DOWN PANEL */}
-            {hoveredCategory === item.slug && item.slug !== "/" && item.slug !== "/latest-news" && (
+            {hoveredCategory === item.slug && item.slug !== "/" && item.slug !== "/latest-news" && item.slug !== "/anmigam" && (
               <div className="mega-dropdown-panel">
                 <div>
                   <h4 style={{ fontFamily: "var(--font-serif)", fontSize: "1.1rem", marginBottom: "14px", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px" }}>

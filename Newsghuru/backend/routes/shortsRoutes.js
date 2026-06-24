@@ -99,6 +99,7 @@ router.post("/", verifyToken, authorizeRoles("admin", "editor"), async (req, res
             recipientId: admin._id,
             type: "submitted",
             text: `New news short reel "${saved.title}" submitted by Editor ${req.user.name} is pending approval.`,
+            language: saved.language || "ta",
           })
         );
         await Promise.all(notificationPromises);
@@ -165,6 +166,7 @@ router.put("/:id", verifyToken, authorizeRoles("admin", "editor"), async (req, r
             recipientId: admin._id,
             type: "submitted",
             text: `News short reel "${short.title}" submitted by Editor ${req.user.name} is pending approval.`,
+            language: short.language || "ta",
           })
         );
         await Promise.all(notificationPromises);
@@ -250,7 +252,8 @@ router.put("/:id/approve", verifyToken, authorizeRoles("admin"), async (req, res
         await Notification.create({
           recipientId: short.createdBy,
           type: "approved",
-          text: `Your news short reel "${short.title}" has been approved by the Admin/Editor.`
+          text: `Your news short reel "${short.title}" has been approved by the Admin/Editor.`,
+          language: short.language || "ta",
         });
       } catch (notifErr) {
         console.error("Failed to notify creator editor:", notifErr);
@@ -290,7 +293,8 @@ router.put("/:id/reject", verifyToken, authorizeRoles("admin"), async (req, res)
           recipientId: short.createdBy,
           type: "rejected",
           text: `Your news short reel "${short.title}" was rejected. Reason: ${rejectionReason}`,
-          reason: rejectionReason
+          reason: rejectionReason,
+          language: short.language || "ta",
         });
       } catch (notifErr) {
         console.error("Failed to notify creator editor:", notifErr);
@@ -325,7 +329,8 @@ router.put("/:id/publish", verifyToken, authorizeRoles("admin"), async (req, res
         await Notification.create({
           recipientId: short.createdBy,
           type: "published",
-          text: `Your news short reel "${short.title}" has been published.`
+          text: `Your news short reel "${short.title}" has been published.`,
+          language: short.language || "ta",
         });
       } catch (notifErr) {
         console.error("Failed to notify creator editor:", notifErr);

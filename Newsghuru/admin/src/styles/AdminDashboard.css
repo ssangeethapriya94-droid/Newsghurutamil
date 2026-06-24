@@ -141,7 +141,7 @@
    ========================================= */
 .dashboard-grid-layout {
   display: grid;
-  grid-template-columns: 2.1fr 1fr;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 }
@@ -682,7 +682,7 @@
 
 @media (max-width: 1024px) {
   .dashboard-grid-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .stats-metric-grid {
     grid-template-columns: repeat(2, 1fr);

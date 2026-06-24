@@ -261,3 +261,19 @@
   .auth-buttons { gap: 6px; margin-left: 5px; }
   .auth-btn { padding: 4px 8px; font-size: 0.8rem; }
 }
+
+.mega-dropdown-sublink {
+  padding: 10px 24px;
+  text-decoration: none;
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: block;
+}
+
+.mega-dropdown-sublink:hover {
+  background-color: var(--bg-hover) !important;
+  color: var(--accent-orange) !important;
+}
+

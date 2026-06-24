@@ -14,7 +14,8 @@ import {
   FaMapMarkedAlt,
   FaGlobe,
   FaFilm,
-  FaAward
+  FaAward,
+  FaOm
 } from "react-icons/fa";
 
 import { Link, useLocation } from "react-router-dom";
@@ -74,6 +75,16 @@ const Sidebar = ({ sidebar, setSidebar }) => {
       name: "Cinema",
       icon: <FaFilm />,
       path: "/cinema",
+    },
+    {
+      name: "Horoscope",
+      icon: <FaOm />,
+      path: "/anmigam/rasi-palan",
+    },
+    {
+      name: "Temple Blogs",
+      icon: <FaLandmark />,
+      path: "/anmigam/temple-blogs",
     },
     {
       name: "Subscription Plans",

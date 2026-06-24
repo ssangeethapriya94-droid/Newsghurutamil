@@ -28,6 +28,7 @@ const staticPageRoutes = require("./routes/staticPageRoutes");
 const videoRoutes = require("./routes/videoRoutes");
 const shortsRoutes = require("./routes/shortsRoutes");
 const photoStoryRoutes = require("./routes/photoStoryRoutes");
+const anmigamRoutes = require("./routes/anmigamRoutes");
 const homepageConfigRoutes = require("./routes/homepageConfigRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 
@@ -657,6 +658,7 @@ app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/videos", videoRoutes);
 app.use("/api/shorts", shortsRoutes);
 app.use("/api/photo-stories", photoStoryRoutes);
+app.use("/api/anmigam", anmigamRoutes);
 app.use("/api/homepage-config", homepageConfigRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
