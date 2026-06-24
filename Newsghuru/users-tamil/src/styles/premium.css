@@ -251,7 +251,7 @@
   border-top: 1px solid rgba(255,255,255,0.15);
   height: 46px;
   background: var(--bg-nav);
-  overflow-x: auto;
+  overflow: visible;
   white-space: nowrap;
   scrollbar-width: none;
   box-shadow: 0 3px 10px rgba(0,0,0,0.15);
@@ -332,6 +332,46 @@
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, 0);
+}
+
+/* Anmigam Custom Dropdown Panel */
+@keyframes anmigamDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anmigam-dropdown-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 160px;
+  width: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  padding: 6px 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 999;
+  animation: anmigamDropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  height: auto !important;
+  min-height: unset !important;
+  max-height: unset !important;
+}
+
+.anmigam-dropdown-panel .mega-dropdown-sublink {
+  height: auto !important;
+  line-height: normal !important;
+  margin: 0 !important;
+  padding: 10px 16px !important;
+  display: block !important;
 }
 
 .mega-dropdown-grid {

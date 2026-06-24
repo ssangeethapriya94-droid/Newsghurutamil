@@ -278,7 +278,13 @@ router.post("/create", verifyToken, uploadFields, async (req, res) => {
 
       // --- NEW EMAIL NOTIFICATION CODE (Runs safely in the background) ---
       try {
-        sendNewsPublishEmail(savedNews.language || "ta");
+        const EmailSchedule = require("../models/EmailSchedule");
+        const schedule = await EmailSchedule.findOne({ language: savedNews.language || "ta" });
+        if (!schedule || !schedule.isEnabled) {
+          sendNewsPublishEmail(savedNews.language || "ta");
+        } else {
+          console.log(`ℹ️ [EMAIL] Scheduling is enabled for ${savedNews.language || "ta"}. Email will be sent at the scheduled time.`);
+        }
       } catch (mailErr) {
         console.error("❌ Failed to trigger email notifications:", mailErr);
       }
@@ -1068,7 +1074,13 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
 
     // --- NEW EMAIL NOTIFICATION CODE (Runs safely in the background) ---
     try {
-      sendNewsPublishEmail(saved.language || "ta");
+      const EmailSchedule = require("../models/EmailSchedule");
+      const schedule = await EmailSchedule.findOne({ language: saved.language || "ta" });
+      if (!schedule || !schedule.isEnabled) {
+        sendNewsPublishEmail(saved.language || "ta");
+      } else {
+        console.log(`ℹ️ [EMAIL] Scheduling is enabled for ${saved.language || "ta"}. Email will be sent at the scheduled time.`);
+      }
     } catch (mailErr) {
       console.error("❌ Failed to trigger email notifications:", mailErr);
     }

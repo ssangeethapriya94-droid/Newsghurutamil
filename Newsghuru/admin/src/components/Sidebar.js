@@ -281,6 +281,12 @@ function Sidebar({ isOpen }) {
               >
                 <FiFileText size={13} /> Website Pages
               </NavLink>
+              <NavLink 
+                className="sidebar-sublink" 
+                to="/admin/settings/email-schedule"
+              >
+                <FiClock size={13} /> Email Schedule
+              </NavLink>
             </div>
           )}
         </div>

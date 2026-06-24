@@ -98,10 +98,10 @@ function TempleBlogsPage() {
                     {blog.templeName}
                   </span>
                 )}
-                <h3 style={{ fontSize: "1.3rem", fontWeight: "700", color: "var(--text-primary)", marginTop: "6px", marginBottom: "10px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", height: "48px", lineHeight: "1.4" }}>
+                <h3 style={{ fontSize: "1.3rem", fontWeight: "700", color: "var(--text-primary)", marginTop: "6px", marginBottom: "10px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: "2.8em", lineHeight: "1.4" }}>
                   {blog.title}
                 </h3>
-                <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", lineHeight: "1.6", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", height: "64px", marginBottom: "15px" }}>
+                <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", lineHeight: "1.6", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: "4.8em", marginBottom: "15px" }}>
                   {blog.description || "Learn about the history, architecture, and timings of this spiritual site."}
                 </p>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

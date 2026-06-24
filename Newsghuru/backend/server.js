@@ -31,6 +31,8 @@ const photoStoryRoutes = require("./routes/photoStoryRoutes");
 const anmigamRoutes = require("./routes/anmigamRoutes");
 const homepageConfigRoutes = require("./routes/homepageConfigRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const emailScheduleRoutes = require("./routes/emailScheduleRoutes");
+const { startEmailScheduler } = require("./utils/scheduler");
 
 // Connect MongoDB
 connectDB().then(async () => {
@@ -44,6 +46,7 @@ connectDB().then(async () => {
   await seedShorts();
   await seedPhotoStories();
   await seedHomepageConfig();
+  startEmailScheduler();
 }).catch((err) => {
   console.warn("⚠️ Database connection failed. Seeding default data was skipped.");
 });
@@ -222,11 +225,11 @@ const seedTransactions = async () => {
     const User = require("./models/User");
     const SubscriptionPlan = require("./models/SubscriptionPlan");
 
-    // Clear existing transaction records
-    await Transaction.deleteMany({});
-    
-    // Clear existing mock reader users to re-seed clean multilingual readers
-    await User.deleteMany({ role: "reader" });
+    // Skip seeding if transactions already exist — don't wipe real reader data
+    const existingTxCount = await Transaction.countDocuments();
+    if (existingTxCount > 0) {
+      return;
+    }
 
     console.log("🌱 Seeding mock transactions for revenue dashboard...");
 
@@ -237,8 +240,8 @@ const seedTransactions = async () => {
       return;
     }
 
-    // Create 6 reader users (3 Tamil, 3 English)
-    const dummyUsers = [
+    // Create 6 reader users for mock transactions only if none exist with these emails
+    const dummyUsersData = [
       { name: "கார்த்திக் ராஜ்", email: "karthik@gmail.com", password: "password123", role: "reader", language: "ta" },
       { name: "பிரியா மோகன்", email: "priya@gmail.com", password: "password123", role: "reader", language: "ta" },
       { name: "சரவணன் குமார்", email: "saravanan@gmail.com", password: "password123", role: "reader", language: "ta" },
@@ -246,22 +249,32 @@ const seedTransactions = async () => {
       { name: "Sarah Smith", email: "sarah@gmail.com", password: "password123", role: "reader", language: "en" },
       { name: "Alex Jones", email: "alex@gmail.com", password: "password123", role: "reader", language: "en" }
     ];
-    const users = await User.insertMany(dummyUsers);
+
+    const users = [];
+    for (const userData of dummyUsersData) {
+      let user = await User.findOne({ email: userData.email });
+      if (!user) {
+        user = await User.create(userData);
+      }
+      users.push(user);
+    }
     console.log("✅ Seeded 6 multilingual reader users for subscription transactions");
 
     // Make some of these users premium in user collection to make it sync
     const premiumUsers = [users[0], users[1], users[3], users[4]];
     for (const u of premiumUsers) {
-      const userLang = u.language || "ta";
-      const langPlans = plans.filter(p => (p.language || "ta") === userLang);
-      const chosenPlan = langPlans.length > 0 ? langPlans[Math.floor(Math.random() * langPlans.length)] : plans[Math.floor(Math.random() * plans.length)];
-      
-      u.isPremium = true;
-      u.premiumPlan = chosenPlan._id;
-      const validUntil = new Date();
-      validUntil.setMonth(validUntil.getMonth() + 6);
-      u.premiumValidUntil = validUntil;
-      await u.save();
+      if (!u.isPremium) {
+        const userLang = u.language || "ta";
+        const langPlans = plans.filter(p => (p.language || "ta") === userLang);
+        const chosenPlan = langPlans.length > 0 ? langPlans[Math.floor(Math.random() * langPlans.length)] : plans[Math.floor(Math.random() * plans.length)];
+        
+        u.isPremium = true;
+        u.premiumPlan = chosenPlan._id;
+        const validUntil = new Date();
+        validUntil.setMonth(validUntil.getMonth() + 6);
+        u.premiumValidUntil = validUntil;
+        await u.save();
+      }
     }
 
     // Now create mock transactions over the last 6 months
@@ -661,6 +674,7 @@ app.use("/api/photo-stories", photoStoryRoutes);
 app.use("/api/anmigam", anmigamRoutes);
 app.use("/api/homepage-config", homepageConfigRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/email-schedule", emailScheduleRoutes);
 
 // Auth Routes
 app.use("/api", authRoutes);

@@ -4,7 +4,7 @@ import {
   FaHome, FaNewspaper, FaMapMarkerAlt, FaFlag, FaGlobe, FaBriefcase,
   FaFutbol, FaGraduationCap, FaLandmark, FaFilm, FaOm
 } from "react-icons/fa";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import API from "../config/api";
 import SearchOverlay from "./SearchOverlay";
 import DateBar from "./DateBar";
@@ -13,6 +13,7 @@ import "../styles/Header.css";
 
 const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, currentUser, visitorCount }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Search & Navigation states
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
@@ -23,6 +24,8 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
   const profileRef = useRef(null);
+  const navRef = useRef(null);
+  const lastTouchTimeRef = useRef(0);
 
   const token = localStorage.getItem("readerToken");
   const readerData = currentUser || (() => {
@@ -40,6 +43,9 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     const handleOutside = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
         setShowProfileMenu(false);
+      }
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setHoveredCategory(null);
       }
     };
     document.addEventListener("mousedown", handleOutside);
@@ -220,85 +226,72 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
       <DateBar visitorCount={visitorCount} />
 
       {/* LAYER 3: MEGA MENU NAVBAR */}
-      <nav className="mega-nav-bar">
+      <nav className="mega-nav-bar" ref={navRef}>
         {categories.map((item, idx) => (
           <div 
             key={idx}
             className="mega-nav-item-wrapper"
-            onMouseEnter={() => handleCategoryHover(item.slug)}
-            onMouseLeave={() => setHoveredCategory(null)}
+            onTouchStart={() => {
+              lastTouchTimeRef.current = Date.now();
+            }}
+            onMouseEnter={() => {
+              if (item.slug === "/anmigam") {
+                if (Date.now() - lastTouchTimeRef.current < 1000) return;
+                setHoveredCategory("/anmigam");
+              }
+            }}
+            onMouseLeave={() => {
+              if (item.slug === "/anmigam") {
+                if (Date.now() - lastTouchTimeRef.current < 1000) return;
+                setHoveredCategory(null);
+              }
+            }}
             style={{ height: "100%", position: "relative" }}
           >
-            <NavLink
-              to={item.slug}
-              className={({ isActive }) =>
-                isActive ? "mega-nav-item active" : "mega-nav-item"
-              }
-              end={item.slug === "/"}
-              onClick={(e) => {
-                if (item.slug === "/anmigam") {
-                  const isTouch = window.matchMedia("(pointer: coarse)").matches;
-                  if (isTouch) {
-                    e.preventDefault();
-                    setHoveredCategory(hoveredCategory === "/anmigam" ? null : "/anmigam");
-                  }
+            {item.slug === "/anmigam" ? (
+              <div
+                className={`mega-nav-item ${
+                  location.pathname.startsWith("/anmigam") ? "active" : ""
+                }`}
+                style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setHoveredCategory(hoveredCategory === "/anmigam" ? null : "/anmigam");
+                }}
+              >
+                <span style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}>
+                  {item.icon}
+                </span>
+                <span>{item.name}</span>
+              </div>
+            ) : (
+              <NavLink
+                to={item.slug}
+                className={({ isActive }) =>
+                  isActive ? "mega-nav-item active" : "mega-nav-item"
                 }
-              }}
-            >
-              <span style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}>
-                {item.icon}
-              </span>
-              <span>{item.name}</span>
-            </NavLink>
+                end={item.slug === "/"}
+              >
+                <span style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}>
+                  {item.icon}
+                </span>
+                <span>{item.name}</span>
+              </NavLink>
+            )}
 
             {/* ANMIGAM CUSTOM DROPDOWN */}
             {hoveredCategory === "/anmigam" && item.slug === "/anmigam" && (
-              <div className="mega-dropdown-panel" style={{ minWidth: "220px", width: "auto", padding: "12px 0", display: "flex", flexDirection: "column", left: "auto", right: "0", transform: "none" }}>
+              <div className="anmigam-dropdown-panel">
                 <NavLink to="/anmigam/rasi-palan" className="mega-dropdown-sublink" onClick={() => setHoveredCategory(null)}>
-                  ராசி பலன் (Horoscope)
+                  ராசி பலன்
                 </NavLink>
                 <NavLink to="/anmigam/temple-blogs" className="mega-dropdown-sublink" onClick={() => setHoveredCategory(null)}>
-                  கோவில் பதிவுகள் (Temple Blogs)
+                  கோவில் பதிவுகள்
                 </NavLink>
               </div>
             )}
 
-            {/* MEGA DROP DOWN PANEL */}
-            {hoveredCategory === item.slug && item.slug !== "/" && item.slug !== "/latest-news" && item.slug !== "/anmigam" && (
-              <div className="mega-dropdown-panel">
-                <div>
-                  <h4 style={{ fontFamily: "var(--font-serif)", fontSize: "1.1rem", marginBottom: "14px", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px" }}>
-                    சமீபத்திய {item.name} செய்திகள்:
-                  </h4>
-                  <div className="mega-dropdown-grid">
-                    {megaMenuData[item.slug] && megaMenuData[item.slug].length > 0 ? (
-                      megaMenuData[item.slug].map((article) => (
-                        <div 
-                          key={article._id} 
-                          className="mega-dropdown-card"
-                          onClick={() => {
-                            navigate(`/news/${article._id}`, { state: article });
-                            setHoveredCategory(null);
-                          }}
-                        >
-                          <img src={article.image} alt={article.title} />
-                          <div className="mega-dropdown-title">{article.titleTa || article.title}</div>
-                        </div>
-                      ))
-                    ) : (
-                      <p style={{ gridColumn: "span 4", color: "var(--text-muted)", fontSize: "0.88rem" }}>செய்திகள் ஏற்றப்படுகின்றன...</p>
-                    )}
-                  </div>
-                </div>
-                <div className="mega-dropdown-sidebar">
-                  <h5 style={{ fontFamily: "var(--font-serif)", fontSize: "0.95rem", marginBottom: "10px" }}>பகுதிகள்:</h5>
-                  <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.85rem" }}>
-                    <li style={{ cursor: "pointer", color: "var(--text-secondary)" }} onClick={() => { navigate(item.slug); setHoveredCategory(null); }}>செய்தித் தொகுப்பு &rarr;</li>
-                    <li style={{ cursor: "pointer", color: "var(--text-secondary)" }} onClick={() => { navigate("/latest-news"); setHoveredCategory(null); }}>தற்போதைய நிகழ்வுகள்</li>
-                  </ul>
-                </div>
-              </div>
-            )}
+
           </div>
         ))}
       </nav>

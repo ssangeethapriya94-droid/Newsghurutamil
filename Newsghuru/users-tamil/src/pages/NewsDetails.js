@@ -110,19 +110,38 @@ const NewsDetails = () => {
       .catch(err => console.error("Error fetching related news", err));
 
     // Increment and fetch real views from backend
-    API.put(`/api/news/${news._id}/view`)
-      .then(res => {
-        if (res.data && res.data.success) {
-          setViewCount(res.data.views);
-        } else {
-          // Fallback to existing views value
+    const sessionKey = `viewed_news_${news._id}`;
+    const isViewed = sessionStorage.getItem(sessionKey);
+
+    if (!isViewed) {
+      sessionStorage.setItem(sessionKey, "true");
+      API.put(`/api/news/${news._id}/view`)
+        .then(res => {
+          if (res.data && res.data.success) {
+            setViewCount(res.data.views);
+          } else {
+            // Fallback to existing views value
+            setViewCount(news.views ? parseInt(news.views) || 0 : 0);
+          }
+        })
+        .catch(() => {
+          // Fallback on error
           setViewCount(news.views ? parseInt(news.views) || 0 : 0);
-        }
-      })
-      .catch(() => {
-        // Fallback on error
-        setViewCount(news.views ? parseInt(news.views) || 0 : 0);
-      });
+        });
+    } else {
+      // Already viewed in this session. Fetch latest views without incrementing
+      API.get(`/api/news/${news._id}`)
+        .then(res => {
+          if (res.data) {
+            setViewCount(res.data.views);
+          } else {
+            setViewCount(news.views ? parseInt(news.views) || 0 : 0);
+          }
+        })
+        .catch(() => {
+          setViewCount(news.views ? parseInt(news.views) || 0 : 0);
+        });
+    }
 
     // Likes count state
     setLikeCount(Math.floor(25 + (news.title.length % 7) * 4));

@@ -30,8 +30,8 @@
 
   --shadow-color: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 
-  --font-serif: "Mukta Malar", "Noto Sans Tamil", sans-serif;
-  --font-sans: "Mukta Malar", "Noto Sans Tamil", sans-serif;
+  --font-serif: "Inter", sans-serif;
+  --font-sans: "Inter", sans-serif;
   --border-radius-sm: 6px;
   --border-radius-md: 12px;
   --border-radius-lg: 20px;
@@ -64,8 +64,8 @@
 
   --shadow-color: rgba(0,0,0,0.06);
 
-  --font-serif: "Mukta Malar", "Noto Sans Tamil", sans-serif;
-  --font-sans: "Mukta Malar", "Noto Sans Tamil", sans-serif;
+  --font-serif: "Inter", sans-serif;
+  --font-sans: "Inter", sans-serif;
   --border-radius-sm: 6px;
   --border-radius-md: 12px;
   --border-radius-lg: 20px;

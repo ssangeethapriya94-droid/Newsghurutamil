@@ -136,14 +136,17 @@ const sendNewsPublishEmail = async (targetLanguage) => {
 
     const lang = targetLanguage || "ta";
 
-    // 1. Fetch latest 5 published news for this language
-    const query = { status: "published", language: lang };
-    const latestNews = await News.find(query)
+    // 1. Fetch latest 5 published breaking news for this language.
+    let latestNews = await News.find({
+      status: "published",
+      language: lang,
+      category: { $regex: new RegExp("^breaking$", "i") }
+    })
       .sort({ publishedAt: -1, createdAt: -1 })
       .limit(5);
 
     if (latestNews.length === 0) {
-      console.log(`ℹ️ [EMAIL] No published news found for language: ${lang}. Skipping email newsletter digest.`);
+      console.log(`ℹ️ [EMAIL] No breaking news found for language: ${lang}. Skipping email newsletter digest.`);
       return;
     }
 
@@ -200,12 +203,12 @@ const sendNewsPublishEmail = async (targetLanguage) => {
       ? "— Your News &nbsp;Your Voice —" 
       : "— உங்கள் செய்தி &nbsp;உங்கள் குரல் —";
     const subject = isEnglish
-      ? `📰 NewsGhuru Latest Updates: ${latestNews[0].title}`
-      : `📰 நியூஸ் குரு முக்கிய செய்திகள்: ${latestNews[0].title}`;
+      ? `📰 NewsGhuru Breaking News: ${latestNews[0].title}`
+      : `📰 நியூஸ் குரு உடனடிச் செய்திகள்: ${latestNews[0].title}`;
     const preheader = isEnglish
-      ? `NewsGhuru — Latest updates from our website`
-      : `நியூஸ் குரு — இன்றைய முக்கிய செய்திகள்`;
-    const headingText = isEnglish ? "LATEST NEWS" : "முக்கிய செய்திகள்";
+      ? `NewsGhuru — Breaking news from our website`
+      : `நியூஸ் குரு — இன்றைய உடனடிச் செய்திகள்`;
+    const headingText = isEnglish ? "BREAKING NEWS" : "உடனடிச் செய்திகள்";
 
     // Build the list of news articles HTML
     let newsItemsHtml = "";
@@ -303,7 +306,7 @@ const sendNewsPublishEmail = async (targetLanguage) => {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${isEnglish ? 'NewsGhuru Updates' : 'நியூஸ் குரு செய்திகள்'}</title>
+  <title>${isEnglish ? 'NewsGhuru Breaking News' : 'நியூஸ் குரு உடனடிச் செய்திகள்'}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f1f5f9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
 

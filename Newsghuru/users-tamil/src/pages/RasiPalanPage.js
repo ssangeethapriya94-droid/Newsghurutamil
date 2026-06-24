@@ -244,6 +244,51 @@ function RasiPalanPage() {
           border-color: #e87830;
           box-shadow: 0 0 15px rgba(232, 120, 48, 0.5);
         }
+
+        /* Detail Section Grid */
+        .zodiac-detail-section {
+          display: grid;
+          grid-template-columns: 1fr 300px;
+          gap: 30px;
+          align-items: start;
+        }
+        .zodiac-detail-section.premium {
+          grid-template-columns: 1fr;
+        }
+        @media (max-width: 768px) {
+          .zodiac-detail-section {
+            grid-template-columns: 1fr !important;
+            gap: 20px;
+          }
+        }
+        
+        /* Tabs Scrollability */
+        .spiritual-tabs {
+          display: flex;
+          justify-content: center;
+          border-bottom: 2px solid var(--border-color);
+          margin-bottom: 25px;
+          gap: 20px;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          white-space: nowrap;
+        }
+        .spiritual-tabs::-webkit-scrollbar {
+          display: none;
+        }
+        @media (max-width: 600px) {
+          .spiritual-tabs {
+            justify-content: flex-start !important;
+            padding: 0 5px;
+            gap: 10px;
+          }
+          .spiritual-tabs button {
+            padding: 10px 14px !important;
+            font-size: 0.95rem !important;
+            flex-shrink: 0;
+          }
+        }
       `}</style>
       
 
@@ -259,7 +304,7 @@ function RasiPalanPage() {
       </div>
 
       {/* Tabs */}
-      <div className="spiritual-tabs" style={{ display: "flex", justifyContent: "center", borderBottom: "2px solid var(--border-color)", marginBottom: "25px", gap: "20px" }}>
+      <div className="spiritual-tabs">
         <button 
           onClick={() => { setActiveTab("day"); }}
           style={{ padding: "12px 24px", background: "none", border: "none", color: activeTab === "day" ? "var(--accent-orange)" : "var(--text-secondary)", fontWeight: "700", fontSize: "1.1rem", borderBottom: activeTab === "day" ? "3px solid var(--accent-orange)" : "3px solid transparent", cursor: "pointer", transition: "all 0.2s" }}
@@ -362,7 +407,7 @@ function RasiPalanPage() {
             const isPremium = readerData?.isPremium || false;
 
             return (
-              <div style={{ display: "grid", gridTemplateColumns: !isPremium ? "1fr 300px" : "1fr", gap: "30px", alignItems: "start" }}>
+              <div className={`zodiac-detail-section ${isPremium ? "premium" : ""}`}>
                 {/* Left: Detail Card */}
                 <div 
                   className="glass-panel"

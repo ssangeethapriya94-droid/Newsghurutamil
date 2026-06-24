@@ -29,6 +29,23 @@
 .account-subtitle {
   font-size: 15px;
   color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.account-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-top: 24px;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.account-section-title:first-of-type {
+  margin-top: 0;
 }
 
 /* =========================

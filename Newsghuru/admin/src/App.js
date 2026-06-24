@@ -19,6 +19,7 @@ import Information from "./pages/Information";
 import Account from "./pages/Account";
 import WebsiteSettings from "./pages/WebsiteSettings";
 import Revenue from "./pages/Revenue";
+import EmailSchedule from "./pages/EmailSchedule";
 import { generateFCMToken } from "./firebase";
 import API from "./config/api";
 
@@ -284,6 +285,17 @@ function App() {
             <ProtectedRoute requiredRole="admin">
               <Layout>
                 <WebsiteSettings />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/settings/email-schedule"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Layout>
+                <EmailSchedule />
               </Layout>
             </ProtectedRoute>
           }

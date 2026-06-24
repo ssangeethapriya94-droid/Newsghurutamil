@@ -69,39 +69,54 @@ const seedData = async () => {
       });
     }
 
-    // Seed Tamil Weekly for June 19 to June 25, 2026
-    const weeklyPredictionsTa = predictionsTa.map(p => ({
-      ...p,
-      description: "இந்த வாரம் " + p.description + " ஆரோக்கியமான உணவும், தகுந்த ஓய்வும் உடலை புத்துணர்ச்சியாக வைத்திருக்க உதவும்."
-    }));
-    await RasiPalan.create({
-      language: "ta",
-      periodType: "week",
-      date: new Date("2026-06-19T00:00:00.000Z"),
-      endDate: new Date("2026-06-25T00:00:00.000Z"),
-      title: "வார ராசிபலன்",
-      status: "published",
-      predictions: weeklyPredictionsTa,
-      createdBy: creator._id,
-      publishedAt: new Date()
-    });
+    // Seed Tamil Weekly (Multiple Weeks)
+    const weeksTa = [
+      { start: "2026-06-19", end: "2026-06-25" },
+      { start: "2026-06-12", end: "2026-06-18" },
+      { start: "2026-06-05", end: "2026-06-11" },
+      { start: "2026-05-29", end: "2026-06-04" }
+    ];
+    for (const w of weeksTa) {
+      const weeklyPredictionsTa = predictionsTa.map(p => ({
+        ...p,
+        description: `இந்த வாரம் (${w.start} முதல் ${w.end} வரை): ` + p.description + " ஆரோக்கியமான உணவும், தகுந்த ஓய்வும் உடலை புத்துணர்ச்சியாக வைத்திருக்க உதவும்."
+      }));
+      await RasiPalan.create({
+        language: "ta",
+        periodType: "week",
+        date: new Date(w.start + "T00:00:00.000Z"),
+        endDate: new Date(w.end + "T00:00:00.000Z"),
+        title: "வார ராசிபலன்",
+        status: "published",
+        predictions: weeklyPredictionsTa,
+        createdBy: creator._id,
+        publishedAt: new Date()
+      });
+    }
 
-    // Seed Tamil Monthly for June 1 to June 30, 2026
-    const monthlyPredictionsTa = predictionsTa.map(p => ({
-      ...p,
-      description: "இந்த மாதம் " + p.description + " புதிய முதலீடுகள் செய்ய உகந்த காலம். பெரியோர்களின் ஆசி கிட்டும்."
-    }));
-    await RasiPalan.create({
-      language: "ta",
-      periodType: "month",
-      date: new Date("2026-06-01T00:00:00.000Z"),
-      endDate: new Date("2026-06-30T00:00:00.000Z"),
-      title: "மாத ராசிபலன்",
-      status: "published",
-      predictions: monthlyPredictionsTa,
-      createdBy: creator._id,
-      publishedAt: new Date()
-    });
+    // Seed Tamil Monthly (Multiple Months)
+    const monthsTa = [
+      { start: "2026-06-01", end: "2026-06-30" },
+      { start: "2026-05-01", end: "2026-05-31" },
+      { start: "2026-04-01", end: "2026-04-30" }
+    ];
+    for (const m of monthsTa) {
+      const monthlyPredictionsTa = predictionsTa.map(p => ({
+        ...p,
+        description: `இந்த மாதம் (${m.start} முதல் ${m.end} வரை): ` + p.description + " புதிய முதலீடுகள் செய்ய உகந்த காலம். பெரியோர்களின் ஆசி கிட்டும்."
+      }));
+      await RasiPalan.create({
+        language: "ta",
+        periodType: "month",
+        date: new Date(m.start + "T00:00:00.000Z"),
+        endDate: new Date(m.end + "T00:00:00.000Z"),
+        title: "மாத ராசிபலன்",
+        status: "published",
+        predictions: monthlyPredictionsTa,
+        createdBy: creator._id,
+        publishedAt: new Date()
+      });
+    }
 
 
     // 2. Seed Rasi Palan (English)
@@ -141,39 +156,54 @@ const seedData = async () => {
       });
     }
 
-    // Seed English Weekly for June 19 to June 25, 2026
-    const weeklyPredictionsEn = predictionsEn.map(p => ({
-      ...p,
-      description: "This week " + p.description + " Proper rest and a healthy diet will keep you energized throughout the week."
-    }));
-    await RasiPalan.create({
-      language: "en",
-      periodType: "week",
-      date: new Date("2026-06-19T00:00:00.000Z"),
-      endDate: new Date("2026-06-25T00:00:00.000Z"),
-      title: "Weekly Horoscope",
-      status: "published",
-      predictions: weeklyPredictionsEn,
-      createdBy: creator._id,
-      publishedAt: new Date()
-    });
+    // Seed English Weekly (Multiple Weeks)
+    const weeksEn = [
+      { start: "2026-06-19", end: "2026-06-25" },
+      { start: "2026-06-12", end: "2026-06-18" },
+      { start: "2026-06-05", end: "2026-06-11" },
+      { start: "2026-05-29", end: "2026-06-04" }
+    ];
+    for (const w of weeksEn) {
+      const weeklyPredictionsEn = predictionsEn.map(p => ({
+        ...p,
+        description: `This week (${w.start} to ${w.end}): ` + p.description + " Proper rest and a healthy diet will keep you energized throughout the week."
+      }));
+      await RasiPalan.create({
+        language: "en",
+        periodType: "week",
+        date: new Date(w.start + "T00:00:00.000Z"),
+        endDate: new Date(w.end + "T00:00:00.000Z"),
+        title: "Weekly Horoscope",
+        status: "published",
+        predictions: weeklyPredictionsEn,
+        createdBy: creator._id,
+        publishedAt: new Date()
+      });
+    }
 
-    // Seed English Monthly for June 1 to June 30, 2026
-    const monthlyPredictionsEn = predictionsEn.map(p => ({
-      ...p,
-      description: "This month " + p.description + " Favorable period for long-term investments. Blessings of elders will guide you."
-    }));
-    await RasiPalan.create({
-      language: "en",
-      periodType: "month",
-      date: new Date("2026-06-01T00:00:00.000Z"),
-      endDate: new Date("2026-06-30T00:00:00.000Z"),
-      title: "Monthly Horoscope",
-      status: "published",
-      predictions: monthlyPredictionsEn,
-      createdBy: creator._id,
-      publishedAt: new Date()
-    });
+    // Seed English Monthly (Multiple Months)
+    const monthsEn = [
+      { start: "2026-06-01", end: "2026-06-30" },
+      { start: "2026-05-01", end: "2026-05-31" },
+      { start: "2026-04-01", end: "2026-04-30" }
+    ];
+    for (const m of monthsEn) {
+      const monthlyPredictionsEn = predictionsEn.map(p => ({
+        ...p,
+        description: `This month (${m.start} to ${m.end}): ` + p.description + " Favorable period for long-term investments. Blessings of elders will guide you."
+      }));
+      await RasiPalan.create({
+        language: "en",
+        periodType: "month",
+        date: new Date(m.start + "T00:00:00.000Z"),
+        endDate: new Date(m.end + "T00:00:00.000Z"),
+        title: "Monthly Horoscope",
+        status: "published",
+        predictions: monthlyPredictionsEn,
+        createdBy: creator._id,
+        publishedAt: new Date()
+      });
+    }
 
     console.log("✅ Seeded Daily, Weekly, Monthly Rasi Palan for Tamil & English.");
 
