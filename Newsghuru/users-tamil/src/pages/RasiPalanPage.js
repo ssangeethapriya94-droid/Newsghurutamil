@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
 import API from "../config/api";
 import useSEO from "../hooks/useSEO";
 import AdZone from "../components/AdZone";
+import { FaPlay } from "react-icons/fa";
 
 const RASI_SIGNS = [
   { key: "aries", name: "மேஷம்", period: "21 மார்ச் - 19 ஏப்ரல்", color: "#e87830" },
@@ -48,6 +48,8 @@ function RasiPalanPage() {
   const [allRecords, setAllRecords] = useState([]); // Used to populate weekly/monthly range selects
   const [selectedSign, setSelectedSign] = useState(RASI_SIGNS[0].key);
   const [loading, setLoading] = useState(false);
+  const [spiritualVideos, setSpiritualVideos] = useState([]);
+  const [playingVideoId, setPlayingVideoId] = useState(null);
 
   // Fetch available weekly/monthly records to let user choose date ranges
   useEffect(() => {
@@ -95,6 +97,18 @@ function RasiPalanPage() {
     }
   }, [selectedDate, activeTab]);
 
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const res = await API.get("/api/videos?category=jothidam&language=ta");
+        setSpiritualVideos(res.data || []);
+      } catch (err) {
+        console.error("Error loading spiritual videos:", err);
+      }
+    };
+    fetchVideos();
+  }, []);
+
   const getPredictionForSign = (key) => {
     if (!rasiRecord || !rasiRecord.predictions) return "";
     const p = rasiRecord.predictions.find(item => item.rasiKey === key);
@@ -116,7 +130,8 @@ function RasiPalanPage() {
   };
 
   return (
-    <div className="spiritual-page-container" style={{ padding: "30px var(--padding-x)", maxWidth: "1200px", margin: "0 auto", minHeight: "80vh" }}>
+    <div className="spiritual-page-container" style={{ padding: "40px 5% 80px", maxWidth: "1200px", margin: "0 auto", minHeight: "80vh" }}>
+      <AdZone position="TOP_BANNER" />
       <style>{`
         .rasi-scroll-container::-webkit-scrollbar {
           display: none;
@@ -289,6 +304,233 @@ function RasiPalanPage() {
             flex-shrink: 0;
           }
         }
+
+        /* Redesigned Large Video Layout (At the top of the page) */
+        .spiritual-video-section-large {
+          max-width: 800px;
+          margin: 10px auto 40px;
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 30px;
+        }
+        
+        .spiritual-featured-video-container {
+          width: 100%;
+          margin-bottom: 24px;
+          background: var(--bg-secondary);
+          border-radius: 20px;
+          overflow: hidden;
+          border: 1px solid var(--border-color);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .spiritual-featured-video-container:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .spiritual-featured-video-player {
+          position: relative;
+          padding-bottom: 56.25%;
+          height: 0;
+          overflow: hidden;
+          background-color: #000;
+        }
+        
+        .spiritual-featured-video-player iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: none;
+        }
+        
+        .spiritual-featured-video-info {
+          padding: 24px;
+        }
+        
+        .spiritual-featured-video-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: linear-gradient(90deg, #ef4444, #f97316);
+          color: #ffffff;
+          font-size: 0.8rem;
+          font-weight: 700;
+          padding: 4px 12px;
+          border-radius: 20px;
+          margin-bottom: 12px;
+        }
+        
+        .spiritual-featured-video-title {
+          font-size: 1.6rem;
+          font-weight: 800;
+          line-height: 1.4;
+          margin: 0 0 10px 0;
+          color: var(--text-primary);
+        }
+        
+        .spiritual-featured-video-time {
+          font-size: 0.9rem;
+          color: #64748b;
+        }
+        
+        /* Grid of other videos */
+        .spiritual-video-grid-large {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 24px;
+        }
+        
+        @media (max-width: 768px) {
+          .spiritual-video-grid-large {
+            grid-template-columns: 1fr;
+          }
+          .spiritual-featured-video-title {
+            font-size: 1.3rem;
+          }
+        }
+        
+        .spiritual-video-card-large {
+          display: flex;
+          flex-direction: column;
+          background: var(--bg-secondary);
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid var(--border-color);
+          transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .spiritual-video-card-large:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+          border-color: #f97316;
+        }
+        
+        .spiritual-video-wrapper-large {
+          position: relative;
+          padding-bottom: 56.25%;
+          height: 0;
+          overflow: hidden;
+          background-color: #000;
+        }
+        
+        .spiritual-video-wrapper-large iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: none;
+        }
+        
+        .spiritual-video-body-large {
+          padding: 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          flex-grow: 1;
+        }
+        
+        .spiritual-video-title-large {
+          font-size: 1.1rem;
+          font-weight: 700;
+          margin: 0;
+          line-height: 1.4;
+          color: var(--text-primary);
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          height: 2.8em;
+        }
+        
+        .spiritual-video-time-large {
+          font-size: 0.85rem;
+          color: #64748b;
+        }
+        
+        /* Lazy loading elements */
+        .spiritual-video-placeholder-large {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          cursor: pointer;
+          overflow: hidden;
+          background-color: #000;
+          display: block;
+        }
+        
+        .spiritual-video-placeholder-large img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.5s ease;
+        }
+        
+        .spiritual-video-placeholder-large:hover img {
+          transform: scale(1.05);
+        }
+        
+        .spiritual-play-overlay-large {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.3s ease;
+        }
+        
+        .spiritual-video-placeholder-large:hover .spiritual-play-overlay-large {
+          background: rgba(0, 0, 0, 0.35);
+        }
+        
+        .spiritual-play-btn-large {
+          width: 68px;
+          height: 68px;
+          background: linear-gradient(135deg, #ef4444, #f97316);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff;
+          font-size: 1.5rem;
+          box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+          padding-left: 4px;
+        }
+        
+        .spiritual-video-placeholder-large:hover .spiritual-play-btn-large {
+          transform: scale(1.12);
+          box-shadow: 0 12px 28px rgba(239, 68, 68, 0.6);
+        }
+        
+        .spiritual-play-btn-small-large {
+          width: 52px;
+          height: 52px;
+          background: linear-gradient(135deg, #ef4444, #f97316);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff;
+          font-size: 1.15rem;
+          box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+          padding-left: 3px;
+        }
+        
+        .spiritual-video-placeholder-large:hover .spiritual-play-btn-small-large {
+          transform: scale(1.12);
+          box-shadow: 0 10px 20px rgba(239, 68, 68, 0.6);
+        }
       `}</style>
       
 
@@ -302,6 +544,7 @@ function RasiPalanPage() {
           இன்றைய, வார மற்றும் மாத பலன்களை உடனுக்குடன் அறிந்து கொள்ளுங்கள்.
         </p>
       </div>
+
 
       {/* Tabs */}
       <div className="spiritual-tabs">
@@ -500,6 +743,92 @@ function RasiPalanPage() {
           </div>
         </div>
       )}
+
+      {/* Spiritual Videos Section (At the bottom) */}
+      {spiritualVideos.length > 0 && (
+        <div className="spiritual-video-section-large" style={{ borderTop: "1px solid var(--border-color)", borderBottom: "none", paddingTop: "40px", marginTop: "50px" }}>
+          
+          {/* 1. Large Featured Video (Newest Upload) */}
+          {(() => {
+            const featuredVid = spiritualVideos[0];
+            const videoId = featuredVid.youtubeVideoId || ((featuredVid.youtubeUrl || featuredVid.videoUrl || "").match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/)?.[2] || "");
+            return (
+              <div className="spiritual-featured-video-container">
+                <div className="spiritual-featured-video-player">
+                  {playingVideoId === featuredVid._id ? (
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`}
+                      title={featuredVid.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  ) : (
+                    <div className="spiritual-video-placeholder-large" onClick={() => setPlayingVideoId(featuredVid._id)}>
+                      <img src={featuredVid.thumbnail} alt={featuredVid.title} />
+                      <div className="spiritual-play-overlay-large">
+                        <div className="spiritual-play-btn-large">
+                          <FaPlay />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="spiritual-featured-video-info">
+                  <div className="spiritual-featured-video-badge">
+                    🎥 ஆன்மீகம் & ராசிபலன்
+                  </div>
+                  <h2 className="spiritual-featured-video-title">{featuredVid.title}</h2>
+                  <div className="spiritual-featured-video-time">
+                    📅 {formatDateText(featuredVid.publishedAt || featuredVid.createdAt)}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* 2. Grid of next videos */}
+          {spiritualVideos.length > 1 && (
+            <div className="spiritual-video-grid-large">
+              {spiritualVideos.slice(1, 5).map((vid) => {
+                const videoId = vid.youtubeVideoId || ((vid.youtubeUrl || vid.videoUrl || "").match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/)?.[2] || "");
+                return (
+                  <div key={vid._id} className="spiritual-video-card-large">
+                    <div className="spiritual-video-wrapper-large">
+                      {playingVideoId === vid._id ? (
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`}
+                          title={vid.title}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      ) : (
+                        <div className="spiritual-video-placeholder-large" onClick={() => setPlayingVideoId(vid._id)}>
+                          <img src={vid.thumbnail} alt={vid.title} />
+                          <div className="spiritual-play-overlay-large">
+                            <div className="spiritual-play-btn-small-large">
+                              <FaPlay />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="spiritual-video-body-large">
+                      <h3 className="spiritual-video-title-large">{vid.title}</h3>
+                      <div className="spiritual-video-time-large">
+                        📅 {formatDateText(vid.publishedAt || vid.createdAt)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+
 
     </div>
   );

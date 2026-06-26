@@ -66,6 +66,8 @@ const CategoryPage = ({
 
   const [news, setNews] = useState([]);
   const [latestNews, setLatestNews] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [activeVideo, setActiveVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -92,12 +94,18 @@ const CategoryPage = ({
       try {
         setLoading(true);
         setError("");
-        const [catRes, latestRes] = await Promise.all([
+        const [catRes, latestRes, videosRes] = await Promise.all([
           API.get(`/api/news/category/${resolvedSlug}`),
-          API.get("/api/news").catch(() => ({ data: [] }))
+          API.get("/api/news").catch(() => ({ data: [] })),
+          API.get(`/api/videos?category=${resolvedSlug}`).catch(() => ({ data: [] }))
         ]);
         setNews(catRes.data || []);
         setLatestNews((latestRes.data || []).slice(0, 8));
+        const fetchedVideos = (videosRes.data || []).slice(0, 10);
+        setVideos(fetchedVideos);
+        if (fetchedVideos.length > 0) {
+          setActiveVideo(fetchedVideos[0]);
+        }
       } catch (err) {
         console.error("Category page fetch error:", err);
         setError("செய்திகளை ஏற்றுவதில் தோல்வி. மீண்டும் முயலவும்.");
@@ -169,6 +177,90 @@ const CategoryPage = ({
           {/* ── LEFT MAIN CONTENT ── */}
           <div className="cat-main-content">
 
+            {/* ── DHINAMALAR STYLE VIDEOS SECTION ── */}
+            {videos.length > 0 && activeVideo && (
+              <div className="cat-video-gallery-section" style={{ marginBottom: "40px" }}>
+                <div className="cat-video-layout" style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+                  
+                  {/* Left Main Player */}
+                  <div className="cat-video-main-player" style={{ flex: "2 1 450px", minWidth: "300px", display: "flex", flexDirection: "column" }}>
+                    <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "12px", boxShadow: "0 4px 15px rgba(0,0,0,0.15)", backgroundColor: "#000" }}>
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${activeVideo.youtubeVideoId || (activeVideo.youtubeUrl ? (activeVideo.youtubeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/)?.[2] || "") : "")}`}
+                        title={activeVideo.title}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                      ></iframe>
+                    </div>
+                    <h4 style={{ 
+                      fontSize: "1.15rem", 
+                      fontWeight: "700", 
+                      marginTop: "12px", 
+                      marginBottom: "4px", 
+                      color: "var(--text-primary)",
+                      fontFamily: "inherit",
+                      lineHeight: "1.4"
+                    }}>
+                      {activeVideo.title}
+                    </h4>
+                  </div>
+
+                  {/* Right Related Videos List */}
+                  <div className="cat-video-sidebar" style={{ flex: "1 1 250px", minWidth: "250px", display: "flex", flexDirection: "column", gap: "12px", maxHeight: "420px", overflowY: "auto", paddingRight: "5px", scrollbarWidth: "thin" }}>
+                    <h5 style={{ fontSize: "0.95rem", fontWeight: "700", margin: "0 0 5px 0", color: "var(--text-primary)", borderBottom: "2px solid var(--accent-color, #ea580c)", paddingBottom: "6px" }}>
+                      தொடர்புடையவை
+                    </h5>
+                    {videos.map((vid) => {
+                      const isActive = vid._id === activeVideo._id;
+                      return (
+                        <div 
+                          key={vid._id}
+                          onClick={() => setActiveVideo(vid)}
+                          style={{ 
+                            display: "flex", 
+                            gap: "10px", 
+                            cursor: "pointer", 
+                            padding: "6px", 
+                            borderRadius: "8px", 
+                            background: isActive ? "var(--bg-secondary, rgba(0,0,0,0.05))" : "transparent",
+                            border: isActive ? "1px solid var(--border-color)" : "1px solid transparent",
+                            transition: "background 0.2s"
+                          }}
+                          onMouseEnter={(e) => { if(!isActive) e.currentTarget.style.background = "var(--bg-secondary, rgba(0,0,0,0.02))"; }}
+                          onMouseLeave={(e) => { if(!isActive) e.currentTarget.style.background = "transparent"; }}
+                        >
+                          <div style={{ position: "relative", width: "90px", height: "55px", flexShrink: 0, borderRadius: "6px", overflow: "hidden", backgroundColor: "#000" }}>
+                            <img src={vid.thumbnail} alt={vid.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ backgroundColor: "rgba(0,0,0,0.7)", color: "white", width: "20px", height: "20px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px" }}>▶</span>
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                            <h6 style={{ 
+                              fontSize: "0.8rem", 
+                              fontWeight: isActive ? "700" : "500", 
+                              margin: 0, 
+                              color: isActive ? "var(--accent-color, #ea580c)" : "var(--text-primary)",
+                              display: "-webkit-box", 
+                              WebkitLineClamp: 2, 
+                              WebkitBoxOrient: "vertical", 
+                              overflow: "hidden", 
+                              lineHeight: "1.3" 
+                            }}>
+                              {vid.title}
+                            </h6>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                </div>
+              </div>
+            )}
+
             {/* FEATURED BIG STORY */}
             {featured && (
               <div className="cat-featured-card" onClick={() => goToNews(featured)}>
@@ -223,6 +315,8 @@ const CategoryPage = ({
                 ))}
               </div>
             )}
+
+
 
             {/* REST - LIST FORMAT */}
             {restNews.length > 0 && (

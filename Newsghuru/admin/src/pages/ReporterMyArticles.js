@@ -39,7 +39,6 @@ function ReporterMyArticles({ defaultFilter = "all" }) {
       case "published": return "badge-published";
       case "pending_editor_review": return "badge-pending";
       case "draft": return "badge-draft";
-      case "rejected": return "badge-rejected";
       default: return "";
     }
   };
@@ -49,7 +48,6 @@ function ReporterMyArticles({ defaultFilter = "all" }) {
       case "published": return "Published";
       case "pending_editor_review": return "Pending Review";
       case "draft": return "Draft";
-      case "rejected": return "Rejected";
       default: return status;
     }
   };
@@ -77,7 +75,6 @@ function ReporterMyArticles({ defaultFilter = "all" }) {
             <option value="published">Published</option>
             <option value="submitted">Submitted / Pending</option>
             <option value="draft">Drafts</option>
-            <option value="rejected">Rejected</option>
           </select>
         </div>
       </div>

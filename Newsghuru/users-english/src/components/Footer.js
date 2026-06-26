@@ -35,7 +35,7 @@ const Footer = ({ visitorCount }) => {
               className="footer-logo"
             />
             <div className="footer-title-wrap">
-              <h2>News Ghuru</h2>
+              <h2>NEWS GHURU</h2>
               <span className="footer-tagline">Your News Your Voice</span>
             </div>
           </div>

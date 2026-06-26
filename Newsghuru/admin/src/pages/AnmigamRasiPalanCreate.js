@@ -312,6 +312,9 @@ function AnmigamRasiPalanCreate() {
               )}
               {id && status === "submitted" && (
                 <>
+                  <button className="btn-save-draft" disabled={isSubmitting} onClick={() => handleSave("submitted")}>
+                    Save Changes
+                  </button>
                   <button className="btn-approve" disabled={isSubmitting} onClick={() => handleAdminAction("approve")}>
                     Approve
                   </button>
@@ -321,8 +324,18 @@ function AnmigamRasiPalanCreate() {
                 </>
               )}
               {id && status === "approved" && (
-                <button className="btn-publish" disabled={isSubmitting} onClick={() => handleAdminAction("publish")}>
-                  Publish Live
+                <>
+                  <button className="btn-save-draft" disabled={isSubmitting} onClick={() => handleSave("approved")}>
+                    Save Changes
+                  </button>
+                  <button className="btn-publish" disabled={isSubmitting} onClick={() => handleAdminAction("publish")}>
+                    Publish Live
+                  </button>
+                </>
+              )}
+              {id && status === "published" && (
+                <button className="btn-submit" disabled={isSubmitting} onClick={() => handleSave("published")}>
+                  Save Changes
                 </button>
               )}
             </>

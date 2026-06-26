@@ -300,6 +300,41 @@ function EditorReviewNews() {
     }
   };
 
+  // For admin-rejected articles: editor edits and resubmits directly to admin
+  const handleResubmitToAdmin = async () => {
+    if (!validateForm()) return;
+    try {
+      setSubmitting(true);
+      // First save the edits
+      const data = new FormData();
+      data.append("title", formData.title);
+      data.append("subtitle", formData.subtitle);
+      data.append("category", formData.category);
+      data.append("location", formData.location);
+      data.append("shortDescription", formData.shortDescription);
+      data.append("fullDescription", formData.fullDescription);
+      data.append("tags", formData.tags);
+      data.append("seoKeywords", formData.seoKeywords);
+      data.append("language", formData.language);
+      if (coverFile) data.append("coverImage", coverFile);
+      galleryFiles.forEach((file) => data.append("galleryImages", file));
+
+      await API.put(`/api/news/editor/save/${id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      // Then resubmit to admin
+      await API.put(`/api/news/editor/resubmit/${id}`);
+      alert("Article revised and resubmitted to Admin! 🎉");
+      navigate("/editor/approved");
+    } catch (error) {
+      console.error("Error resubmitting article to admin:", error);
+      alert(error.response?.data?.message || "Failed to resubmit article ❌");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (!article) return <div style={{padding: '50px'}}>Loading article...</div>;
 
   const getStatusLabel = (status) => {
@@ -307,7 +342,8 @@ function EditorReviewNews() {
       case "published": return "Published";
       case "pending_editor_review": return "Pending Review";
       case "pending_admin_verification": return "Pending Approval";
-      case "rejected": return "Rejected";
+      case "rejected": return "Rejected (Sent to Reporter)";
+      case "admin_rejected": return "Returned by Admin — Needs Revision";
       case "draft": return "Draft";
       default: return status;
     }
@@ -319,17 +355,19 @@ function EditorReviewNews() {
       case "pending_editor_review": return "badge-pending";
       case "pending_admin_verification": return "badge-approved";
       case "rejected": return "badge-rejected";
+      case "admin_rejected": return "badge-rejected";
       case "draft": return "badge-draft";
       default: return "";
     }
   };
 
-  return (
+   return (
     <div className="reporter-create-news">
       <div className="header-actions">
         <div>
-          <h2>Review Article</h2>
-          <span className={`status-badge ${getStatusClass(article.status)}`}>
+          <h2>{(article.status === 'admin_rejected' || article.status === 'rejected') ? 'Edit & Resubmit Article' : 'Review Article'}</h2>
+          <span className={`status-badge ${getStatusClass(article.status)}`}
+            style={(article.status === 'admin_rejected' || article.status === 'rejected') ? {background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b'} : {}}>
             Status: {getStatusLabel(article.status)}
           </span>
         </div>
@@ -338,6 +376,8 @@ function EditorReviewNews() {
             {submitting ? "Saving..." : "Save Changes"}
           </button>
           <button className="btn-secondary" onClick={(e) => { e.preventDefault(); setShowPreview(true); }}>Preview</button>
+
+          {/* Normal flow: article awaiting editor review for the first time */}
           {article.status === "pending_editor_review" && (
             <>
               <button 
@@ -353,7 +393,7 @@ function EditorReviewNews() {
                 onClick={() => { if (validateForm()) setShowRejectModal(true); }} 
                 style={{background: '#ef4444', color: '#ffffff', border:'none', padding:'10px 20px', borderRadius:'6px', fontWeight: 600, cursor:'pointer'}}
               >
-                Reject
+                Reject to Reporter
               </button>
               <button 
                 className="btn-primary" 
@@ -375,8 +415,33 @@ function EditorReviewNews() {
               </button>
             </>
           )}
+
+          {/* Rejected flow: editor edits and resubmits directly to admin (works for both editor-rejected and admin-rejected) */}
+          {(article.status === "rejected" || article.status === "admin_rejected") && (
+            <button 
+              className="btn-primary" 
+              onClick={handleResubmitToAdmin}
+              disabled={submitting}
+              style={{background: '#f59e0b', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer'}}
+            >
+              {submitting ? "Resubmitting..." : "✅ Save & Resubmit to Admin"}
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Rejection reason banner — shown for both rejected and admin_rejected */}
+      {(article.status === "rejected" || article.status === "admin_rejected") && article.rejectionReason && (
+        <div style={{background: '#fff7ed', border: '1px solid #f59e0b', borderRadius: '8px', padding: '16px 20px', marginBottom: '20px', display: 'flex', gap: '12px', alignItems: 'flex-start'}}>
+          <span style={{fontSize: '20px'}}>⚠️</span>
+          <div>
+            <div style={{fontWeight: 700, color: '#92400e', marginBottom: '4px'}}>
+              {article.status === 'admin_rejected' ? 'Rejected by Admin' : 'Previously Rejected'} — Reason for Revision:
+            </div>
+            <div style={{color: '#78350f', fontSize: '14px'}}>{article.rejectionReason}</div>
+          </div>
+        </div>
+      )}
 
       {grammarChecked && (
         <div style={{background: '#f8fafc', padding: '20px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #e2e8f0'}}>
@@ -541,8 +606,8 @@ function EditorReviewNews() {
       {showRejectModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3 style={{color: '#ef4444'}}>Reject Article</h3>
-            <p>Please provide a reason for rejecting this article. It will be sent back to the reporter.</p>
+            <h3 style={{color: '#ef4444'}}>Reject Article — Return to Reporter</h3>
+            <p>Please provide a reason for rejecting this article. It will be sent back to the <strong>Reporter</strong> for revision. (This is different from Admin rejection.)</p>
             <textarea 
               rows="4" 
               style={{width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', marginTop: '10px'}}

@@ -40,7 +40,7 @@ router.get("/", async (req, res) => {
       query.language = lang;
     }
     
-    const shorts = await Short.find(query).sort({ createdAt: -1 });
+    const shorts = await Short.find(query).sort({ publishedAt: -1, createdAt: -1 });
     res.json(shorts);
   } catch (error) {
     console.error("Error fetching shorts:", error);
@@ -360,6 +360,19 @@ router.put("/:id/unpublish", verifyToken, authorizeRoles("admin"), async (req, r
   } catch (error) {
     console.error("Unpublish short error:", error);
     res.status(500).json({ success: false, message: "Server error unpublishing short" });
+  }
+});
+
+// POST /api/shorts/youtube-sync - Manually trigger YouTube sync (Admin only)
+router.post("/youtube-sync", verifyToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const { runSync } = require("../utils/youtubeSync");
+    console.log("[YouTube Sync] Manual sync triggered by admin.");
+    await runSync();
+    res.json({ success: true, message: "YouTube video and shorts sync completed successfully." });
+  } catch (error) {
+    console.error("Error running manual YouTube sync:", error);
+    res.status(500).json({ message: "Server error triggering manual YouTube sync" });
   }
 });
 

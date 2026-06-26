@@ -283,12 +283,13 @@ const NewsDetails = () => {
   const renderInArticleContent = (htmlContent) => {
     if (!htmlContent) return "No details available";
     
-    const plainText = stripHtml(htmlContent);
+    const cleanedContent = htmlContent.replace(/&nbsp;/g, " ").replace(/\u00a0/g, " ");
+    const plainText = stripHtml(cleanedContent);
     // Extrapolate a sentence for pull quote
     const sentences = plainText.split(/[.।]/).filter(s => s.trim().length > 15);
     const quoteSentence = sentences[Math.min(2, sentences.length - 1)] || "Key details are presented in this article.";
 
-    const paras = htmlContent.split("</p>");
+    const paras = cleanedContent.split("</p>");
     return (
       <div className="editorial-body">
         {paras.map((para, index) => {

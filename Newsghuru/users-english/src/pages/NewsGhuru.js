@@ -119,7 +119,7 @@ const NewsGhuru = () => {
 
         <div>
 
-          <h1>News Ghuru</h1>
+          <h1>NEWS GHURU</h1>
 
           <p>
             Get breaking news and updates instantly

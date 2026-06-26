@@ -283,29 +283,18 @@ const NewsDetails = () => {
   const renderInArticleContent = (htmlContent) => {
     if (!htmlContent) return "விவரங்கள் எதுவும் கிடைக்கவில்லை";
     
-    const plainText = stripHtml(htmlContent);
+    const cleanedContent = htmlContent.replace(/&nbsp;/g, " ").replace(/\u00a0/g, " ");
+    const plainText = stripHtml(cleanedContent);
     // Extrapolate a sentence for pull quote
     const sentences = plainText.split(/[.।]/).filter(s => s.trim().length > 15);
     const quoteSentence = sentences[Math.min(2, sentences.length - 1)] || "முக்கிய தகவல்கள் இந்த செய்தியில் கொடுக்கப்பட்டுள்ளது.";
 
-    const paras = htmlContent.split("</p>");
+    const paras = cleanedContent.split("</p>");
     return (
       <div className="editorial-body">
         {paras.map((para, index) => {
           if (!para.trim()) return null;
           let paraHtml = para + "</p>";
-          
-          // Drop cap for first paragraph
-          if (index === 0) {
-            const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = paraHtml;
-            const text = tempDiv.textContent || tempDiv.innerText || "";
-            if (text.length > 0) {
-              const firstLetter = text.charAt(0);
-              const restText = text.slice(1);
-              paraHtml = `<p><span style="float: left; font-size: 3.5rem; line-height: 0.85; font-weight: bold; margin-right: 8px; color: var(--accent-orange); font-family: var(--font-serif);">${firstLetter}</span>${restText}</p>`;
-            }
-          }
 
           return (
             <React.Fragment key={index}>

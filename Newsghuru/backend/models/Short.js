@@ -69,6 +69,12 @@ const shortSchema = new mongoose.Schema(
       enum: ["ta", "en", "hi", "te", "ml"],
       default: "ta",
       required: true
+    },
+    youtubeVideoId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true
     }
   },
   {

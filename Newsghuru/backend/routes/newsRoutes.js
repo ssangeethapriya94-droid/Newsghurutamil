@@ -162,9 +162,16 @@ router.get("/reporter/my-articles", verifyToken, async (req, res) => {
     if (req.query.status) {
       if (req.query.status === "submitted") {
         query.status = "pending_editor_review";
+      } else if (req.query.status === "rejected") {
+        // Reporters no longer handle rejected articles — all rejections are handled by editor
+        // Return empty result for rejected filter to avoid confusion
+        return res.json([]);
       } else {
         query.status = req.query.status;
       }
+    } else {
+      // When fetching "all", exclude all rejected statuses — only editor handles those
+      query.status = { $nin: ["rejected", "admin_rejected"] };
     }
     
     const articles = await News.find(query).sort({ createdAt: -1 });
@@ -452,208 +459,9 @@ router.get("/published", async (req, res) => {
 });
 
 
-// GET SINGLE NEWS BY ID
-router.get("/:id", async (req, res) => {
-  try {
-    const news = await News.findById(req.params.id);
-    if (!news) {
-      return res.status(404).json({
-        message: "News not found",
-      });
-    }
 
-    res.json(news);
-
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-});
-
-// PUT /api/news/:id/view - Increment news article view count (public)
-router.put("/:id/view", async (req, res) => {
-  try {
-    const news = await News.findByIdAndUpdate(
-      req.params.id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-    if (!news) {
-      return res.status(404).json({ message: "News not found" });
-    }
-    res.json({ success: true, views: news.views });
-  } catch (error) {
-    console.error("Error incrementing views:", error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// 🗑️ DELETE NEWS BY DATE
-router.delete("/date/:dateString", verifyToken, authorizeRoles("admin"), async (req, res) => {
-  try {
-    const { dateString } = req.params; // YYYY-MM-DD
-    const startDate = new Date(dateString);
-    startDate.setHours(0, 0, 0, 0);
-
-    const endDate = new Date(dateString);
-    endDate.setHours(23, 59, 59, 999);
-
-    await News.deleteMany({
-      $or: [
-        { date: { $gte: startDate, $lte: endDate } },
-        { createdAt: { $gte: startDate, $lte: endDate } }
-      ]
-    });
-
-    res.json({
-      message: `News for date ${dateString} deleted successfully`,
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-});
-
-
-// DELETE SINGLE NEWS
-router.delete("/:id", verifyToken, async (req, res) => {
-  try {
-    const news = await News.findById(req.params.id);
-    if (!news) {
-      return res.status(404).json({ message: "News not found" });
-    }
-
-    // Secure database mutation: allow admin OR the original reporter who created it
-    if (req.user.role !== "admin" && news.reporterId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized to delete this article" });
-    }
-
-    await News.findByIdAndDelete(req.params.id);
-
-    res.json({
-      message: "News Deleted",
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-});
-
-
-// 🗑️ DELETE ALL NEWS (NEW FEATURE)
-router.delete("/", verifyToken, authorizeRoles("admin"), async (req, res) => {
-  try {
-    await News.deleteMany({});
-
-    res.json({
-      message: "All News Deleted Successfully",
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-});
-
-// PUT /api/news/:id - Update news article (Edit)
-router.put("/:id", verifyToken, uploadFields, async (req, res) => {
-  try {
-    const {
-      title,
-      subtitle,
-      category,
-      location,
-      shortDescription,
-      fullDescription,
-      tags,
-      seoKeywords,
-      status,
-      language,
-    } = req.body;
-
-    const news = await News.findById(req.params.id);
-    if (!news) {
-      return res.status(404).json({ message: "Article not found" });
-    }
-
-    // Verify ownership: only the reporter who created it can edit it, or an admin!
-    if (req.user.role !== "admin" && news.reporterId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized to edit this article" });
-    }
-
-    // Update fields if provided
-    if (title !== undefined) news.title = title;
-    if (subtitle !== undefined) news.subtitle = subtitle;
-    if (category !== undefined) news.category = category;
-    if (location !== undefined) news.location = location;
-    if (shortDescription !== undefined) news.shortDescription = shortDescription;
-    if (fullDescription !== undefined) news.description = fullDescription;
-    if (tags !== undefined) news.tags = tags;
-    if (seoKeywords !== undefined) news.seoKeywords = seoKeywords;
-    if (language !== undefined) news.language = language;
-    
-    // Update status and timestamps
-    if (status !== undefined) {
-      let finalStatus = status;
-      if (req.user.role === "reporter") {
-        if (finalStatus !== "draft" && finalStatus !== "pending_editor_review") {
-          finalStatus = "pending_editor_review";
-        }
-      }
-      news.status = finalStatus;
-      if (finalStatus === "pending_editor_review") {
-        news.submittedAt = new Date();
-      }
-    }
-
-    // Handle files if uploaded
-    if (req.files) {
-      const baseUrl = req.protocol + '://' + req.get('host');
-      if (req.files["coverImage"] && req.files["coverImage"][0]) {
-        const coverPath = baseUrl + "/uploads/" + req.files["coverImage"][0].filename;
-        news.image = coverPath;
-        news.coverImage = coverPath;
-      }
-      if (req.files["galleryImages"]) {
-        const galleryPaths = req.files["galleryImages"].map(
-          (file) => baseUrl + "/uploads/" + file.filename
-        );
-        news.galleryImages = galleryPaths;
-      }
-    }
-
-    const updatedNews = await news.save();
-
-    // Notify all editors if submitted for review
-    if (status === "pending_editor_review") {
-      try {
-        const editors = await User.find({ role: "editor" });
-        const notificationPromises = editors.map((editor) =>
-          Notification.create({
-            recipientId: editor._id,
-            type: "submitted",
-            text: `Article "${updatedNews.title}" resubmitted by Reporter ${req.user.name} is pending review.`,
-            language: updatedNews.language || "ta",
-          })
-        );
-        await Promise.all(notificationPromises);
-      } catch (notifErr) {
-        console.error("Failed to send submission notifications to editors:", notifErr);
-      }
-    }
-
-    res.json(updatedNews);
-  } catch (error) {
-    console.error("Error updating article:", error);
-    res.status(500).json({ message: error.message });
-  }
-});
+// NOTE: Generic /:id routes are defined at the END of this file (after all specific routes)
+// to prevent them from intercepting requests meant for /editor/* and /admin/* routes.
 
 // GET /api/news/editor/review-queue - Fetch articles for the editor queue
 router.get("/editor/review-queue", verifyToken, authorizeRoles("editor"), async (req, res) => {
@@ -662,14 +470,16 @@ router.get("/editor/review-queue", verifyToken, authorizeRoles("editor"), async 
     let query = {};
 
     if (status === "pending") {
-      query.status = "pending_editor_review";
+      // Pending includes: articles awaiting review AND articles rejected by admin (need editor revision)
+      query.status = { $in: ["pending_editor_review", "admin_rejected"] };
     } else if (status === "approved") {
       query.status = { $in: ["pending_admin_verification", "published"] };
     } else if (status === "rejected") {
+      // Editor's "rejected" list = articles the editor themselves rejected (sent back to reporter)
       query.status = "rejected";
     } else {
-      // "all"
-      query.status = { $ne: "draft" };
+      // "all" — exclude drafts
+      query.status = { $nin: ["draft"] };
     }
 
     if (language && language !== "all") {
@@ -808,6 +618,50 @@ router.put("/editor/approve/:id", verifyToken, authorizeRoles("editor"), async (
     res.json(savedNews);
   } catch (error) {
     console.error("Error approving article:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// PUT /api/news/editor/resubmit/:id - Editor resubmits rejected article back to admin after revision
+router.put("/editor/resubmit/:id", verifyToken, authorizeRoles("editor"), async (req, res) => {
+  try {
+    const news = await News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({ message: "Article not found" });
+    }
+
+    if (news.status !== "admin_rejected" && news.status !== "rejected") {
+      return res.status(400).json({ message: "Only rejected articles can be resubmitted." });
+    }
+
+    news.status = "pending_admin_verification";
+    news.editorId = req.user._id;
+    news.approvedAt = new Date();
+    // Clear the rejection reason since it's being resubmitted
+    news.rejectionReason = undefined;
+    news.rejectedAt = undefined;
+
+    const savedNews = await news.save();
+
+    // Notify all admin users
+    try {
+      const admins = await User.find({ role: "admin" });
+      const notificationPromises = admins.map((admin) =>
+        Notification.create({
+          recipientId: admin._id,
+          type: "approved",
+          text: `Article "${savedNews.title}" has been revised by Editor ${req.user.name} and resubmitted for admin verification.`,
+          language: savedNews.language || "ta",
+        })
+      );
+      await Promise.all(notificationPromises);
+    } catch (notifErr) {
+      console.error("Failed to notify admins of resubmission:", notifErr);
+    }
+
+    res.json(savedNews);
+  } catch (error) {
+    console.error("Error resubmitting article to admin:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -1000,6 +854,7 @@ router.get("/admin/articles", verifyToken, authorizeRoles("admin"), async (req, 
       status: art.status === "pending_admin_verification" ? "Pending Admin Verification" :
               art.status === "published" ? "Published" :
               art.status === "rejected" ? "Rejected" :
+              art.status === "admin_rejected" ? "Returned to Editor" :
               art.status === "pending_editor_review" ? "Pending Review" : "Draft",
       date: new Date(art.date || art.createdAt).toLocaleDateString("en-GB", {
         day: "2-digit",
@@ -1026,9 +881,18 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
       return res.status(404).json({ message: "Article not found" });
     }
 
+    const now = new Date();
+    const timeString = now.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
     news.status = "published";
     news.adminId = req.user._id;
-    news.publishedAt = new Date();
+    news.publishedAt = now;
+    news.date = now;
+    news.time = timeString;
     
     logFCM(`[Admin Publish /${req.params.id}] req.body: ${JSON.stringify(req.body)}`);
     
@@ -1096,7 +960,7 @@ router.put("/admin/publish/:id", verifyToken, authorizeRoles("admin"), async (re
   }
 });
 
-// Admin Reject route
+// Admin Reject route — sets status to 'admin_rejected' so the article goes back to the Editor for revision
 router.put("/admin/reject/:id", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
     const { rejectionReason } = req.body;
@@ -1109,19 +973,21 @@ router.put("/admin/reject/:id", verifyToken, authorizeRoles("admin"), async (req
       return res.status(404).json({ message: "Article not found" });
     }
 
-    news.status = "rejected";
+    // Use 'admin_rejected' so the article appears in the Editor's queue for revision
+    // (not 'rejected' which is the editor→reporter rejection flow)
+    news.status = "admin_rejected";
     news.rejectionReason = rejectionReason;
     news.rejectedAt = new Date();
 
     const saved = await news.save();
 
-    // Notify the Editor
+    // Notify the Editor so they can revise and resubmit
     try {
       if (news.editorId) {
         await Notification.create({
           recipientId: news.editorId,
           type: "rejected",
-          text: `The article "${news.title}" you approved was rejected by the Admin. Reason: ${rejectionReason}`,
+          text: `The article "${news.title}" you approved was rejected by the Admin. Please revise and resubmit. Reason: ${rejectionReason}`,
           reason: rejectionReason,
           language: news.language || "ta",
         });
@@ -1133,6 +999,178 @@ router.put("/admin/reject/:id", verifyToken, authorizeRoles("admin"), async (req
     res.json(saved);
   } catch (error) {
     console.error("Admin reject error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ============================================================
+// GENERIC /:id ROUTES — Must be defined LAST so specific routes
+// like /editor/*, /admin/*, /reporter/* are matched first.
+// ============================================================
+
+// GET SINGLE NEWS BY ID
+router.get("/:id", async (req, res) => {
+  try {
+    const news = await News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({
+        message: "News not found",
+      });
+    }
+
+    res.json(news);
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
+// PUT /api/news/:id/view - Increment news article view count (public)
+router.put("/:id/view", async (req, res) => {
+  try {
+    const news = await News.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    if (!news) {
+      return res.status(404).json({ message: "News not found" });
+    }
+    res.json({ success: true, views: news.views });
+  } catch (error) {
+    console.error("Error incrementing views:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// DELETE SINGLE NEWS
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    const news = await News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({ message: "News not found" });
+    }
+
+    // Secure database mutation: allow admin OR the original reporter who created it
+    if (req.user.role !== "admin" && news.reporterId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to delete this article" });
+    }
+
+    await News.findByIdAndDelete(req.params.id);
+
+    res.json({
+      message: "News Deleted",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
+// PUT /api/news/:id - Update news article (Edit) — reporter/admin generic update
+router.put("/:id", verifyToken, uploadFields, async (req, res) => {
+  try {
+    const {
+      title,
+      subtitle,
+      category,
+      location,
+      shortDescription,
+      fullDescription,
+      tags,
+      seoKeywords,
+      status,
+      language,
+    } = req.body;
+
+    const news = await News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({ message: "Article not found" });
+    }
+
+    // Verify ownership: only the reporter who created it can edit it, or an admin!
+    if (req.user.role !== "admin" && news.reporterId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to edit this article" });
+    }
+
+    // Update fields if provided
+    if (title !== undefined) news.title = title;
+    if (subtitle !== undefined) news.subtitle = subtitle;
+    if (category !== undefined) news.category = category;
+    if (location !== undefined) news.location = location;
+    if (shortDescription !== undefined) news.shortDescription = shortDescription;
+    if (fullDescription !== undefined) news.description = fullDescription;
+    if (tags !== undefined) news.tags = tags;
+    if (seoKeywords !== undefined) news.seoKeywords = seoKeywords;
+    if (language !== undefined) news.language = language;
+
+    // Update status and timestamps
+    if (status !== undefined) {
+      let finalStatus = status;
+      if (req.user.role === "reporter") {
+        if (finalStatus !== "draft" && finalStatus !== "pending_editor_review") {
+          finalStatus = "pending_editor_review";
+        }
+      }
+      if (finalStatus === "published" && news.status !== "published") {
+        const now = new Date();
+        news.publishedAt = now;
+        news.date = now;
+        news.time = now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+      }
+      news.status = finalStatus;
+      if (finalStatus === "pending_editor_review") {
+        news.submittedAt = new Date();
+      }
+    }
+
+    // Handle files if uploaded
+    if (req.files) {
+      const baseUrl = req.protocol + '://' + req.get('host');
+      if (req.files["coverImage"] && req.files["coverImage"][0]) {
+        const coverPath = baseUrl + "/uploads/" + req.files["coverImage"][0].filename;
+        news.image = coverPath;
+        news.coverImage = coverPath;
+      }
+      if (req.files["galleryImages"]) {
+        const galleryPaths = req.files["galleryImages"].map(
+          (file) => baseUrl + "/uploads/" + file.filename
+        );
+        news.galleryImages = galleryPaths;
+      }
+    }
+
+    const updatedNews = await news.save();
+
+    // Notify all editors if submitted for review
+    if (status === "pending_editor_review") {
+      try {
+        const editors = await User.find({ role: "editor" });
+        const notificationPromises = editors.map((editor) =>
+          Notification.create({
+            recipientId: editor._id,
+            type: "submitted",
+            text: `Article "${updatedNews.title}" resubmitted by Reporter ${req.user.name} is pending review.`,
+            language: updatedNews.language || "ta",
+          })
+        );
+        await Promise.all(notificationPromises);
+      } catch (notifErr) {
+        console.error("Failed to send submission notifications to editors:", notifErr);
+      }
+    }
+
+    res.json(updatedNews);
+  } catch (error) {
+    console.error("Error updating article:", error);
     res.status(500).json({ message: error.message });
   }
 });

@@ -72,7 +72,7 @@ const newsSchema =
 
     status: {
       type: String,
-      enum: ["draft", "pending_editor_review", "rejected", "pending_admin_verification", "published"],
+      enum: ["draft", "pending_editor_review", "rejected", "admin_rejected", "pending_admin_verification", "published"],
       default: "draft",
     },
 
@@ -140,6 +140,24 @@ const newsSchema =
   {
     timestamps: true,
   });
+
+newsSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    if (ret.status === 'published' && ret.publishedAt) {
+      ret.createdAt = ret.publishedAt;
+    }
+    return ret;
+  }
+});
+
+newsSchema.set('toObject', {
+  transform: (doc, ret) => {
+    if (ret.status === 'published' && ret.publishedAt) {
+      ret.createdAt = ret.publishedAt;
+    }
+    return ret;
+  }
+});
 
 module.exports =
   mongoose.model(

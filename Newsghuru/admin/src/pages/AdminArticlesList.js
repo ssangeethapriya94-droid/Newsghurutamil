@@ -40,6 +40,7 @@ function AdminArticlesList({ defaultFilter = "pending" }) {
       case "Draft": return "badge-draft";
       case "Pending Admin Verification": return "badge-approved";
       case "Rejected": return "badge-rejected";
+      case "Returned to Editor": return "badge-rejected";
       case "Submitted": return "badge-submitted";
       default: return "";
     }

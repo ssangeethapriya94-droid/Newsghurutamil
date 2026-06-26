@@ -48,6 +48,7 @@ function AdminReviewNews() {
           status: art.status === "pending_admin_verification" ? "Pending Admin Verification" :
                   art.status === "published" ? "Published" :
                   art.status === "rejected" ? "Rejected" :
+                  art.status === "admin_rejected" ? "Returned to Editor" :
                   art.status === "pending_editor_review" ? "Pending Review" : "Draft",
           date: new Date(art.date || art.createdAt).toLocaleDateString("en-GB", {
             day: "2-digit",

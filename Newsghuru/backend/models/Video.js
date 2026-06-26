@@ -38,11 +38,20 @@ const videoSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
+    publishedAt: {
+      type: Date
+    },
     language: {
       type: String,
       enum: ["ta", "en", "hi", "te", "ml"],
       default: "ta",
       required: true
+    },
+    youtubeVideoId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true
     }
   },
   {

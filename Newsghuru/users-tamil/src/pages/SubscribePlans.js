@@ -73,6 +73,27 @@ const SubscribePlans = () => {
     } catch (e) {
       console.error("Error loading readerData:", e);
     }
+
+    // Sync latest profile on mount to ensure active/upcoming plan states are updated
+    const syncProfileOnMount = async () => {
+      const token = localStorage.getItem("readerToken");
+      if (token) {
+        try {
+          const res = await API.get("/api/users/profile", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.data && res.data.success) {
+            setUserData(res.data.user);
+            localStorage.setItem("readerData", JSON.stringify(res.data.user));
+            // Trigger app state update
+            window.dispatchEvent(new CustomEvent("payment-success", { detail: { user: res.data.user } }));
+          }
+        } catch (err) {
+          console.error("Error syncing profile on SubscribePlans mount:", err);
+        }
+      }
+    };
+    syncProfileOnMount();
   }, []);
 
   useEffect(() => {

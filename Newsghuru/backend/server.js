@@ -33,6 +33,7 @@ const homepageConfigRoutes = require("./routes/homepageConfigRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const emailScheduleRoutes = require("./routes/emailScheduleRoutes");
 const { startEmailScheduler } = require("./utils/scheduler");
+const { runSync } = require("./utils/youtubeSync");
 
 // Connect MongoDB
 connectDB().then(async () => {
@@ -47,6 +48,11 @@ connectDB().then(async () => {
   await seedPhotoStories();
   await seedHomepageConfig();
   startEmailScheduler();
+  
+  // YouTube Sync initialization
+  console.log("⏰ Initializing YouTube Video and Shorts Sync...");
+  runSync();
+  setInterval(runSync, 30 * 60 * 1000); // Sync every 30 minutes
 }).catch((err) => {
   console.warn("⚠️ Database connection failed. Seeding default data was skipped.");
 });

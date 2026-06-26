@@ -11,7 +11,10 @@ router.get("/", async (req, res) => {
     if (lang !== "all") {
       query.language = lang;
     }
-    const videos = await Video.find(query).sort({ createdAt: -1 });
+    if (req.query.category) {
+      query.category = { $regex: new RegExp(`^${req.query.category}$`, "i") };
+    }
+    const videos = await Video.find(query).sort({ publishedAt: -1, createdAt: -1 });
     res.json(videos);
   } catch (error) {
     console.error("Error fetching videos:", error);

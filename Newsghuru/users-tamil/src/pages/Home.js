@@ -59,6 +59,7 @@ const Home = () => {
   const [homepageConfig, setHomepageConfig] = useState(null);
   const [shorts, setShorts] = useState([]);
   const [photoStories, setPhotoStories] = useState([]);
+  const [videos, setVideos] = useState([]);
 
   // Interactive page states
   const [activeShort, setActiveShort] = useState(null);
@@ -157,11 +158,12 @@ const Home = () => {
       setError("");
 
       // Parallel data fetching
-      const [newsRes, configRes, shortsRes, photosRes] = await Promise.all([
+      const [newsRes, configRes, shortsRes, photosRes, videosRes] = await Promise.all([
         API.get("/api/news/published"),
         API.get("/api/homepage-config"),
         API.get("/api/shorts"),
-        API.get("/api/photo-stories")
+        API.get("/api/photo-stories"),
+        API.get("/api/videos").catch(() => ({ data: [] }))
       ]);
 
       const allPublished = newsRes.data || [];
@@ -183,8 +185,9 @@ const Home = () => {
       // Set dynamic dashboard layouts
       const configData = configRes.data || {};
       setHomepageConfig(configData);
-      setShorts((shortsRes.data || []).filter(s => s.isEnabled));
+      setShorts((shortsRes.data || []).filter(s => s.isEnabled).slice(0, 10));
       setPhotoStories(photosRes.data || []);
+      setVideos(videosRes.data || []);
 
     } catch (err) {
       console.error("Home API Error:", err);
@@ -235,10 +238,10 @@ const Home = () => {
   const filteredTech = filterByDate(techNews, selectedDate);
   const filteredAll = filterByDate(allNews, selectedDate);
 
-  // Fallbacks to keep layouts fully populated with news
+  // Only display category-specific news (no fallback to general news)
   const getStoriesOrFallback = (list, count = 4) => {
     if (list && list.length > 0) return list.slice(0, count);
-    return filteredAll.slice(0, count);
+    return [];
   };
 
   // Actions
@@ -297,7 +300,7 @@ const Home = () => {
     { id: "tech", titleTa: "தொழில்நுட்பம்", titleEn: "Technology", isEnabled: true, order: 7 },
     { id: "business", titleTa: "வணிகம் & வர்த்தகம்", titleEn: "Business & Markets", isEnabled: true, order: 8 },
     { id: "tamil", titleTa: "தமிழ்நாடு", titleEn: "Tamil Nadu", isEnabled: true, order: 9 },
-    { id: "shorts", titleTa: "சார்ட்ஸ்", titleEn: "Shorts Reels", isEnabled: true, order: 10 },
+    { id: "shorts", titleTa: "ஷார்ட்ஸ்", titleEn: "Shorts", isEnabled: true, order: 10 },
     { id: "photos", titleTa: "புகைப்படக் கதைகள்", titleEn: "Photo Stories", isEnabled: true, order: 11 },
     { id: "editors", titleTa: "ஆசிரியர் தேர்வு", titleEn: "Editor's Picks", isEnabled: true, order: 12 }
   ];
@@ -333,9 +336,9 @@ const Home = () => {
     const featuredIds = new Set(featured.map((s) => s._id.toString()));
     const remaining = shorts.filter((s) => s && s._id && !featuredIds.has(s._id.toString()));
 
-    // Combine featured and remaining, then sort by creation date descending (newest first)
+    // Combine featured and remaining, then sort by YouTube publication/creation date descending (newest first)
     const combined = [...featured, ...remaining];
-    return combined.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return combined.sort((a, b) => new Date(b.publishedAt || b.createdAt || 0) - new Date(a.publishedAt || a.createdAt || 0));
   })();
 
   // Standard News Card Component
@@ -524,6 +527,92 @@ const Home = () => {
     );
   };
 
+  const renderSectionVideo = (categorySlug) => {
+    const catVids = videos.filter(v => {
+      const vCat = v.category?.toLowerCase() || "";
+      if (categorySlug === "tech") {
+        return vCat === "tech" || vCat === "technology";
+      }
+      return vCat === categorySlug;
+    });
+
+    if (catVids.length === 0) return null;
+    const video = catVids[0];
+
+    const videoId = video.youtubeVideoId || (video.youtubeUrl ? (video.youtubeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/)?.[2] || "") : "");
+    if (!videoId) return null;
+
+    // Clean up description by stripping hashtags, social links, and HTML
+    const rawDesc = stripHtml(video.description || "");
+    const cleanDesc = rawDesc
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line !== "" && !line.includes("#") && !line.includes("http") && !line.includes("Twitter") && !line.includes("Instagram") && !line.includes("Facebook") && !line.includes("LinkedIn"))
+      .join(' ');
+    const slicedDesc = cleanDesc.length > 180 ? cleanDesc.slice(0, 180) + "..." : cleanDesc;
+
+    return (
+      <div 
+        className="home-section-video-banner"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+          background: "var(--bg-secondary, rgba(0,0,0,0.03))",
+          borderRadius: "12px",
+          border: "1px solid var(--border-color)",
+          padding: "20px",
+          marginTop: "20px"
+        }}
+      >
+        {/* Outer container to hold video width (full width) */}
+        <div style={{ width: "100%" }}>
+          {/* Inner 16:9 aspect-ratio wrapper */}
+          <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "8px", backgroundColor: "#000" }}>
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+              title={video.title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+            ></iframe>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", padding: "4px 0" }}>
+          <span style={{ fontSize: "0.75rem", background: "rgba(245, 158, 11, 0.08)", color: "var(--accent-orange)", padding: "4px 8px", borderRadius: "4px", width: "fit-content", fontWeight: "bold", textTransform: "uppercase", marginBottom: "10px", display: "inline-flex", alignItems: "center" }}>
+            🎥 வீடியோ
+          </span>
+          <h4 style={{ 
+            fontSize: "1.35rem", 
+            fontWeight: "800", 
+            color: "var(--text-primary)", 
+            fontFamily: "inherit", 
+            margin: "0 0 8px 0", 
+            lineHeight: "1.35"
+          }}>
+            {video.title}
+          </h4>
+          {slicedDesc && (
+            <p style={{
+              fontSize: "0.95rem",
+              color: "var(--text-muted, #6b7280)",
+              fontFamily: "inherit",
+              lineHeight: "1.6",
+              margin: 0,
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden"
+            }}>
+              {slicedDesc}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderPoliticsSection = (titleTa) => {
     const pStories = getStoriesOrFallback(filteredPolitics, 4);
     if (pStories.length === 0) return null;
@@ -574,6 +663,7 @@ const Home = () => {
             ))}
           </div>
         </div>
+        {renderSectionVideo("politics")}
       </div>
     );
   };
@@ -628,6 +718,7 @@ const Home = () => {
             ))}
           </div>
         </div>
+        {renderSectionVideo("tamil")}
       </div>
     );
   };
@@ -683,6 +774,7 @@ const Home = () => {
             ))}
           </div>
         </div>
+        {renderSectionVideo("cinema")}
       </div>
     );
   };
@@ -762,6 +854,7 @@ const Home = () => {
             )}
           </div>
         </div>
+        {renderSectionVideo("sports")}
       </div>
     );
   };
@@ -807,6 +900,7 @@ const Home = () => {
             </div>
           ))}
         </div>
+        {renderSectionVideo("tech")}
       </div>
     );
   };
@@ -844,6 +938,7 @@ const Home = () => {
             </div>
           ))}
         </div>
+        {renderSectionVideo("business")}
       </div>
     );
   };
@@ -870,7 +965,7 @@ const Home = () => {
       <div style={{ marginBottom: "40px" }}>
         <div className="section-headline-bar">
           <h2 className="section-title-premium">
-            <FaMobileAlt style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {titleTa || "சார்ட்ஸ்"}
+            <FaMobileAlt style={{ color: "var(--accent-orange)", marginRight: "8px" }} /> {(titleTa || "ஷார்ட்ஸ்").replace(/சார்ட்ஸ்/g, "ஷார்ட்ஸ்")}
           </h2>
         </div>
 
@@ -1371,13 +1466,89 @@ const Home = () => {
     }
   };
 
+  const params = new URLSearchParams(window.location.search);
+  const searchQuery = params.get("search");
+
+  const renderSearchResults = () => {
+    if (!searchQuery) return null;
+    const queryWords = searchQuery.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const matchedNews = allNews.filter(article => {
+      const title = (article.titleTa || article.title || "").toLowerCase();
+      const desc = (article.description || article.shortDescription || "").toLowerCase();
+      const category = (article.category || "").toLowerCase();
+      const tags = Array.isArray(article.tags) ? article.tags.map(t => t.toLowerCase()).join(" ") : (article.tags || "").toLowerCase();
+      const content = (article.content || "").toLowerCase();
+
+      return queryWords.every(word => 
+        title.includes(word) ||
+        desc.includes(word) ||
+        category.includes(word) ||
+        tags.includes(word) ||
+        content.includes(word)
+      );
+    });
+
+    return (
+      <div style={{ marginBottom: "40px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "2px solid var(--accent-orange)", paddingBottom: "12px", marginBottom: "25px" }}>
+          <div>
+            <h2 className="section-title-premium" style={{ margin: 0, fontFamily: "var(--font-serif)" }}>
+              தேடல் முடிவுகள்
+            </h2>
+            <p style={{ margin: "5px 0 0 0", fontSize: "0.88rem", color: "var(--text-secondary)" }}>
+              "{searchQuery}" என்ற தேடலுக்கு {matchedNews.length} {matchedNews.length === 1 ? "செய்தி" : "செய்திகள்"} கண்டறியப்பட்டது
+            </p>
+          </div>
+          <button 
+            onClick={() => navigate("/")}
+            style={{
+              background: "none",
+              border: "1px solid var(--accent-orange)",
+              color: "var(--accent-orange)",
+              padding: "8px 16px",
+              borderRadius: "20px",
+              fontSize: "0.85rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+              transition: "all 0.2s"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--accent-orange)";
+              e.currentTarget.style.color = "white";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "none";
+              e.currentTarget.style.color = "var(--accent-orange)";
+            }}
+          >
+            &larr; முகப்பு பக்கம்
+          </button>
+        </div>
+
+        {matchedNews.length > 0 ? (
+          <div style={{ display: "grid", gridTemplateColumns: isLargeScreen ? "repeat(2, 1fr)" : "1fr", gap: "25px" }}>
+            {matchedNews.map(story => renderNewsCard(story))}
+          </div>
+        ) : (
+          <div style={{ textAlign: "center", padding: "60px 20px", background: "var(--bg-secondary)", borderRadius: "12px", border: "1px solid var(--border-color)", marginTop: "20px" }}>
+            <span style={{ fontSize: "3rem", display: "block", marginBottom: "15px" }}>🔍</span>
+            <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.2rem", color: "var(--text-primary)", margin: "0 0 10px 0" }}>முடிவுகள் எதுவும் இல்லை</h3>
+            <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--text-muted)", maxWidth: "400px", marginLeft: "auto", marginRight: "auto", lineHeight: "1.5" }}>
+              தாங்கள் தேடிய தலைப்பில் செய்திகள் எதுவும் கண்டறியப்படவில்லை. தயவுசெய்து மாற்று சொற்களை கொண்டு மீண்டும் தேடவும்.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <section className="home-user-page" style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 15px 30px 15px", position: "relative" }}>
       <PopupAd />
       <AdZone position="TOP_BANNER" />
 
       {/* RENDER TOP SECTIONS: Breaking Ticker & Hero Above-the-fold */}
-      {activeSections.map(sec => {
+      {!searchQuery && activeSections.map(sec => {
         if (sec.id === "breaking") return <div key={sec.id}>{renderBreakingNewsBar(sec.titleTa)}</div>;
         if (sec.id === "hero") return <div key={sec.id}>{renderHeroSection()}</div>;
         return null;
@@ -1388,14 +1559,18 @@ const Home = () => {
       {/* Two-Column Body Grid */}
       <div style={isLargeScreen ? { display: "grid", gridTemplateColumns: "1fr 320px", gap: "30px", alignItems: "start", marginTop: "20px" } : { display: "flex", flexDirection: "column", gap: "30px", marginTop: "20px" }}>
         
-        {/* Left Column: All other categories loaded in dynamic order */}
+        {/* Left Column: All other categories loaded in dynamic order or Search Results */}
         <div ref={leftRef} style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
-          {activeSections.map(sec => {
-            if (sec.id !== "breaking" && sec.id !== "hero") {
-              return <div key={sec.id}>{renderSectionById(sec.id, sec.titleTa)}</div>;
-            }
-            return null;
-          })}
+          {searchQuery ? (
+            renderSearchResults()
+          ) : (
+            activeSections.map(sec => {
+              if (sec.id !== "breaking" && sec.id !== "hero") {
+                return <div key={sec.id}>{renderSectionById(sec.id, sec.titleTa)}</div>;
+              }
+              return null;
+            })
+          )}
         </div>
 
         {/* Right Column: Dynamic Sidebar with ads & widgets */}
@@ -1534,9 +1709,32 @@ const Home = () => {
               )}
 
               {/* Overlay details */}
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px", background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%)", color: "white", zIndex: 5 }}>
-                <h3 style={{ fontSize: "1rem", margin: "0 0 5px 0" }}>{activeShort.title}</h3>
-                <p style={{ fontSize: "0.8rem", opacity: "0.8", margin: 0 }}>{activeShort.description}</p>
+              <div style={{ 
+                position: "absolute", 
+                bottom: 0, 
+                left: 0, 
+                right: 0, 
+                padding: "20px 20px 15px 20px", 
+                background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0) 100%)", 
+                color: "white", 
+                zIndex: 5,
+                maxHeight: "160px",
+                display: "flex",
+                flexDirection: "column"
+              }}>
+                <h3 style={{ fontSize: "0.95rem", fontWeight: "bold", margin: "0 0 6px 0", textShadow: "1px 1px 2px rgba(0,0,0,0.8)" }}>{activeShort.title}</h3>
+                <div style={{ 
+                  fontSize: "0.8rem", 
+                  opacity: "0.85", 
+                  margin: 0, 
+                  overflowY: "auto", 
+                  maxHeight: "80px", 
+                  paddingRight: "5px",
+                  lineHeight: "1.4",
+                  scrollbarWidth: "thin"
+                }}>
+                  {activeShort.description}
+                </div>
               </div>
             </div>
           </motion.div>

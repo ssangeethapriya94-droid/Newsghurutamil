@@ -107,7 +107,7 @@ const Sidebar = ({ sidebar, setSidebar }) => {
               alt="Logo"
               className="sidebar-logo"
             />
-            <h2 className="logo-title" style={{ fontSize: "22px" }}>News Ghuru</h2>
+            <h2 className="logo-title" style={{ fontSize: "22px" }}>NEWS GHURU</h2>
           </div>
 
           <FaTimes
