@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import API from "../config/api";
 import RelativeTime from "../components/RelativeTime";
 import AdZone from "../components/AdZone";
+import YouTubeFacade from "../components/YouTubeFacade";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { 
   FaArrowRight, FaClock, FaFire, FaGlobe, FaFutbol, FaBriefcase, FaFilm, 
@@ -184,16 +185,13 @@ const CategoryPage = ({
                   
                   {/* Left Main Player */}
                   <div className="cat-video-main-player" style={{ flex: "2 1 450px", minWidth: "300px", display: "flex", flexDirection: "column" }}>
-                    <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "12px", boxShadow: "0 4px 15px rgba(0,0,0,0.15)", backgroundColor: "#000" }}>
-                      <iframe
-                        src={`https://www.youtube-nocookie.com/embed/${activeVideo.youtubeVideoId || (activeVideo.youtubeUrl ? (activeVideo.youtubeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/)?.[2] || "") : "")}`}
-                        title={activeVideo.title}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
-                      ></iframe>
-                    </div>
+                  {/* Active video player — facade loads iframe only on click */}
+                  <YouTubeFacade
+                    videoId={activeVideo.youtubeVideoId || (activeVideo.youtubeUrl ? (activeVideo.youtubeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/)?.[2] || "") : "")}
+                    title={activeVideo.title}
+                    autoplay={true}
+                    style={{ borderRadius: "12px", boxShadow: "0 4px 15px rgba(0,0,0,0.15)" }}
+                  />
                     <h4 style={{ 
                       fontSize: "1.15rem", 
                       fontWeight: "700", 

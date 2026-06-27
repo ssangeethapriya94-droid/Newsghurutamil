@@ -2,14 +2,15 @@ import React, { useEffect, useState, useRef } from "react";
 import API from "../config/api";
 import RelativeTime from "../components/RelativeTime";
 import AdZone from "../components/AdZone";
+import YouTubeFacade from "../components/YouTubeFacade";
 import PopupAd from "../components/PopupAd";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FaBolt, FaFire, FaMapMarkedAlt, FaFlag, FaGlobe, FaFutbol, 
-  FaBriefcase, FaFilm, FaGraduationCap, FaLandmark, FaHeart, 
+  FaBolt, FaMapMarkedAlt, FaFutbol, 
+  FaBriefcase, FaFilm, FaLandmark, FaHeart, 
   FaBookmark, FaShareAlt, FaPlay, FaImage, FaChevronRight, 
   FaStar, FaMobileAlt,
-  FaRegLightbulb, FaTimes, FaChevronLeft, FaTimesCircle
+  FaRegLightbulb, FaTimes, FaChevronLeft
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
@@ -39,8 +40,6 @@ const Home = () => {
     keywords: "முகப்பு செய்தி, தமிழ் செய்திகள், தமிழக செய்திகள், பிரேக்கிங் நியூஸ், நியூஸ் குரு",
   });
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
 
   // Published News Lists
@@ -105,7 +104,7 @@ const Home = () => {
       observer.disconnect();
       window.removeEventListener("resize", calculateExtraAds);
     };
-  }, [isLargeScreen]);
+  }, [isLargeScreen, isPremium]);
   const [bookmarkedArticles, setBookmarkedArticles] = useState({});
   const [activePollVote, setActivePollVote] = useState(null);
   const [activeScoreTab, setActiveScoreTab] = useState("match1");
@@ -152,11 +151,8 @@ const Home = () => {
   const getCategoryLabel = (category) =>
     categoryTamilMap[category?.toLowerCase()] || category;
 
-  const fetchAll = async (showLoading = true) => {
+  const fetchAll = async () => {
     try {
-      if (showLoading) setLoading(true);
-      setError("");
-
       // Parallel data fetching
       const [newsRes, configRes, shortsRes, photosRes, videosRes] = await Promise.all([
         API.get("/api/news/published"),
@@ -191,9 +187,6 @@ const Home = () => {
 
     } catch (err) {
       console.error("Home API Error:", err);
-      if (showLoading) setError("செய்திகளை ஏற்றுவதில் தோல்வி");
-    } finally {
-      if (showLoading) setLoading(false);
     }
   };
 
@@ -228,12 +221,9 @@ const Home = () => {
 
   const filteredBreaking = filterByDate(breakingNews, selectedDate);
   const filteredTamil = filterByDate(tamilNews, selectedDate);
-  const filteredWorld = filterByDate(worldNews, selectedDate);
-  const filteredIndia = filterByDate(indiaNews, selectedDate);
   const filteredSports = filterByDate(sportsNews, selectedDate);
   const filteredPolitics = filterByDate(politicsNews, selectedDate);
   const filteredBusiness = filterByDate(businessNews, selectedDate);
-  const filteredEducation = filterByDate(educationNews, selectedDate);
   const filteredCinema = filterByDate(cinemaNews, selectedDate);
   const filteredTech = filterByDate(techNews, selectedDate);
   const filteredAll = filterByDate(allNews, selectedDate);
@@ -567,17 +557,8 @@ const Home = () => {
       >
         {/* Outer container to hold video width (full width) */}
         <div style={{ width: "100%" }}>
-          {/* Inner 16:9 aspect-ratio wrapper */}
-          <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "8px", backgroundColor: "#000" }}>
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${videoId}`}
-              title={video.title}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
-            ></iframe>
-          </div>
+          {/* YouTubeFacade — loads iframe only on click, eliminates telemetry noise */}
+          <YouTubeFacade videoId={videoId} title={video.title} autoplay={true} />
         </div>
         <div style={{ display: "flex", flexDirection: "column", padding: "4px 0" }}>
           <span style={{ fontSize: "0.75rem", background: "rgba(245, 158, 11, 0.08)", color: "var(--accent-orange)", padding: "4px 8px", borderRadius: "4px", width: "fit-content", fontWeight: "bold", textTransform: "uppercase", marginBottom: "10px", display: "inline-flex", alignItems: "center" }}>
@@ -1691,14 +1672,26 @@ const Home = () => {
 
               {/* Video Player */}
               {activeShort.videoUrl.includes("youtube.com") || activeShort.videoUrl.includes("youtu.be") || activeShort.videoUrl.includes("embed") ? (
-                <iframe
-                  src={`${activeShort.videoUrl}?autoplay=1&mute=0`}
-                  title={activeShort.title}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  style={{ width: "100%", height: "100%", flex: 1 }}
-                ></iframe>
+                (() => {
+                  const shortVidId = activeShort.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/)?.[2] || "";
+                  return shortVidId ? (
+                    <YouTubeFacade
+                      videoId={shortVidId}
+                      title={activeShort.title}
+                      autoplay={true}
+                      style={{ borderRadius: "0", height: "100%", paddingBottom: "0", flex: 1, position: "relative" }}
+                    />
+                  ) : (
+                    <iframe
+                      src={`${activeShort.videoUrl}?autoplay=1&mute=0`}
+                      title={activeShort.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{ width: "100%", height: "100%", flex: 1 }}
+                    ></iframe>
+                  );
+                })()
               ) : (
                 <video
                   src={activeShort.videoUrl}

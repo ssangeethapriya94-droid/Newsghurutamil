@@ -656,6 +656,26 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Allow browser APIs that ad scripts (AdZone) use — prevents
+// "Permissions policy violation: compute-pressure is not allowed"
+// errors that are especially visible in incognito / strict mode.
+app.use((req, res, next) => {
+  res.setHeader(
+    "Permissions-Policy",
+    [
+      "compute-pressure=*",           // CPU pressure API used by some ad networks
+      "interest-cohort=()",           // opt-out of FLoC (good privacy practice)
+      "camera=()",                    // deny camera access
+      "microphone=()",                // deny microphone access
+      "geolocation=(self)",           // allow geolocation only on same origin
+      "fullscreen=(self)",            // allow fullscreen on same origin
+    ].join(", ")
+  );
+  // Allow popups opened by ad scripts in incognito without COOP blocking them
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  next();
+});
+
 app.use((req, res, next) => {
   console.log(`[REQUEST] ${req.method} ${req.url}`);
   next();
