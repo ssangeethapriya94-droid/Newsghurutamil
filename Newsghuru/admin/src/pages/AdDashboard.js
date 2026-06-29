@@ -7,7 +7,7 @@ import {
 } from "recharts";
 import { 
   FiLayers, FiActivity, FiClock, FiXCircle, 
-  FiMousePointer, FiEye, FiTrendingUp, FiPlusCircle, FiSettings 
+  FiMousePointer, FiEye, FiTrendingUp, FiPlusCircle 
 } from "react-icons/fi";
 import "../styles/AdminDashboard.css"; // Reuse dashboard metrics stylesheet
 
@@ -64,9 +64,6 @@ function AdDashboard() {
           </p>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
-          <button onClick={() => navigate("/admin/ads/settings")} className="btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-            <FiSettings /> Settings
-          </button>
           <button onClick={() => navigate("/admin/ads/add")} className="btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
             <FiPlusCircle /> Add Advertisement
           </button>

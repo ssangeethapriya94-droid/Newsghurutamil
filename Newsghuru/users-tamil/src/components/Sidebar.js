@@ -107,7 +107,7 @@ const Sidebar = ({ sidebar, setSidebar }) => {
               alt="Logo"
               className="sidebar-logo"
             />
-            <h2 className="logo-title" style={{ fontSize: "22px" }}>நியூஸ் குரு</h2>
+            <h2 className="logo-title sidebar-brand-title">நியூஸ் குரு</h2>
           </div>
 
           <FaTimes

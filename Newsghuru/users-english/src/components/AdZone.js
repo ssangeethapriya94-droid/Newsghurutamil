@@ -246,6 +246,14 @@ function AdZone({ position, className, style }) {
           maxHeight: "300px",
           objectFit: "contain"
         };
+      case "FOOTER_BANNER":
+        return {
+          ...baseImageStyle,
+          width: "100%",
+          height: "auto",
+          maxHeight: "none",
+          objectFit: "contain"
+        };
       default:
         return {
           ...baseImageStyle,
@@ -307,6 +315,16 @@ function AdZone({ position, className, style }) {
           ...baseStyle,
           maxWidth: "728px",
           margin: "20px auto"
+        };
+      case "FOOTER_BANNER":
+        return {
+          ...baseStyle,
+          maxWidth: "1150px",
+          margin: "20px auto",
+          background: "transparent",
+          border: "none",
+          padding: 0,
+          boxShadow: "none"
         };
       case "FLOATING_ADVERTISEMENT":
         return {

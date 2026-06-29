@@ -42,15 +42,11 @@ const Home = () => {
 
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
 
-  // Published News Lists
   const [breakingNews, setBreakingNews] = useState([]);
   const [tamilNews, setTamilNews] = useState([]);
-  const [indiaNews, setIndiaNews] = useState([]);
-  const [worldNews, setWorldNews] = useState([]);
   const [sportsNews, setSportsNews] = useState([]);
   const [politicsNews, setPoliticsNews] = useState([]);
   const [businessNews, setBusinessNews] = useState([]);
-  const [educationNews, setEducationNews] = useState([]);
   const [cinemaNews, setCinemaNews] = useState([]);
   const [techNews, setTechNews] = useState([]);
   const [allNews, setAllNews] = useState([]);
@@ -170,12 +166,9 @@ const Home = () => {
 
       setBreakingNews(filterCat("breaking"));
       setTamilNews(filterCat("tamil"));
-      setWorldNews(filterCat("world"));
-      setIndiaNews(filterCat("india"));
       setSportsNews(filterCat("sports"));
       setPoliticsNews(filterCat("politics"));
       setBusinessNews(filterCat("business"));
-      setEducationNews(filterCat("education"));
       setCinemaNews(filterCat("cinema"));
       setTechNews(filterCat("tech").concat(filterCat("technology")));
 

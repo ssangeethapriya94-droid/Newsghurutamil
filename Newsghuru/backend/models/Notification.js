@@ -9,7 +9,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["submitted", "changes", "rejected", "approved", "published", "contact"],
+      enum: ["submitted", "changes", "rejected", "approved", "published", "contact", "campaign_submitted", "campaign_approved", "campaign_rejected"],
       required: true,
     },
     text: {

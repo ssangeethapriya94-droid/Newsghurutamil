@@ -547,3 +547,28 @@
   font-size: 0.85em;
   margin-right: 2px;
 }
+
+/* ── CAMPAIGN STUDIO RESPONSIVE ── */
+.campaign-studio-card {
+  background: var(--card-bg, #ffffff);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+@media (max-width: 768px) {
+  .cat-page-container {
+    padding: 20px 10px !important;
+  }
+  .campaign-studio-card {
+    padding: 20px 15px !important;
+    border-radius: 16px !important;
+  }
+  .campaign-studio-card h1 {
+    font-size: 1.5rem !important;
+  }
+  .campaign-studio-card h2 {
+    font-size: 1.05rem !important;
+  }
+}

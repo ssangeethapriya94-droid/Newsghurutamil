@@ -129,9 +129,7 @@ const AuthPopup = ({ onClose, onLoginSuccess, isSubscribeFlow }) => {
         setError(errorMsg);
       }
     } finally {
-      if (activeTab === "login" || error) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 

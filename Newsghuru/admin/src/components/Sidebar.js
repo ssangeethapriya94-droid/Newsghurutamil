@@ -5,8 +5,8 @@ import {
   FiGrid, FiFileText, FiClock, FiList, FiCheckCircle, 
   FiZap, FiFolder, FiImage, FiUsers, FiMail, 
   FiBell, FiSettings, FiUser, FiLogOut,
-  FiSliders, FiLayers, FiPlusCircle, FiInbox, FiBarChart2,
-  FiChevronDown, FiChevronUp, FiVideo, FiTv, FiCamera, FiLayout, FiSun
+  FiSliders, FiLayers, FiPlusCircle, FiBarChart2, FiDollarSign,
+  FiChevronDown, FiChevronUp, FiTv, FiCamera, FiLayout, FiSun
 } from "react-icons/fi";
 import API from "../config/api";
 
@@ -189,19 +189,9 @@ function Sidebar({ isOpen }) {
           Add Advertisement
         </NavLink>
 
-        <NavLink className="sidebar-link" to="/admin/ads/requests">
-          <span className="link-icon"><FiInbox /></span>
-          Ad Requests
-        </NavLink>
-
-        <NavLink className="sidebar-link" to="/admin/ads/analytics">
-          <span className="link-icon"><FiBarChart2 /></span>
-          Ad Analytics
-        </NavLink>
-
-        <NavLink className="sidebar-link" to="/admin/ads/settings">
-          <span className="link-icon"><FiSettings /></span>
-          Ad Settings
+        <NavLink className="sidebar-link" to="/admin/ads/pricing">
+          <span className="link-icon"><FiDollarSign /></span>
+          Ad Slot Pricing
         </NavLink>
 
         <div className="sidebar-section">SYSTEM</div>

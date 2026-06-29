@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/DateBar.css";
-import { FaCalendarAlt, FaClock, FaSun, FaMoon, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaCalendarAlt, FaSun, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom"; // Added for routing without reload
 
 const thithis = [
@@ -346,8 +346,6 @@ const DateBar = ({ visitorCount }) => {
   const tamilFullDate = `${tamilDate} ${tamilMonth}, ${tamilYear} ஆண்டு`;
 
   const time = currentTime.toLocaleTimeString("ta-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  const hour = currentTime.getHours();
-  const TimeIcon = hour >= 6 && hour < 18 ? FaSun : FaMoon;
 
   const todayDateObj = new Date();
   todayDateObj.setHours(0, 0, 0, 0);
@@ -372,8 +370,41 @@ const DateBar = ({ visitorCount }) => {
 
         <div className="time-section">
           <span className="time-text">{time}</span>
+          <button
+            type="button"
+            className="start-adv-datebar-btn"
+            style={{
+              marginLeft: "12px",
+              background: "var(--brand-gradient, linear-gradient(135deg, #ea580c 0%, #d97706 100%))",
+              color: "#fff",
+              border: "none",
+              padding: "4px 14px",
+              borderRadius: "20px",
+              fontSize: "0.85rem",
+              fontWeight: "700",
+              cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(234, 88, 12, 0.35)",
+              whiteSpace: "nowrap",
+              transition: "transform 0.18s ease, box-shadow 0.18s ease"
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate("/campaigns");
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = "scale(1.04)";
+              e.currentTarget.style.boxShadow = "0 4px 12px rgba(234, 88, 12, 0.5)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "0 2px 8px rgba(234, 88, 12, 0.35)";
+            }}
+          >
+            விளம்பரம் செய்ய
+          </button>
           {visitorCount > 0 && (
             <span
+              className="visitor-count-badge"
               style={{
                 marginLeft: "14px",
                 display: "inline-flex",

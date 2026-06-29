@@ -15,7 +15,6 @@ import Login from "./pages/Login";
 import Sidebar from "./components/Sidebar";
 import ReporterSidebar from "./components/ReporterSidebar";
 import Topbar from "./components/Topbar";
-import Information from "./pages/Information";
 import Account from "./pages/Account";
 import WebsiteSettings from "./pages/WebsiteSettings";
 import Revenue from "./pages/Revenue";
@@ -56,9 +55,7 @@ import AnmigamTempleBlogCreate from "./pages/AnmigamTempleBlogCreate";
 import AdDashboard from "./pages/AdDashboard";
 import AllAds from "./pages/AllAds";
 import AddAd from "./pages/AddAd";
-import AdRequests from "./pages/AdRequests";
-import AdAnalytics from "./pages/AdAnalytics";
-import AdSettings from "./pages/AdSettings";
+import AdPricingSettings from "./pages/AdPricingSettings";
 
 const isLoggedIn = () => {
   return localStorage.getItem("token") && localStorage.getItem("role");
@@ -335,9 +332,7 @@ function App() {
         <Route path="/admin/ads/all" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AllAds /></Layout></ProtectedRoute>} />
         <Route path="/admin/ads/add" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AddAd /></Layout></ProtectedRoute>} />
         <Route path="/admin/ads/edit/:id" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AddAd /></Layout></ProtectedRoute>} />
-        <Route path="/admin/ads/requests" element={<ProtectedRoute requiredRole="admin"><Layout><AdRequests /></Layout></ProtectedRoute>} />
-        <Route path="/admin/ads/analytics" element={<ProtectedRoute requiredRole="admin"><Layout><AdAnalytics /></Layout></ProtectedRoute>} />
-        <Route path="/admin/ads/settings" element={<ProtectedRoute requiredRole="admin"><Layout><AdSettings /></Layout></ProtectedRoute>} />
+        <Route path="/admin/ads/pricing" element={<ProtectedRoute requiredRole="admin"><Layout><AdPricingSettings /></Layout></ProtectedRoute>} />
 
         {/* REPORTER ROUTES */}
         <Route

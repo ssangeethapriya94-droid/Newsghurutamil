@@ -1,19 +1,12 @@
 import React from "react";
 import "../styles/Footer.css";
+import AdZone from "./AdZone";
 import {
   FaFacebookF,
   FaTwitter,
   FaInstagram,
   FaYoutube,
-  FaTelegramPlane,
-  FaWhatsapp,
   FaChevronRight,
-  FaMapMarkerAlt,
-  FaGlobeAmericas,
-  FaChartLine,
-  FaRunning,
-  FaMicrochip,
-  FaPlayCircle,
   FaFutbol,
   FaBriefcase,
   FaGraduationCap,
@@ -24,7 +17,11 @@ import { Link } from "react-router-dom";
 
 const Footer = ({ visitorCount }) => {
   return (
-    <footer className="footer">
+    <>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 15px" }}>
+        <AdZone position="FOOTER_BANNER" />
+      </div>
+      <footer className="footer">
       <div className="footer-top">
         {/* COLUMN 1: BRAND SECTION */}
         <div className="footer-brand-col">
@@ -111,6 +108,7 @@ const Footer = ({ visitorCount }) => {
         </div>
       </div>
     </footer>
+    </>
   );
 };
 

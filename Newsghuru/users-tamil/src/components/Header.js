@@ -25,8 +25,6 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  // Mega dropdown content cache
-  const [megaMenuData, setMegaMenuData] = useState({});
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
   const profileRef = useRef(null);
@@ -140,22 +138,6 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     "விண்வெளி"
   ];
 
-  const categoryEnglishMap = {
-    breaking: "தற்போதைய செய்தி",
-    tamil: "தமிழகம்",
-    india: "இந்தியா",
-    world: "உலகம்",
-    business: "வணிகம்",
-    sports: "விளையாட்டு",
-    education: "கல்வி",
-    politics: "அரசியல்",
-    cinema: "சினிமா",
-    tech: "தொழில்நுட்பம்",
-    technology: "தொழில்நுட்பம்",
-    anmigam: "ஆன்மீகம்"
-  };
-
-  const getCategoryLabel = (cat) => categoryEnglishMap[cat?.toLowerCase()] || cat;
 
   const saveRecentSearch = (term) => {
     const updated = [term, ...recentSearches.filter((t) => t !== term)].slice(0, 5);
@@ -229,27 +211,6 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     };
   };
 
-  // Mega Navigation hover prefetcher
-  const handleCategoryHover = (categorySlug) => {
-    setHoveredCategory(categorySlug);
-    if (categorySlug === "/" || categorySlug === "/latest-news") return;
-
-    // Clean slug for API: "/tamil" -> "tamil", "/category/health" -> "health"
-    const cleanCat = categorySlug
-      .replace(/^\/category\//, "")
-      .replace(/^\//, "");
-
-    if (!megaMenuData[categorySlug]) {
-      API.get(`/api/news/category/${cleanCat}`)
-        .then((res) => {
-          setMegaMenuData((prev) => ({
-            ...prev,
-            [categorySlug]: (res.data || []).slice(0, 4),
-          }));
-        })
-        .catch((err) => console.error(`Error prefetching category ${cleanCat}:`, err));
-    }
-  };
 
   const categories = [
     { name: "முகப்பு",          slug: "/",             icon: <FaHome /> },
@@ -440,7 +401,44 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
             {darkMode ? <FaSun /> : <FaMoon />}
           </button>
 
-          {/* SUBSCRIBE BUTTON or PREMIUM BADGE */}
+          {/* LANGUAGE SWITCHER — switches to English portal */}
+          <a
+            className="lang-portal-btn"
+            href={process.env.REACT_APP_ENGLISH_URL || "http://localhost:3005"}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Switch to English Website"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              background: "var(--brand-gradient, linear-gradient(135deg, #c2410c 0%, #f97316 100%))",
+              color: "#fff",
+              fontWeight: "800",
+              fontSize: "0.95rem",
+              fontFamily: "'Georgia', serif",
+              textDecoration: "none",
+              boxShadow: "0 2px 8px rgba(234,88,12,0.45)",
+              border: "2px solid rgba(255,255,255,0.25)",
+              letterSpacing: "-0.5px",
+              transition: "transform 0.18s ease, box-shadow 0.18s ease",
+              flexShrink: 0,
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = "scale(1.12)";
+              e.currentTarget.style.boxShadow = "0 4px 14px rgba(234,88,12,0.65)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "0 2px 8px rgba(234,88,12,0.45)";
+            }}
+          >
+            E
+          </a>
+
           {readerData?.isPremium ? (
             <div 
               className="premium-badge-header" 
@@ -505,10 +503,13 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
                 {readerData?.name ? readerData.name.charAt(0).toUpperCase() : "U"}
               </div>
               {showProfileMenu && (
-                <div className="lang-menu" style={{ minWidth: "160px" }}>
+                <div className="lang-menu" style={{ minWidth: "180px" }}>
                   <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", fontSize: "0.8rem", color: "var(--text-muted)" }}>
                     {readerData?.name || "பயனர்"}
                   </div>
+                  <button className="lang-item" onClick={() => { setShowProfileMenu(false); navigate("/campaigns"); }} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    📢 என் விளம்பரங்கள்
+                  </button>
                   <button className="lang-item" onClick={() => { setShowProfileMenu(false); navigate("/bookmarks"); }} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     புக்மார்க்குகள்
                   </button>

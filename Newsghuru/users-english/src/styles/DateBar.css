@@ -452,10 +452,48 @@
 @media (max-width: 768px) {
   .date-bar {
     flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 12px 15px;
-    top: 75px;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    top: 70px;
+    text-align: center;
+  }
+
+  .date-section {
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .time-section {
+    flex-wrap: nowrap !important;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 5px !important;
+    font-size: 12px;
+  }
+
+  .time-section span.time-text {
+    padding: 3px 8px !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
+  }
+
+  .start-adv-datebar-btn {
+    margin-left: 0 !important;
+    padding: 3px 8px !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
+  }
+
+  .visitor-count-badge {
+    margin-left: 0 !important;
+    padding: 3px 8px !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
   }
   
   .dc-panchangam-section {
@@ -498,5 +536,35 @@
   
   .dc-date-input-text {
     font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .date-bar {
+    top: 60px;
+    padding: 5px 4px;
+  }
+  
+  .date-section {
+    font-size: 11px;
+  }
+
+  .time-section {
+    gap: 3px !important;
+  }
+
+  .time-section span.time-text {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+  }
+
+  .start-adv-datebar-btn {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+  }
+
+  .visitor-count-badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
   }
 }

@@ -51,7 +51,8 @@ const advertisementSchema = new mongoose.Schema(
         "SECTION_BANNER",
         "ARTICLE_ADVERTISEMENT",
         "POPUP_ADVERTISEMENT",
-        "FLOATING_ADVERTISEMENT"
+        "FLOATING_ADVERTISEMENT",
+        "FOOTER_BANNER"
       ]
     },
     priority: {
@@ -138,6 +139,20 @@ const advertisementSchema = new mongoose.Schema(
       enum: ["ta", "en", "both", "hi", "te", "ml"],
       default: "both",
       required: true
+    },
+    amountPaid: {
+      type: Number,
+      default: 0
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Paid", "Refunded"],
+      default: "Pending"
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["Razorpay", "Wallet", "Free"],
+      default: "Razorpay"
     }
   },
   {

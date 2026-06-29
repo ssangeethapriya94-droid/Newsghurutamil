@@ -6,8 +6,8 @@ import useSEO from "../hooks/useSEO";
 import AdZone from "../components/AdZone";
 
 import {
-  FaArrowLeft, FaFacebookF, FaTwitter, FaUserAlt,
-  FaInstagram, FaYoutube, FaHeart, FaBookmark, FaShareAlt,
+  FaArrowLeft, FaUserAlt,
+  FaHeart, FaBookmark, FaShareAlt,
   FaPlus, FaCheck, FaEye, FaRegComment
 } from "react-icons/fa";
 
@@ -435,7 +435,7 @@ const NewsDetails = () => {
                 <FaShareAlt /> <span>பகிர்க</span>
               </button>
             </div>
-            <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
+            <div className="article-comments-count">
               <FaRegComment /> {comments.length} கருத்துகள்
             </div>
           </div>

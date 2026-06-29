@@ -8,7 +8,10 @@ function AdSettings() {
     globalRotationInterval: 10,
     popupEnabled: true,
     popupDelay: 3,
-    popupAutoClose: 10
+    popupAutoClose: 10,
+    salesEmail: "ads@newsghuru.in",
+    salesPhone: "+91 88259 48859",
+    salesWebsite: "newsghuru.in"
   });
 
   const [loading, setLoading] = useState(true);
@@ -24,7 +27,10 @@ function AdSettings() {
           globalRotationInterval: res.data.settings.globalRotationInterval || 10,
           popupEnabled: res.data.settings.popupEnabled !== undefined ? res.data.settings.popupEnabled : true,
           popupDelay: res.data.settings.popupDelay !== undefined ? res.data.settings.popupDelay : 3,
-          popupAutoClose: res.data.settings.popupAutoClose !== undefined ? res.data.settings.popupAutoClose : 10
+          popupAutoClose: res.data.settings.popupAutoClose !== undefined ? res.data.settings.popupAutoClose : 10,
+          salesEmail: res.data.settings.salesEmail || "ads@newsghuru.in",
+          salesPhone: res.data.settings.salesPhone || "+91 88259 48859",
+          salesWebsite: res.data.settings.salesWebsite || "newsghuru.in"
         });
       }
     } catch (err) {
@@ -43,7 +49,7 @@ function AdSettings() {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : Number(value)
+      [name]: type === "checkbox" ? checked : (type === "number" ? Number(value) : value)
     }));
   };
 
@@ -56,7 +62,6 @@ function AdSettings() {
       const res = await API.put("/api/ads/settings", formData);
       if (res.data.success) {
         setMessage({ type: "success", text: "Global advertisement settings updated successfully! 🎉" });
-        // Automatically hide success message after 4 seconds
         setTimeout(() => setMessage({ type: "", text: "" }), 4000);
       }
     } catch (err) {
@@ -77,7 +82,7 @@ function AdSettings() {
         <div>
           <h2>⚙️ Advertisement Settings</h2>
           <div className="header-subtitle">
-            Configure global advertisement behaviors, rotation durations, popup conditions, and default delays.
+            Configure global advertisement behaviors, rotation durations, popup conditions, and sales contact details.
           </div>
         </div>
       </div>
@@ -169,6 +174,48 @@ function AdSettings() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* PAGE DETAILS & SALES CONTACT CONTROLS */}
+        <div className="form-card" style={{ background: "var(--card-bg)", padding: "24px", borderRadius: "12px", border: "1px solid var(--border-color)", boxShadow: "0 10px 30px rgba(15, 23, 42, 0.03)" }}>
+          <h3 style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "10px", marginBottom: "20px", color: "var(--text-main)" }}>3. Advertise With Us Contact Details</h3>
+          
+          <div className="form-group" style={{ marginBottom: "15px" }}>
+            <label>Sales Email Address *</label>
+            <span style={{ display: "block", color: "var(--text-muted)", fontSize: "12px", marginBottom: "6px" }}>Displayed on Advertise With Us and Create Campaign pages.</span>
+            <input
+              type="email"
+              name="salesEmail"
+              value={formData.salesEmail}
+              onChange={handleInputChange}
+              placeholder="ads@newsghuru.in"
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: "15px" }}>
+            <label>Sales Phone Number *</label>
+            <input
+              type="text"
+              name="salesPhone"
+              value={formData.salesPhone}
+              onChange={handleInputChange}
+              placeholder="+91 88259 48859"
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Sales Website URL *</label>
+            <input
+              type="text"
+              name="salesWebsite"
+              value={formData.salesWebsite}
+              onChange={handleInputChange}
+              placeholder="newsghuru.in"
+              style={{ width: "100%" }}
+            />
+          </div>
         </div>
 
         {/* SAVE BUTTON */}

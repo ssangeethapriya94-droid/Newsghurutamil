@@ -51,6 +51,8 @@ import MobileBottomNav from "./components/MobileBottomNav";
 import Tech from "./pages/Tech";
 import GenericCategory from "./pages/GenericCategory";
 import SubscribePlans from "./pages/SubscribePlans";
+import Campaigns from "./pages/Campaigns";
+import CreateCampaign from "./pages/CreateCampaign";
 
 // Anmigam pages
 import RasiPalanPage from "./pages/RasiPalanPage";
@@ -541,6 +543,24 @@ function App() {
           element={
             <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
               <Bookmarks />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/campaigns"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
+              <Campaigns openLoginPopup={openLoginPopup} />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/create-campaign"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
+              <CreateCampaign openLoginPopup={openLoginPopup} />
             </Layout>
           }
         />

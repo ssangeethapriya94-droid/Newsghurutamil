@@ -25,8 +25,6 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
   
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  // Mega dropdown content cache
-  const [megaMenuData, setMegaMenuData] = useState({});
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
   const profileRef = useRef(null);
@@ -46,21 +44,7 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     }
   })();
 
-  const categoryEnglishMap = {
-    breaking: "Breaking News",
-    tamil: "Tamil Nadu",
-    india: "India",
-    world: "World",
-    business: "Business",
-    sports: "Sports",
-    education: "Education",
-    politics: "Politics",
-    cinema: "Cinema",
-    tech: "Technology",
-    technology: "Technology"
-  };
 
-  const getCategoryLabel = (cat) => categoryEnglishMap[cat?.toLowerCase()] || cat;
 
   // Load published news and recent searches for instant search dropdown
   useEffect(() => {
@@ -225,27 +209,7 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
     };
   };
 
-  // Mega Navigation hover prefetcher
-  const handleCategoryHover = (categorySlug) => {
-    setHoveredCategory(categorySlug);
-    if (categorySlug === "/" || categorySlug === "/latest-news") return;
 
-    // Clean slug for API: "/tamil" -> "tamil", "/category/health" -> "health"
-    const cleanCat = categorySlug
-      .replace(/^\/category\//, "")
-      .replace(/^\//, "");
-
-    if (!megaMenuData[categorySlug]) {
-      API.get(`/api/news/category/${cleanCat}`)
-        .then((res) => {
-          setMegaMenuData((prev) => ({
-            ...prev,
-            [categorySlug]: (res.data || []).slice(0, 4),
-          }));
-        })
-        .catch((err) => console.error(`Error prefetching category ${cleanCat}:`, err));
-    }
-  };
 
   const categories = [
     { name: "Home",          slug: "/",             icon: <FaHome /> },
@@ -436,6 +400,44 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
             {darkMode ? <FaSun /> : <FaMoon />}
           </button>
 
+          {/* LANGUAGE SWITCHER — switches to Tamil portal */}
+          <a
+            className="lang-portal-btn"
+            href={process.env.REACT_APP_TAMIL_URL || "http://localhost:3004"}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Switch to Tamil Website"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              background: "var(--brand-gradient, linear-gradient(135deg, #c2410c 0%, #f97316 100%))",
+              color: "#fff",
+              fontWeight: "800",
+              fontSize: "0.95rem",
+              fontFamily: "'Georgia', serif",
+              textDecoration: "none",
+              boxShadow: "0 2px 8px rgba(234,88,12,0.45)",
+              border: "2px solid rgba(255,255,255,0.25)",
+              letterSpacing: "-0.5px",
+              transition: "transform 0.18s ease, box-shadow 0.18s ease",
+              flexShrink: 0,
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = "scale(1.12)";
+              e.currentTarget.style.boxShadow = "0 4px 14px rgba(234,88,12,0.65)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "0 2px 8px rgba(234,88,12,0.45)";
+            }}
+          >
+            T
+          </a>
+
           {/* SUBSCRIBE BUTTON or PREMIUM BADGE */}
           {readerData?.isPremium ? (
             <div 
@@ -501,10 +503,13 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
                 {readerData?.name ? readerData.name.charAt(0).toUpperCase() : "U"}
               </div>
               {showProfileMenu && (
-                <div className="lang-menu" style={{ minWidth: "160px" }}>
+                <div className="lang-menu" style={{ minWidth: "180px" }}>
                   <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", fontSize: "0.8rem", color: "var(--text-muted)" }}>
                     {readerData?.name || "User"}
                   </div>
+                  <button className="lang-item" onClick={() => { setShowProfileMenu(false); navigate("/campaigns"); }} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    📢 My Campaigns
+                  </button>
                   <button className="lang-item" onClick={() => { setShowProfileMenu(false); navigate("/bookmarks"); }} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     Bookmarks
                   </button>

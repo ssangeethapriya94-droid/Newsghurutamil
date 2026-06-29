@@ -104,19 +104,19 @@ function AllAds() {
 
   const handleApprove = async (id) => {
     try {
-      const res = await API.put(`/api/ads/${id}/approve`);
+      const res = await API.put(`/api/ads/${id}/approve-campaign`);
       if (res.data.success) {
-        alert("Advertisement approved successfully!");
+        alert(res.data.message || "Advertisement approved successfully!");
         fetchAds();
       }
     } catch (err) {
       console.error("Error approving ad", err);
-      alert("Failed to approve advertisement");
+      alert(err.response?.data?.message || "Failed to approve advertisement");
     }
   };
 
   const handleReject = async (id) => {
-    const reason = window.prompt("Please enter a reason for rejecting this advertisement:");
+    const reason = window.prompt("Please enter a reason for rejecting this advertisement campaign:");
     if (reason === null) return; // cancelled
     if (!reason.trim()) {
       alert("A rejection reason is required.");
@@ -124,14 +124,14 @@ function AllAds() {
     }
 
     try {
-      const res = await API.put(`/api/ads/${id}/reject`, { rejectionReason: reason });
+      const res = await API.put(`/api/ads/${id}/reject-campaign`, { rejectionReason: reason });
       if (res.data.success) {
-        alert("Advertisement rejected successfully.");
+        alert(res.data.message || "Advertisement rejected successfully.");
         fetchAds();
       }
     } catch (err) {
       console.error("Error rejecting ad", err);
-      alert("Failed to reject advertisement");
+      alert(err.response?.data?.message || "Failed to reject advertisement");
     }
   };
 
