@@ -57,6 +57,7 @@ const Footer = ({ visitorCount }) => {
             <li><Link to="/latest-news"><FaChevronRight className="chevron-link-icon" /> Latest News</Link></li>
             <li><Link to="/about-us"><FaChevronRight className="chevron-link-icon" /> About Us</Link></li>
             <li><Link to="/advertise-with-us"><FaChevronRight className="chevron-link-icon" /> Advertise With Us</Link></li>
+            <li><Link to="/sponsored-articles"><FaChevronRight className="chevron-link-icon" /> Sponsored Articles</Link></li>
           </ul>
         </div>
 

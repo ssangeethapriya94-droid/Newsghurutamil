@@ -605,6 +605,13 @@ const Header = ({ setSidebar, darkMode, setDarkMode, openLoginPopup, onLogout, c
         ))}
       </nav>
 
+      {/* MOBILE HEADER BANNER */}
+      {!readerData?.isPremium && (
+        <div className="header-ad-zone-mobile">
+          <AdZone position="HEADER_BANNER" />
+        </div>
+      )}
+
       {/* Slide-down Search Bar & Dropdown Results */}
 
     </div>

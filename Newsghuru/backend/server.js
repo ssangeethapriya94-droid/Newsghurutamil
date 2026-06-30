@@ -34,6 +34,7 @@ const analyticsRoutes = require("./routes/analyticsRoutes");
 const emailScheduleRoutes = require("./routes/emailScheduleRoutes");
 const { startEmailScheduler } = require("./utils/scheduler");
 const { runSync } = require("./utils/youtubeSync");
+const { ensurePackages } = require("./routes/sponsoredArticleRoutes");
 
 // Connect MongoDB
 connectDB().then(async () => {
@@ -47,6 +48,7 @@ connectDB().then(async () => {
   await seedShorts();
   await seedPhotoStories();
   await seedHomepageConfig();
+  await ensurePackages();
   startEmailScheduler();
   
   // YouTube Sync initialization
@@ -116,8 +118,10 @@ const seedAdSettings = async () => {
 
 const seedSubscriptionPlans = async () => {
   try {
-    // Drop all subscription plans to force reseeding of the updated clean benefits (no magazines/newspapers)
-    await SubscriptionPlan.deleteMany({});
+    const planCount = await SubscriptionPlan.countDocuments();
+    if (planCount > 0) {
+      return;
+    }
     
     const defaultPlans = [
       {
@@ -704,6 +708,8 @@ app.use("/api/anmigam", anmigamRoutes);
 app.use("/api/homepage-config", homepageConfigRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/email-schedule", emailScheduleRoutes);
+const sponsoredArticleRoutes = require("./routes/sponsoredArticleRoutes");
+app.use("/api/sponsored", sponsoredArticleRoutes);
 
 // Auth Routes
 app.use("/api", authRoutes);

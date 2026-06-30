@@ -19,6 +19,10 @@ const adSettingsSchema = new mongoose.Schema(
       type: Number,
       default: 10
     },
+    tariffCardPdf: {
+      type: String,
+      default: ""
+    },
     // Page Details & Sales Contact Access Control
     salesEmail: {
       type: String,
@@ -72,6 +76,36 @@ const adSettingsSchema = new mongoose.Schema(
         "திட்டமிடப்பட்ட வெளியீட்டிற்கு குறைந்தபட்சம் 48 மணிநேரத்திற்கு முன்பே விளம்பர படங்கள் சமர்ப்பிக்கப்பட வேண்டும்.",
         "ஸ்பான்சர் செய்யப்பட்ட கட்டுரைகள் Sponsored, Partner Content அல்லது Advertisement எனத் தெளிவாகக் குறிப்பிடப்படும்.",
         "சட்டம், நெறிமுறைகளுக்கு இணங்காத விளம்பரங்களை நிராகரிக்கும் உரிமை நியூஸ் குருவுக்கு உண்டு."
+      ]
+    },
+    creativeSpecsEn: {
+      type: [
+        {
+          item: String,
+          requirement: String
+        }
+      ],
+      default: [
+        { item: "Image Format", requirement: "JPG, PNG, WebP" },
+        { item: "HTML Banner", requirement: "HTML5" },
+        { item: "Video Format", requirement: "MP4" },
+        { item: "Max Image Size", requirement: "500 KB" },
+        { item: "Max Video Size", requirement: "100 MB" }
+      ]
+    },
+    creativeSpecsTa: {
+      type: [
+        {
+          item: String,
+          requirement: String
+        }
+      ],
+      default: [
+        { item: "பட வடிவம் (Image Format)", requirement: "JPG, PNG, WebP" },
+        { item: "HTML பேனர் (HTML Banner)", requirement: "HTML5" },
+        { item: "வீடியோ வடிவம் (Video Format)", requirement: "MP4" },
+        { item: "அதிகபட்ச பட அளவு (Max Image Size)", requirement: "500 KB" },
+        { item: "அதிகபட்ச வீடியோ அளவு (Max Video Size)", requirement: "100 MB" }
       ]
     }
   },

@@ -194,6 +194,11 @@ function Sidebar({ isOpen }) {
           Ad Slot Pricing
         </NavLink>
 
+        <NavLink className="sidebar-link" to="/admin/sponsored-articles">
+          <span className="link-icon"><FiFileText /></span>
+          Sponsored Articles
+        </NavLink>
+
         <div className="sidebar-section">SYSTEM</div>
 
         <NavLink className="sidebar-link" to="/admin/users">

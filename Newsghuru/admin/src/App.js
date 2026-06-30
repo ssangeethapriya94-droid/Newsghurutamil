@@ -56,6 +56,7 @@ import AdDashboard from "./pages/AdDashboard";
 import AllAds from "./pages/AllAds";
 import AddAd from "./pages/AddAd";
 import AdPricingSettings from "./pages/AdPricingSettings";
+import SponsoredManagement from "./pages/SponsoredManagement";
 
 const isLoggedIn = () => {
   return localStorage.getItem("token") && localStorage.getItem("role");
@@ -333,6 +334,9 @@ function App() {
         <Route path="/admin/ads/add" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AddAd /></Layout></ProtectedRoute>} />
         <Route path="/admin/ads/edit/:id" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><AddAd /></Layout></ProtectedRoute>} />
         <Route path="/admin/ads/pricing" element={<ProtectedRoute requiredRole="admin"><Layout><AdPricingSettings /></Layout></ProtectedRoute>} />
+        <Route path="/admin/sponsored-articles" element={<ProtectedRoute requiredRole={["admin", "editor", "reporter"]}><Layout><SponsoredManagement /></Layout></ProtectedRoute>} />
+        <Route path="/editor/sponsored-articles" element={<ProtectedRoute requiredRole={["admin", "editor"]}><Layout><SponsoredManagement /></Layout></ProtectedRoute>} />
+        <Route path="/reporter/sponsored-articles" element={<ProtectedRoute requiredRole={["admin", "editor", "reporter"]}><Layout><SponsoredManagement /></Layout></ProtectedRoute>} />
 
         {/* REPORTER ROUTES */}
         <Route

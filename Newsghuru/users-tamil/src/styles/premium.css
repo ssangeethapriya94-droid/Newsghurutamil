@@ -138,6 +138,23 @@
   }
 }
 
+.header-ad-zone-mobile {
+  display: none;
+}
+
+@media (max-width: 992px) {
+  .header-ad-zone-mobile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    background: var(--bg-secondary, #ffffff);
+    border-bottom: 1.5px solid var(--border-color, #e2e8f0);
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
 .brand-section {
   display: flex;
   align-items: center;
@@ -1375,7 +1392,7 @@
   justify-content: center;
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   font-family: var(--font-sans);
   font-weight: 500;
   cursor: pointer;

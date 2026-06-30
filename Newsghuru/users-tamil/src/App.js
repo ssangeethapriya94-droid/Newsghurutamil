@@ -53,6 +53,9 @@ import GenericCategory from "./pages/GenericCategory";
 import SubscribePlans from "./pages/SubscribePlans";
 import Campaigns from "./pages/Campaigns";
 import CreateCampaign from "./pages/CreateCampaign";
+import SponsoredArticlesLanding from "./pages/SponsoredArticlesLanding";
+import SponsoredRequestForm from "./pages/SponsoredRequestForm";
+import SponsoredArticleDetail from "./pages/SponsoredArticleDetail";
 
 // Anmigam pages
 import RasiPalanPage from "./pages/RasiPalanPage";
@@ -561,6 +564,33 @@ function App() {
           element={
             <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
               <CreateCampaign openLoginPopup={openLoginPopup} />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/sponsored-articles"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
+              <SponsoredArticlesLanding />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/sponsored-request"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
+              <SponsoredRequestForm />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/sponsored/:id"
+          element={
+            <Layout {...{ sidebar, setSidebar, darkMode, setDarkMode, authPopupVisible, setAuthPopupVisible, subscribeFlow, openSubscribePopup, openLoginPopup, onLoginSuccess: handleLoginSuccess, onLogout: handleLogout, currentUser, visitorCount }}>
+              <SponsoredArticleDetail />
             </Layout>
           }
         />

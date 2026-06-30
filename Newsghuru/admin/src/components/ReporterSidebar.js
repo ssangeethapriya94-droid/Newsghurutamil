@@ -55,6 +55,11 @@ function ReporterSidebar({ isOpen }) {
           Categories
         </NavLink>
         
+        <NavLink className="sidebar-link" to="/reporter/sponsored-articles">
+          <span className="link-icon"><FiFileText /></span>
+          🌟 Sponsored Assignments
+        </NavLink>
+
         <div className="sidebar-section">STATUS</div>
         
         <NavLink className="sidebar-link" to="/reporter/submitted">

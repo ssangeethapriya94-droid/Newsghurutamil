@@ -57,6 +57,7 @@ const Footer = ({ visitorCount }) => {
             <li><Link to="/latest-news"><FaChevronRight className="chevron-link-icon" /> தற்போதைய செய்தி</Link></li>
             <li><Link to="/about-us"><FaChevronRight className="chevron-link-icon" /> எங்களைப் பற்றி (About Us)</Link></li>
             <li><Link to="/advertise-with-us"><FaChevronRight className="chevron-link-icon" /> விளம்பரம் செய்ய</Link></li>
+            <li><Link to="/sponsored-articles"><FaChevronRight className="chevron-link-icon" /> ஸ்பான்சர் செய்திகள் (Sponsored Articles)</Link></li>
           </ul>
         </div>
 

@@ -71,6 +71,7 @@ const CategoryPage = ({
   const [activeVideo, setActiveVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [sponsoredNews, setSponsoredNews] = useState([]);
 
   const selectedDate = (() => {
     const d = searchParams.get("date");
@@ -95,10 +96,11 @@ const CategoryPage = ({
       try {
         setLoading(true);
         setError("");
-        const [catRes, latestRes, videosRes] = await Promise.all([
+        const [catRes, latestRes, videosRes, sponsoredRes] = await Promise.all([
           API.get(`/api/news/category/${resolvedSlug}`),
           API.get("/api/news").catch(() => ({ data: [] })),
-          API.get(`/api/videos?category=${resolvedSlug}`).catch(() => ({ data: [] }))
+          API.get(`/api/videos?category=${resolvedSlug}`).catch(() => ({ data: [] })),
+          API.get("/api/sponsored/published").catch(() => ({ data: { articles: [] } }))
         ]);
         setNews(catRes.data || []);
         setLatestNews((latestRes.data || []).slice(0, 8));
@@ -107,6 +109,12 @@ const CategoryPage = ({
         if (fetchedVideos.length > 0) {
           setActiveVideo(fetchedVideos[0]);
         }
+
+        // Filter sponsored articles by category target
+        const catSponsored = (sponsoredRes.data?.articles || []).filter(
+          a => a.placement === "category_sponsored" && a.category?.toLowerCase() === resolvedSlug?.toLowerCase()
+        );
+        setSponsoredNews(catSponsored);
       } catch (err) {
         console.error("Category page fetch error:", err);
         setError("செய்திகளை ஏற்றுவதில் தோல்வி. மீண்டும் முயலவும்.");
@@ -255,6 +263,36 @@ const CategoryPage = ({
                     })}
                   </div>
 
+                </div>
+              </div>
+            )}
+
+            {/* SPONSORED CATEGORY FEATURES AT THE VERY TOP */}
+            {sponsoredNews && sponsoredNews.length > 0 && (
+              <div className="cat-sponsored-row-section" style={{ marginBottom: "30px", padding: "16px", borderRadius: "14px", background: "rgba(234,88,12,0.04)", border: "1.5px solid rgba(234,88,12,0.18)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                  <h3 style={{ fontSize: "1.05rem", fontWeight: "800", color: "var(--accent-orange, #ea580c)", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    🌟 சிறப்பு விளம்பரதாரர் செய்திகள்
+                  </h3>
+                  <span style={{ background: "var(--accent-orange, #ea580c)", color: "#fff", padding: "3px 10px", borderRadius: "20px", fontSize: "0.68rem", fontWeight: "800", textTransform: "uppercase" }}>விளம்பரம்</span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+                  {sponsoredNews.map((art) => (
+                    <div
+                      key={art._id}
+                      onClick={() => navigate(`/sponsored/${art._id}`)}
+                      style={{ cursor: "pointer", display: "flex", gap: "12px", background: "var(--bg-secondary)", borderRadius: "10px", padding: "12px", border: "1px solid var(--border-color)", boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}
+                    >
+                      {art.image && (
+                        <img src={art.image} alt={art.title} style={{ width: "90px", height: "80px", borderRadius: "8px", objectFit: "cover" }} />
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "0.72rem", fontWeight: "800", color: "var(--accent-orange, #ea580c)", textTransform: "uppercase", marginBottom: "4px" }}>{art.companyName}</div>
+                        <h4 style={{ fontSize: "0.88rem", fontWeight: "700", margin: "0 0 6px 0", lineHeight: "1.35", color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{art.title}</h4>
+                        <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontWeight: "600" }}>{art.sponsoredLabel || "Partner Link"}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

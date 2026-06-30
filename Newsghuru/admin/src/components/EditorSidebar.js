@@ -120,6 +120,11 @@ function EditorSidebar({ isOpen }) {
           Add Advertisement
         </NavLink>
 
+        <NavLink className="sidebar-link" to="/editor/sponsored-articles">
+          <span className="link-icon"><FiCheckSquare /></span>
+          🌟 Sponsored Articles
+        </NavLink>
+
         <div className="sidebar-section">STATUS</div>
 
         <NavLink className="sidebar-link" to="/editor/approved">

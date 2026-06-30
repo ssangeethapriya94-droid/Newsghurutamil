@@ -27,10 +27,32 @@ const AdvertiseWithUs = () => {
   const [descriptionContent, setDescriptionContent] = useState("");
   const [descLoading, setDescLoading] = useState(true);
 
-  const [salesInfo, setSalesInfo] = useState({
+  const [adSettings, setAdSettings] = useState({
     salesEmail: "ads@newsghuru.in",
     salesPhone: "+91 88259 48859",
-    salesWebsite: "newsghuru.in"
+    salesWebsite: "newsghuru.in",
+    benefitsTa: [
+      "முன்னுரிமை வெளியீடு (Priority publishing)",
+      "பிரத்யேக கணக்கு மேலாளர் (Dedicated account manager)",
+      "முகப்பு பக்கத்தில் சிறந்த பார்வைத் திறன் (Premium homepage visibility)",
+      "மாதாந்திர பகுப்பாய்வு அறிக்கைகள் (Monthly analytics reports)",
+      "தனிப்பயனாக்கப்பட்ட விளம்பரங்கள் (Customized campaigns)",
+      "இணை பிராண்டிங் வாய்ப்புகள் (Co-branded opportunities)"
+    ],
+    paymentTermsTa: [
+      "விதிகளின்படி ஜிஎஸ்டி (GST) தனியாக வசூலிக்கப்படும்.",
+      "விளம்பரம் நேரலையாவதற்கு முன் 100% முன்பணம் செலுத்தப்பட வேண்டும்.",
+      "திட்டமிடப்பட்ட வெளியீட்டிற்கு குறைந்தபட்சம் 48 மணிநேரத்திற்கு முன்பே விளம்பர படங்கள் சமர்ப்பிக்கப்பட வேண்டும்.",
+      "Sponsored content will be clearly labeled as Sponsored, Partner Content, or Advertisement.",
+      "News Ghuru reserves the right to reject advertisements that do not comply with legal or ethical guidelines."
+    ],
+    creativeSpecsTa: [
+      { item: "பட வடிவங்கள் (Image Format)", requirement: "JPG, PNG, WebP" },
+      { item: "HTML பேனர்", requirement: "HTML5" },
+      { item: "வீடியோ வடிவம் (Video Format)", requirement: "MP4" },
+      { item: "அதிகபட்ச பட அளவு (Max Image Size)", requirement: "500 KB" },
+      { item: "அதிகபட்ச வீடியோ அளவு (Max Video Size)", requirement: "100 MB" }
+    ]
   });
 
   useEffect(() => {
@@ -52,11 +74,15 @@ const AdvertiseWithUs = () => {
       try {
         const res = await API.get("/api/ads/settings/public");
         if (res.data && res.data.success && res.data.settings) {
-          setSalesInfo({
-            salesEmail: res.data.settings.salesEmail || "ads@newsghuru.in",
-            salesPhone: res.data.settings.salesPhone || "+91 88259 48859",
-            salesWebsite: res.data.settings.salesWebsite || "newsghuru.in"
-          });
+          const s = res.data.settings;
+          setAdSettings(prev => ({
+            salesEmail: s.salesEmail || prev.salesEmail,
+            salesPhone: s.salesPhone || prev.salesPhone,
+            salesWebsite: s.salesWebsite || prev.salesWebsite,
+            benefitsTa: s.benefitsTa && s.benefitsTa.length > 0 ? s.benefitsTa : prev.benefitsTa,
+            paymentTermsTa: s.paymentTermsTa && s.paymentTermsTa.length > 0 ? s.paymentTermsTa : prev.paymentTermsTa,
+            creativeSpecsTa: s.creativeSpecsTa && s.creativeSpecsTa.length > 0 ? s.creativeSpecsTa : prev.creativeSpecsTa
+          }));
         }
       } catch (err) {
         console.error("Error fetching public ad settings:", err);
@@ -320,14 +346,7 @@ const AdvertiseWithUs = () => {
               <FiStar /> விளம்பர பலன்கள் (Benefits)
             </h3>
             <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
-              {[
-                "முன்னுரிமை வெளியீடு (Priority publishing)",
-                "பிரத்யேக கணக்கு மேலாளர் (Dedicated account manager)",
-                "முகப்பு பக்கத்தில் சிறந்த பார்வைத் திறன் (Premium homepage visibility)",
-                "மாதாந்திர பகுப்பாய்வு அறிக்கைகள் (Monthly analytics reports)",
-                "தனிப்பயனாக்கப்பட்ட விளம்பரங்கள் (Customized campaigns)",
-                "இணை பிராண்டிங் வாய்ப்புகள் (Co-branded opportunities)"
-              ].map((benefit, idx) => (
+              {adSettings.benefitsTa.map((benefit, idx) => (
                 <li key={idx} style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "0.92rem", fontWeight: "700", color: "var(--text-primary, #1e293b)", background: "rgba(245, 158, 11, 0.04)", padding: "8px 12px", borderRadius: "10px", border: "1px solid rgba(245, 158, 11, 0.12)" }}>
                   <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "var(--accent-orange, #ea580c)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: "900", flexShrink: 0 }}>
                     ✓
@@ -351,26 +370,12 @@ const AdvertiseWithUs = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr style={{ borderBottom: "1px solid var(--border-color, #e2e8f0)" }}>
-                  <td style={{ padding: "8px 0", fontWeight: "600" }}>பட வடிவங்கள் (Image Format)</td>
-                  <td style={{ padding: "8px 0" }}>JPG, PNG, WebP</td>
-                </tr>
-                <tr style={{ borderBottom: "1px solid var(--border-color, #e2e8f0)" }}>
-                  <td style={{ padding: "8px 0", fontWeight: "600" }}>HTML பேனர்</td>
-                  <td style={{ padding: "8px 0" }}>HTML5</td>
-                </tr>
-                <tr style={{ borderBottom: "1px solid var(--border-color, #e2e8f0)" }}>
-                  <td style={{ padding: "8px 0", fontWeight: "600" }}>வீடியோ வடிவம் (Video Format)</td>
-                  <td style={{ padding: "8px 0" }}>MP4</td>
-                </tr>
-                <tr style={{ borderBottom: "1px solid var(--border-color, #e2e8f0)" }}>
-                  <td style={{ padding: "8px 0", fontWeight: "600" }}>அதிகபட்ச பட அளவு (Max Image Size)</td>
-                  <td style={{ padding: "8px 0", fontWeight: "800", color: "var(--accent-orange, #ea580c)" }}>500 KB</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: "8px 0", fontWeight: "600" }}>அதிகபட்ச வீடியோ அளவு (Max Video Size)</td>
-                  <td style={{ padding: "8px 0", fontWeight: "800", color: "var(--accent-orange, #ea580c)" }}>100 MB</td>
-                </tr>
+                {adSettings.creativeSpecsTa.map((spec, idx) => (
+                  <tr key={idx} style={{ borderBottom: idx === adSettings.creativeSpecsTa.length - 1 ? "none" : "1px solid var(--border-color, #e2e8f0)" }}>
+                    <td style={{ padding: "8px 0", fontWeight: "600" }}>{spec.item}</td>
+                    <td style={{ padding: "8px 0", fontWeight: spec.item.toLowerCase().includes("size") || spec.item.includes("அளவு") ? "800" : "400", color: spec.item.toLowerCase().includes("size") || spec.item.includes("அளவு") ? "var(--accent-orange, #ea580c)" : "inherit" }}>{spec.requirement}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -381,13 +386,7 @@ const AdvertiseWithUs = () => {
               <FiDollarSign /> கட்டண விதிமுறைகள் (Payment Terms)
             </h3>
             <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-              {[
-                "விதிகளின்படி ஜிஎஸ்டி (GST) தனியாக வசூலிக்கப்படும்.",
-                "விளம்பரம் நேரலையாவதற்கு முன் 100% முன்பணம் செலுத்தப்பட வேண்டும்.",
-                "திட்டமிடப்பட்ட வெளியீட்டிற்கு குறைந்தபட்சம் 48 மணிநேரத்திற்கு முன்பே விளம்பர படங்கள் சமர்ப்பிக்கப்பட வேண்டும்.",
-                "ஸ்பான்சர் செய்யப்பட்ட கட்டுரைகள் Sponsored, Partner Content அல்லது Advertisement எனத் தெளிவாகக் குறிப்பிடப்படும்.",
-                "சட்டம், நெறிமுறைகளுக்கு இணங்காத விளம்பரங்களை நிராகரிக்கும் உரிமை நியூஸ் குருவுக்கு உண்டு."
-              ].map((term, idx) => (
+              {adSettings.paymentTermsTa.map((term, idx) => (
                 <li key={idx} style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "0.88rem", lineHeight: "1.6", color: "var(--text-primary, #334155)" }}>
                   <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--accent-orange, #ea580c)", marginTop: "7px", flexShrink: 0 }} />
                   <div>{term}</div>
@@ -407,15 +406,15 @@ const AdvertiseWithUs = () => {
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.92rem", color: "var(--text-primary, #334155)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <FiMail style={{ color: "var(--accent-orange)" }} /> 
-                <span>மின்னஞ்சல்: <a href={`mailto:${salesInfo.salesEmail}`} style={{ color: "var(--accent-orange)", textDecoration: "none", fontWeight: "700" }}>{salesInfo.salesEmail}</a></span>
+                <span>மின்னஞ்சல்: <a href={`mailto:${adSettings.salesEmail}`} style={{ color: "var(--accent-orange)", textDecoration: "none", fontWeight: "700" }}>{adSettings.salesEmail}</a></span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <FiPhone style={{ color: "var(--accent-orange)" }} /> 
-                <span>தொலைபேசி: <a href={`tel:${salesInfo.salesPhone.replace(/\s+/g, '')}`} style={{ color: "var(--accent-orange)", textDecoration: "none", fontWeight: "700" }}>{salesInfo.salesPhone}</a></span>
+                <span>தொலைபேசி: <a href={`tel:${adSettings.salesPhone.replace(/\s+/g, '')}`} style={{ color: "var(--accent-orange)", textDecoration: "none", fontWeight: "700" }}>{adSettings.salesPhone}</a></span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <FiGlobe style={{ color: "var(--accent-orange)" }} /> 
-                <span>இணையதளம்: <a href={salesInfo.salesWebsite.startsWith("http") ? salesInfo.salesWebsite : `https://${salesInfo.salesWebsite}`} target="_blank" rel="noreferrer" style={{ color: "var(--accent-orange)", textDecoration: "none", fontWeight: "700" }}>{salesInfo.salesWebsite}</a></span>
+                <span>இணையதளம்: <a href={adSettings.salesWebsite.startsWith("http") ? adSettings.salesWebsite : `https://${adSettings.salesWebsite}`} target="_blank" rel="noreferrer" style={{ color: "var(--accent-orange)", textDecoration: "none", fontWeight: "700" }}>{adSettings.salesWebsite}</a></span>
               </div>
             </div>
           </div>

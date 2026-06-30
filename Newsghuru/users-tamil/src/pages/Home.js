@@ -148,19 +148,23 @@ const Home = () => {
   const getCategoryLabel = (category) =>
     categoryTamilMap[category?.toLowerCase()] || category;
 
+  const [sponsoredNews, setSponsoredNews] = useState([]);
+
   const fetchAll = async () => {
     try {
       // Parallel data fetching
-      const [newsRes, configRes, shortsRes, photosRes, videosRes] = await Promise.all([
+      const [newsRes, configRes, shortsRes, photosRes, videosRes, sponsoredRes] = await Promise.all([
         API.get("/api/news/published"),
         API.get("/api/homepage-config"),
         API.get("/api/shorts"),
         API.get("/api/photo-stories"),
-        API.get("/api/videos").catch(() => ({ data: [] }))
+        API.get("/api/videos").catch(() => ({ data: [] })),
+        API.get("/api/sponsored/published?language=ta").catch(() => ({ data: { articles: [] } }))
       ]);
 
       const allPublished = newsRes.data || [];
       setAllNews(allPublished);
+      setSponsoredNews(sponsoredRes.data?.articles || []);
 
       const filterCat = (cat) => allPublished.filter(n => n.category && n.category.trim().toLowerCase() === cat);
 
@@ -1412,6 +1416,161 @@ const Home = () => {
     );
   };
 
+  const renderSponsoredSection = (titleTa) => {
+    const list = (sponsoredNews || []).filter(a => a.placement === "homepage_sponsored");
+    if (!list || list.length === 0) return null;
+
+    const isTamil = true;
+
+    return (
+      <div style={{
+        marginBottom: "40px",
+        background: "linear-gradient(135deg, rgba(234,88,12,0.04) 0%, rgba(245,158,11,0.01) 100%)",
+        border: "1px solid rgba(234,88,12,0.15)",
+        borderRadius: "16px",
+        padding: "24px",
+        boxShadow: "0 10px 30px -15px rgba(234,88,12,0.08)"
+      }}>
+        <style dangerouslySetInnerHTML={{__html: `
+          .sponsored-hover-card:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 20px 40px -15px rgba(234, 88, 12, 0.18) !important;
+            border-color: rgba(234, 88, 12, 0.3) !important;
+          }
+          .sponsored-hover-card:hover .sponsored-zoom-img {
+            transform: scale(1.05) !important;
+          }
+        `}} />
+
+        <div className="section-headline-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "2px solid var(--border-color)", paddingBottom: "10px" }}>
+          <h2 className="section-title-premium" style={{ fontSize: "1.3rem", fontWeight: "800", color: "var(--accent-orange)", margin: 0 }}>
+            ஸ்பான்சர் செய்திகள்
+          </h2>
+          <span style={{ background: "rgba(234,88,12,0.1)", color: "var(--accent-orange)", padding: "4px 12px", borderRadius: "20px", fontSize: "0.72rem", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            விளம்பரம்
+          </span>
+        </div>
+
+        {list.length === 1 ? (
+          // Single Item: Premium Horizontal Layout
+          (() => {
+            const art = list[0];
+            return (
+              <div
+                onClick={() => navigate(`/sponsored/${art._id}`)}
+                className="sponsored-hover-card"
+                style={{
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: isLargeScreen ? "row" : "column",
+                  gap: "24px",
+                  background: "var(--bg-secondary)",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  border: "1px solid var(--border-color)",
+                  transition: "all 0.3s ease",
+                  boxShadow: "0 4px 15px rgba(0,0,0,0.03)"
+                }}
+              >
+                <div style={{ flex: isLargeScreen ? "1.2" : "1", position: "relative", height: isLargeScreen ? "280px" : "200px", overflow: "hidden" }}>
+                  {art.image ? (
+                    <img src={art.image} alt={art.titleTa || art.title} className="sponsored-zoom-img" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }} />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: "3rem" }}>✨</span>
+                    </div>
+                  )}
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(to right, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.05) 100%)" }} />
+                  {art.companyLogo && (
+                    <img
+                      src={art.companyLogo}
+                      alt={art.companyName}
+                      style={{ position: "absolute", top: "16px", left: "16px", width: "45px", height: "45px", borderRadius: "8px", objectFit: "contain", background: "rgba(255,255,255,0.95)", padding: "4px", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}
+                    />
+                  )}
+                </div>
+                <div style={{ flex: "1.8", padding: "24px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                  <div style={{ fontSize: "0.8rem", fontWeight: "800", color: "var(--accent-orange)", textTransform: "uppercase", marginBottom: "8px", letterSpacing: "0.6px" }}>
+                    {art.companyName}
+                  </div>
+                  <h3 style={{ fontSize: "1.4rem", fontWeight: "900", margin: "0 0 12px 0", lineHeight: "1.35", color: "var(--text-primary)" }}>
+                    {art.titleTa || art.title}
+                  </h3>
+                  <p style={{ fontSize: "0.92rem", color: "var(--text-muted)", margin: "0 0 20px 0", lineHeight: "1.6", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {art.shortDescriptionTa || art.shortDescription || art.description}
+                  </p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border-color)", paddingTop: "14px", marginTop: "auto" }}>
+                    <span style={{ background: "var(--bg-light)", padding: "4px 10px", borderRadius: "6px", fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "700" }}>{art.category || "General"}</span>
+                    <span style={{ fontSize: "0.85rem", color: "var(--accent-orange)", fontWeight: "800", display: "flex", alignItems: "center", gap: "4px" }}>
+                      மேலும் வாசிக்க &rarr;
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()
+        ) : (
+          // Multiple Items: Grid Layout
+          <div style={{ display: "grid", gridTemplateColumns: isLargeScreen ? (list.length === 2 ? "1fr 1fr" : "repeat(3, 1fr)") : "1fr", gap: "20px" }}>
+            {list.slice(0, 6).map(art => (
+              <div
+                key={art._id}
+                onClick={() => navigate(`/sponsored/${art._id}`)}
+                className="sponsored-hover-card"
+                style={{
+                  cursor: "pointer",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  border: "1px solid var(--border-color)",
+                  background: "var(--bg-secondary)",
+                  transition: "all 0.3s ease",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+                  display: "flex",
+                  flexDirection: "column"
+                }}
+              >
+                <div style={{ position: "relative", height: "190px", overflow: "hidden" }}>
+                  {art.image ? (
+                    <img src={art.image} alt={art.titleTa || art.title} className="sponsored-zoom-img" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }} />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: "2rem" }}>✨</span>
+                    </div>
+                  )}
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.05) 100%)" }} />
+                  {art.companyLogo && (
+                    <img
+                      src={art.companyLogo}
+                      alt={art.companyName}
+                      style={{ position: "absolute", bottom: "12px", left: "12px", width: "36px", height: "36px", borderRadius: "6px", objectFit: "contain", background: "rgba(255,255,255,0.95)", padding: "3px", border: "1px solid rgba(255,255,255,0.4)" }}
+                    />
+                  )}
+                </div>
+                <div style={{ padding: "16px", display: "flex", flexDirection: "column", flex: 1 }}>
+                  <div style={{ fontSize: "0.75rem", fontWeight: "800", color: "var(--accent-orange)", textTransform: "uppercase", marginBottom: "6px", letterSpacing: "0.5px" }}>
+                    {art.companyName}
+                  </div>
+                  <h4 style={{ fontSize: "1rem", fontWeight: "800", margin: "0 0 8px 0", lineHeight: "1.4", color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {art.titleTa || art.title}
+                  </h4>
+                  <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: "0 0 16px 0", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: "1.5" }}>
+                    {art.shortDescriptionTa || art.shortDescription || art.description}
+                  </p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto", borderTop: "1px solid var(--border-color)", paddingTop: "12px" }}>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: "600" }}>{art.category || "General"}</span>
+                    <span style={{ fontSize: "0.78rem", color: "var(--accent-orange)", fontWeight: "800", display: "flex", alignItems: "center", gap: "2px" }}>
+                      மேலும் வாசிக்க &rarr;
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderSectionById = (id, titleTa) => {
     switch (id) {
       case "breaking":
@@ -1436,6 +1595,8 @@ const Home = () => {
         return renderPhotosSection(titleTa);
       case "editors":
         return renderEditorsPicksSection(titleTa);
+      case "sponsored":
+        return renderSponsoredSection(titleTa);
       default:
         return null;
     }
@@ -1516,11 +1677,98 @@ const Home = () => {
       </div>
     );
   };
+  const renderFeaturedSponsoredBanner = () => {
+    const featuredList = sponsoredNews.filter(a => a.placement === "featured_banner");
+    if (featuredList.length === 0) return null;
+
+    return (
+      <div style={{ marginBottom: "25px" }}>
+        {featuredList.map(art => (
+          <div
+            key={art._id}
+            onClick={() => navigate(`/sponsored/${art._id}`)}
+            style={{
+              cursor: "pointer",
+              borderRadius: "16px",
+              overflow: "hidden",
+              position: "relative",
+              background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+              color: "#ffffff",
+              padding: isLargeScreen ? "40px" : "25px",
+              boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+              border: "1.5px solid var(--accent-orange, #ea580c)",
+              display: "flex",
+              flexDirection: isLargeScreen ? "row" : "column",
+              gap: "25px",
+              alignItems: "center"
+            }}
+          >
+            {/* Left/Top Media */}
+            <div style={{ width: isLargeScreen ? "40%" : "100%", height: "220px", borderRadius: "12px", overflow: "hidden", position: "relative", flexShrink: 0 }}>
+              {art.image ? (
+                <img src={art.image} alt={art.titleTa || art.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <div style={{ width: "100%", height: "100%", background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: "3rem" }}>🌟</span>
+                </div>
+              )}
+              <span style={{ position: "absolute", top: "12px", left: "12px", background: "rgba(234,88,12,0.95)", color: "#fff", padding: "4px 10px", borderRadius: "6px", fontSize: "0.75rem", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                {art.sponsoredLabel || "சிறப்பு விளம்பரதாரர்"}
+              </span>
+            </div>
+
+            {/* Right/Bottom Content */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {art.companyLogo && (
+                  <img
+                    src={art.companyLogo}
+                    alt={art.companyName}
+                    style={{ width: "32px", height: "32px", borderRadius: "6px", objectFit: "contain", background: "#fff", padding: "2px" }}
+                  />
+                )}
+                <span style={{ fontSize: "0.85rem", fontWeight: "800", color: "var(--accent-orange, #ea580c)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  {art.companyName}
+                </span>
+              </div>
+              <h2 style={{ fontSize: isLargeScreen ? "1.8rem" : "1.3rem", fontWeight: "900", margin: 0, lineHeight: "1.3", fontFamily: "var(--font-serif)" }}>
+                {art.titleTa || art.title}
+              </h2>
+              <p style={{ fontSize: "0.95rem", opacity: 0.85, margin: 0, lineHeight: "1.6", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                {stripHtml(art.description || "").slice(0, 180)}...
+              </p>
+              <div style={{ marginTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.75rem", opacity: 0.6, fontWeight: "600" }}>வெளியிடப்பட்டது: {new Date(art.publishedAt || art.createdAt).toLocaleDateString()}</span>
+                <button
+                  style={{
+                    background: "var(--accent-orange, #ea580c)",
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 20px",
+                    borderRadius: "20px",
+                    fontSize: "0.85rem",
+                    fontWeight: "800",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 10px rgba(234,88,12,0.3)"
+                  }}
+                >
+                  சிறப்பு செய்தியை வாசிக்க &rarr;
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <section className="home-user-page" style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 15px 30px 15px", position: "relative" }}>
       <PopupAd />
       <AdZone position="TOP_BANNER" />
+
+      {/* RENDER FEATURED SPONSORED BANNER ON TOP */}
+      {!searchQuery && renderFeaturedSponsoredBanner()}
 
       {/* RENDER TOP SECTIONS: Breaking Ticker & Hero Above-the-fold */}
       {!searchQuery && activeSections.map(sec => {
@@ -1539,12 +1787,17 @@ const Home = () => {
           {searchQuery ? (
             renderSearchResults()
           ) : (
-            activeSections.map(sec => {
-              if (sec.id !== "breaking" && sec.id !== "hero") {
-                return <div key={sec.id}>{renderSectionById(sec.id, sec.titleTa)}</div>;
-              }
-              return null;
-            })
+            <>
+              {/* RENDER HOMEPAGE FEATURED SPONSORED CONTENT AT THE VERY TOP */}
+              {renderSponsoredSection("பங்குதாரர் செய்திகள்")}
+
+              {activeSections.map(sec => {
+                if (sec.id !== "breaking" && sec.id !== "hero" && sec.id !== "sponsored") {
+                  return <div key={sec.id}>{renderSectionById(sec.id, sec.titleTa)}</div>;
+                }
+                return null;
+              })}
+            </>
           )}
         </div>
 
@@ -1668,21 +1921,17 @@ const Home = () => {
               {activeShort.videoUrl.includes("youtube.com") || activeShort.videoUrl.includes("youtu.be") || activeShort.videoUrl.includes("embed") ? (
                 (() => {
                   const shortVidId = activeShort.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/)?.[2] || "";
-                  return shortVidId ? (
-                    <YouTubeFacade
-                      videoId={shortVidId}
-                      title={activeShort.title}
-                      autoplay={true}
-                      style={{ borderRadius: "0", height: "100%", paddingBottom: "0", flex: 1, position: "relative" }}
-                    />
-                  ) : (
+                  const embedUrl = shortVidId 
+                    ? `https://www.youtube-nocookie.com/embed/${shortVidId}?autoplay=1&mute=0&rel=0&modestbranding=1`
+                    : (activeShort.videoUrl.includes("?") ? `${activeShort.videoUrl}&autoplay=1&mute=0` : `${activeShort.videoUrl}?autoplay=1&mute=0`);
+                  return (
                     <iframe
-                      src={`${activeShort.videoUrl}?autoplay=1&mute=0`}
+                      src={embedUrl}
                       title={activeShort.title}
                       frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
-                      style={{ width: "100%", height: "100%", flex: 1 }}
+                      style={{ width: "100%", height: "100%", flex: 1, border: "none" }}
                     ></iframe>
                   );
                 })()

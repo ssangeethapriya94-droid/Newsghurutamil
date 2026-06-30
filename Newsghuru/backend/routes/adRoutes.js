@@ -360,13 +360,31 @@ router.get("/settings", verifyToken, authorizeRoles("admin"), async (req, res) =
   }
 });
 
+// POST /api/ads/settings/tariff-upload - Upload tariff card document (PDF/Image)
+router.post("/settings/tariff-upload", verifyToken, authorizeRoles("admin"), upload.single("tariff"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+    res.status(201).json({
+      success: true,
+      message: "Tariff card uploaded successfully",
+      url: `/uploads/${req.file.filename}`
+    });
+  } catch (error) {
+    console.error("Upload tariff card error:", error);
+    res.status(500).json({ success: false, message: "Server error uploading tariff card" });
+  }
+});
+
 // PUT /api/ads/settings - Update settings
 router.put("/settings", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
     const { 
       globalRotationInterval, popupEnabled, popupDelay, popupAutoClose,
       salesEmail, salesPhone, salesWebsite,
-      benefitsEn, benefitsTa, paymentTermsEn, paymentTermsTa
+      benefitsEn, benefitsTa, paymentTermsEn, paymentTermsTa,
+      creativeSpecsEn, creativeSpecsTa, tariffCardPdf
     } = req.body;
     let settings = await AdSettings.findOne();
     if (!settings) {
@@ -385,6 +403,9 @@ router.put("/settings", verifyToken, authorizeRoles("admin"), async (req, res) =
     if (benefitsTa !== undefined) settings.benefitsTa = benefitsTa;
     if (paymentTermsEn !== undefined) settings.paymentTermsEn = paymentTermsEn;
     if (paymentTermsTa !== undefined) settings.paymentTermsTa = paymentTermsTa;
+    if (creativeSpecsEn !== undefined) settings.creativeSpecsEn = creativeSpecsEn;
+    if (creativeSpecsTa !== undefined) settings.creativeSpecsTa = creativeSpecsTa;
+    if (tariffCardPdf !== undefined) settings.tariffCardPdf = tariffCardPdf;
 
     await settings.save();
     res.json({ success: true, message: "Settings updated successfully", settings });
