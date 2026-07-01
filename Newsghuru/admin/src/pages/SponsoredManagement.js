@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import API from "../config/api";
 import {
   FiFileText, FiPlusCircle, FiUsers, FiCheckCircle, FiClock, FiDollarSign,
-  FiAlertCircle, FiTrendingUp, FiInfo
+  FiAlertCircle, FiTrendingUp, FiInfo, FiX
 } from "react-icons/fi";
 import "../styles/ReporterCreateNews.css";
 
@@ -991,8 +991,29 @@ const SponsoredManagement = () => {
       {/* ASSIGN REPORTER MODAL */}
       {assignModal.open && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
-          <div style={{ background: "var(--card-bg, #fff)", padding: "24px", borderRadius: "16px", maxWidth: "500px", width: "100%" }}>
-            <h3 style={{ marginTop: 0 }}>🎯 Assign Reporter & Configure Package</h3>
+          <div style={{ position: "relative", background: "var(--card-bg, #fff)", padding: "24px", borderRadius: "16px", maxWidth: "500px", width: "100%" }}>
+            <button
+              type="button"
+              onClick={() => setAssignModal({ open: false, item: null })}
+              style={{
+                position: "absolute",
+                top: "16px",
+                right: "16px",
+                background: "none",
+                border: "none",
+                fontSize: "22px",
+                cursor: "pointer",
+                color: "var(--text-muted, #64748b)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 0
+              }}
+              title="Close Modal"
+            >
+              <FiX />
+            </button>
+            <h3 style={{ marginTop: 0, paddingRight: "30px" }}>🎯 Assign Reporter & Configure Package</h3>
             <form onSubmit={handleAssignSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
                 <label style={{ fontWeight: "700", display: "block", marginBottom: "4px" }}>Select Reporter *</label>
@@ -1029,8 +1050,29 @@ const SponsoredManagement = () => {
       {/* WORKFLOW MODAL (WRITE / EDIT / APPROVE) */}
       {workModal.open && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
-          <div style={{ background: "var(--card-bg, #fff)", padding: "24px", borderRadius: "16px", maxWidth: "780px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
-            <h3 style={{ marginTop: 0 }}>
+          <div style={{ position: "relative", background: "var(--card-bg, #fff)", padding: "24px", borderRadius: "16px", maxWidth: "780px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
+            <button
+              type="button"
+              onClick={() => setWorkModal({ open: false, item: null, mode: "" })}
+              style={{
+                position: "absolute",
+                top: "16px",
+                right: "16px",
+                background: "none",
+                border: "none",
+                fontSize: "22px",
+                cursor: "pointer",
+                color: "var(--text-muted, #64748b)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 0
+              }}
+              title="Close Modal"
+            >
+              <FiX />
+            </button>
+            <h3 style={{ marginTop: 0, paddingRight: "30px" }}>
               {workModal.mode === "write" ? "✍️ Draft Sponsored Article" : (workModal.mode === "edit" ? "🔍 Editor Review & Verification" : "🌟 Admin Final Publication")}
             </h3>
 

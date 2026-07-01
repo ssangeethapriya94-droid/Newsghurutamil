@@ -38,7 +38,7 @@ const CreateCampaign = ({ openLoginPopup }) => {
     position: "TOP_BANNER",
     startDate: new Date().toISOString().split("T")[0],
     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    language: "both",
+    language: "ta",
     paymentMethod: "Razorpay"
   });
 
@@ -742,17 +742,17 @@ const CreateCampaign = ({ openLoginPopup }) => {
             </div>
 
             {/* CONTACT FOR ADVERTISING */}
-            <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", color: "#fff", padding: "20px", borderRadius: "14px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-              <h4 style={{ fontWeight: "800", fontSize: "1rem", color: "#ea580c", marginTop: 0, marginBottom: "6px" }}>
+            <div style={{ background: "linear-gradient(135deg, #ea580c 0%, #d97706 100%)", color: "#fff", padding: "20px", borderRadius: "14px", display: "flex", flexDirection: "column", justifyContent: "center", boxShadow: "0 4px 15px rgba(234,88,12,0.2)" }}>
+              <h4 style={{ fontWeight: "800", fontSize: "1rem", color: "#fff", marginTop: 0, marginBottom: "6px" }}>
                 📞 தொடர்புகொள்ள (Contact for Advertising)
               </h4>
-              <div style={{ fontWeight: "700", fontSize: "0.95rem", marginBottom: "12px", color: "#f8fafc" }}>
+              <div style={{ fontWeight: "700", fontSize: "0.95rem", marginBottom: "12px", color: "#fff" }}>
                 விளம்பரம் மற்றும் ஊடக விற்பனை பிரிவு — நியூஸ் குரு
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.88rem", color: "#cbd5e1" }}>
-                <div>📧 மின்னஞ்சல்: <a href="mailto:ads@newsghuru.in" style={{ color: "#fdba74", textDecoration: "none", fontWeight: "700" }}>ads@newsghuru.in</a></div>
-                <div>📞 தொலைபேசி: <a href="tel:+918825948859" style={{ color: "#fdba74", textDecoration: "none", fontWeight: "700" }}>+91 88259 48859</a></div>
-                <div>🌐 இணையதளம்: <a href="https://newsghuru.in" target="_blank" rel="noreferrer" style={{ color: "#fdba74", textDecoration: "none", fontWeight: "700" }}>newsghuru.in</a></div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.88rem", color: "#fff" }}>
+                <div>📧 மின்னஞ்சல்: <a href="mailto:ads@newsghuru.in" style={{ color: "#fff", textDecoration: "underline", fontWeight: "700" }}>ads@newsghuru.in</a></div>
+                <div>📞 தொலைபேசி: <a href="tel:+918825948859" style={{ color: "#fff", textDecoration: "underline", fontWeight: "700" }}>+91 88259 48859</a></div>
+                <div>🌐 இணையதளம்: <a href="https://newsghuru.in" target="_blank" rel="noreferrer" style={{ color: "#fff", textDecoration: "underline", fontWeight: "700" }}>newsghuru.in</a></div>
               </div>
             </div>
           </div>

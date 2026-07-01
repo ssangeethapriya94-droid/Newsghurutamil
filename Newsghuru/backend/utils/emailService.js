@@ -112,21 +112,30 @@ const getPublicImageUrl = (imageUrl) => {
     }
   }
 
-  // If after all processing, it's still a localhost or invalid URL, return the fallback
-  if (resolvedUrl.includes("localhost") || resolvedUrl.includes("127.0.0.1") || !/^https?:\/\//i.test(resolvedUrl)) {
-    console.warn(`⚠️ [EMAIL SERVICE] Localhost/invalid image URL detected: "${imageUrl}". Falling back to public placeholder for email client compatibility.`);
+  // If after all processing, it's still a localhost/placeholder or invalid URL, return the fallback
+  if (resolvedUrl.includes("api.newsghuru.com") || resolvedUrl.includes("localhost") || resolvedUrl.includes("127.0.0.1") || !/^https?:\/\//i.test(resolvedUrl)) {
+    console.warn(`⚠️ [EMAIL SERVICE] Localhost/placeholder/invalid image URL detected: "${imageUrl}". Falling back to public placeholder for email client compatibility.`);
     return FALLBACK_NEWS_IMAGE;
   }
 
   return resolvedUrl;
 };
 
-const getLogoUrl = () => {
-  const frontendUrl = process.env.FRONTEND_URL;
+const getLogoUrl = (lang) => {
+  const isEnglish = (lang === "en");
+  const filename = isEnglish ? "NEWS%20GHURU%20LOGO%20English.png" : "NEWS%20GHURU%20LOGO%20PNG.png";
+  const frontendUrl = isEnglish 
+    ? (process.env.FRONTEND_URL || "http://localhost:3001")
+    : (process.env.FRONTEND_URL_TA || "http://localhost:3002");
+
   if (frontendUrl && !frontendUrl.includes("localhost") && !frontendUrl.includes("127.0.0.1")) {
-    return `${frontendUrl.replace(/\/$/, "")}/NEWS%20GHURU%20LOGO%20PNG.png`;
+    return `${frontendUrl.replace(/\/$/, "")}/${filename}`;
   }
-  return "https://raw.githubusercontent.com/ssangeethapriya94-droid/Newsghurutamil/main/Newsghuru/users/public/NEWS%20GHURU%20LOGO%20PNG.png";
+  
+  // GitHub fallback URLs
+  return isEnglish 
+    ? "https://raw.githubusercontent.com/ssangeethapriya94-droid/Newsghurutamil/main/Newsghuru/users-english/public/NEWS%20GHURU%20LOGO%20English.png"
+    : "https://raw.githubusercontent.com/ssangeethapriya94-droid/Newsghurutamil/main/Newsghuru/users-tamil/public/NEWS%20GHURU%20LOGO%20PNG.png";
 };
 
 const sendNewsPublishEmail = async (targetLanguage) => {
@@ -136,17 +145,18 @@ const sendNewsPublishEmail = async (targetLanguage) => {
 
     const lang = targetLanguage || "ta";
 
-    // 1. Fetch latest 5 published breaking news for this language.
+    // 1. Fetch latest 5 news articles published in the last 24 hours for this language (any category).
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     let latestNews = await News.find({
       status: "published",
       language: lang,
-      category: { $regex: new RegExp("^breaking$", "i") }
+      publishedAt: { $gte: twentyFourHoursAgo }
     })
       .sort({ publishedAt: -1, createdAt: -1 })
       .limit(5);
 
     if (latestNews.length === 0) {
-      console.log(`ℹ️ [EMAIL] No breaking news found for language: ${lang}. Skipping email newsletter digest.`);
+      console.log(`ℹ️ [EMAIL] No new published articles found in the last 24 hours for language: ${lang}. Skipping email newsletter digest.`);
       return;
     }
 
@@ -174,29 +184,8 @@ const sendNewsPublishEmail = async (targetLanguage) => {
       ? (process.env.FRONTEND_URL || "http://localhost:3001")
       : (process.env.FRONTEND_URL_TA || "http://localhost:3002");
 
-    // Setup attachments array
-    const attachments = [];
-
-    // Logo Attachment
-    const logoFilename = isEnglish ? "NEWS GHURU LOGO English.png" : "NEWS GHURU LOGO PNG.png";
-    const logoLocalPath = isEnglish 
-      ? path.join(__dirname, "../../users-english/public", logoFilename)
-      : path.join(__dirname, "../../users-tamil/public", logoFilename);
-    
-    let logoUrl = "";
-    if (fs.existsSync(logoLocalPath)) {
-      attachments.push({
-        filename: logoFilename,
-        path: logoLocalPath,
-        cid: "brand-logo",
-      });
-      logoUrl = "cid:brand-logo";
-    } else {
-      console.warn(`⚠️ [EMAIL] Local logo not found at: ${logoLocalPath}. Falling back to GitHub URL.`);
-      logoUrl = isEnglish 
-        ? "https://raw.githubusercontent.com/ssangeethapriya94-droid/Newsghurutamil/main/Newsghuru/users-english/public/NEWS%20GHURU%20LOGO%20English.png"
-        : "https://raw.githubusercontent.com/ssangeethapriya94-droid/Newsghurutamil/main/Newsghuru/users-tamil/public/NEWS%20GHURU%20LOGO%20PNG.png";
-    }
+    // Setup logo URL
+    const logoUrl = getLogoUrl(lang);
 
     const brandName = isEnglish ? "NewsGhuru" : "நியூஸ் குரு";
     const slogan = isEnglish 
@@ -216,47 +205,7 @@ const sendNewsPublishEmail = async (targetLanguage) => {
       const item = latestNews[i];
       const newsLink = `${frontendUrl}/news/${item._id}`;
       const imageUrl = item.coverImage || item.image;
-      let finalSrc = FALLBACK_NEWS_IMAGE;
-
-      if (imageUrl) {
-        if (/^https?:\/\//i.test(imageUrl) && !imageUrl.includes("localhost") && !imageUrl.includes("127.0.0.1")) {
-          // Public absolute URL
-          finalSrc = imageUrl;
-        } else {
-          // Local/localhost upload URL or relative URL
-          let filename = "";
-          if (imageUrl.includes("/uploads/")) {
-            filename = imageUrl.substring(imageUrl.lastIndexOf("/uploads/") + 9);
-          } else if (imageUrl.includes("/images/")) {
-            filename = imageUrl.substring(imageUrl.lastIndexOf("/images/") + 8);
-          } else {
-            filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-          }
-          filename = filename.split("?")[0]; // Remove query params if any
-          
-          const uploadsPath = path.join(__dirname, "../uploads", filename);
-          const imagesPath = path.join(__dirname, "../images", filename);
-          let localPath = "";
-          
-          if (fs.existsSync(uploadsPath)) {
-            localPath = uploadsPath;
-          } else if (fs.existsSync(imagesPath)) {
-            localPath = imagesPath;
-          }
-          
-          if (localPath) {
-            const cid = `news-image-${i}`;
-            attachments.push({
-              filename: filename,
-              path: localPath,
-              cid: cid,
-            });
-            finalSrc = `cid:${cid}`;
-          } else {
-            finalSrc = FALLBACK_NEWS_IMAGE;
-          }
-        }
-      }
+      const finalSrc = getPublicImageUrl(imageUrl);
 
       const isLast = (i === latestNews.length - 1);
 
@@ -464,7 +413,6 @@ const sendNewsPublishEmail = async (targetLanguage) => {
 
 </body>
 </html>`,
-      attachments: attachments,
     };
 
     const info = await getTransporter().sendMail(mailOptions);

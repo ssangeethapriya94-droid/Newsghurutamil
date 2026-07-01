@@ -4,6 +4,7 @@ const Razorpay = require("razorpay");
 const SubscriptionPlan = require("../models/SubscriptionPlan");
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
+const Advertisement = require("../models/Advertisement");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -637,6 +638,42 @@ router.get("/admin/revenue", verifyToken, authorizeRoles("admin"), async (req, r
       revenue: monthlyTrendsMap[month]
     }));
 
+    // Fetch all successful advertisement payments
+    const ads = await Advertisement.find({ paymentStatus: { $in: ["Paid", "Refunded"] } })
+      .populate("createdBy", "name email language")
+      .sort({ createdAt: -1 });
+
+    const totalAdRevenue = ads
+      .filter(ad => ad.paymentStatus === "Paid")
+      .reduce((sum, ad) => sum + (ad.amountPaid || 0), 0);
+
+    const monthlyAdRevenue = ads
+      .filter(ad => ad.paymentStatus === "Paid" && new Date(ad.createdAt) >= startOfMonth)
+      .reduce((sum, ad) => sum + (ad.amountPaid || 0), 0);
+
+    const tamilAdRevenue = ads
+      .filter(ad => ad.paymentStatus === "Paid" && ad.language === "ta")
+      .reduce((sum, ad) => sum + (ad.amountPaid || 0), 0);
+
+    const englishAdRevenue = ads
+      .filter(ad => ad.paymentStatus === "Paid" && ad.language === "en")
+      .reduce((sum, ad) => sum + (ad.amountPaid || 0), 0);
+
+    const adTransactions = ads.map(ad => ({
+      _id: ad._id,
+      createdAt: ad.createdAt,
+      advertiserName: ad.advertiserName,
+      advertiserEmail: ad.advertiserEmail,
+      advertiserPhone: ad.advertiserPhone,
+      title: ad.title,
+      position: ad.position,
+      amount: ad.amountPaid,
+      paymentMethod: ad.paymentMethod,
+      paymentStatus: ad.paymentStatus,
+      language: ad.language,
+      status: ad.status
+    }));
+
     res.json({
       success: true,
       metrics: {
@@ -647,9 +684,16 @@ router.get("/admin/revenue", verifyToken, authorizeRoles("admin"), async (req, r
         activeSubscriptions,
         totalPlansSold
       },
+      adMetrics: {
+        totalAdRevenue,
+        monthlyAdRevenue,
+        tamilAdRevenue,
+        englishAdRevenue
+      },
       planDistribution,
       monthlyTrends,
-      transactions: transactions.slice(0, 50) // Return last 50 transactions for table
+      transactions: transactions.slice(0, 50), // Return last 50 transactions for table
+      adTransactions
     });
   } catch (error) {
     console.error("Admin revenue fetch error:", error);

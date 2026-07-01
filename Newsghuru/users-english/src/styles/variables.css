@@ -30,7 +30,7 @@
 
   --shadow-color: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 
-  --font-serif: "Lora", Georgia, serif;
+  --font-serif: "Inter", sans-serif;
   --font-sans: "Inter", sans-serif;
   --border-radius-sm: 6px;
   --border-radius-md: 12px;
@@ -64,7 +64,7 @@
 
   --shadow-color: rgba(0,0,0,0.06);
 
-  --font-serif: "Lora", Georgia, serif;
+  --font-serif: "Inter", sans-serif;
   --font-sans: "Inter", sans-serif;
   --border-radius-sm: 6px;
   --border-radius-md: 12px;

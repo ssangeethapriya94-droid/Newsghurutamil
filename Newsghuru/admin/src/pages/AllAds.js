@@ -363,6 +363,12 @@ function AllAds() {
                         <span style={{ fontSize: "12px", color: "var(--text-muted)", display: "block" }}>
                           Advertiser: <strong>{ad.advertiserName}</strong> {ad.companyName && `(${ad.companyName})`}
                         </span>
+                        <span style={{ fontSize: "12px", display: "block", marginTop: "4px" }}>
+                          💰 Paid: <strong style={{ color: "#ea580c" }}>₹{(ad.amountPaid || 0).toLocaleString()}</strong> ({ad.paymentMethod}) — <span style={{
+                            color: ad.paymentStatus === "Paid" ? "#10b981" : ad.paymentStatus === "Refunded" ? "#f97316" : "#6b7280",
+                            fontWeight: "bold"
+                          }}>{ad.paymentStatus}</span>
+                        </span>
                         {ad.rejectionReason && ad.status === "Rejected" && (
                           <span style={{ fontSize: "11px", color: "#ef4444", display: "block", marginTop: "2px" }}>
                             Rejection Reason: {ad.rejectionReason}
@@ -625,6 +631,12 @@ function AllAds() {
               </div>
               <div>
                 <strong>Priority:</strong> <span style={{ fontWeight: "bold", color: previewAd.priority === "High" ? "#ef4444" : previewAd.priority === "Medium" ? "#3b82f6" : "#6b7280" }}>{previewAd.priority}</span>
+              </div>
+              <div>
+                <strong>Payment Details:</strong> <span style={{ color: "#ea580c", fontWeight: "bold" }}>₹{(previewAd.amountPaid || 0).toLocaleString()}</span> via <strong>{previewAd.paymentMethod}</strong> (<span style={{
+                  color: previewAd.paymentStatus === "Paid" ? "#10b981" : previewAd.paymentStatus === "Refunded" ? "#f97316" : "#6b7280",
+                  fontWeight: "bold"
+                }}>{previewAd.paymentStatus}</span>)
               </div>
               <div>
                 <strong>Target Link:</strong> <a href={previewAd.targetUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#3b82f6", textDecoration: "underline", wordBreak: "break-all" }}>{previewAd.targetUrl}</a>

@@ -64,6 +64,11 @@ router.put("/:lang", verifyToken, authorizeRoles("admin"), async (req, res) => {
       schedule.isSent = false;
     }
 
+    // Always reset lastSent on daily schedule updates so it can trigger at the new scheduled time today
+    if (schedule.scheduleType === "daily") {
+      schedule.lastSent = null;
+    }
+
     await schedule.save();
 
     res.json({

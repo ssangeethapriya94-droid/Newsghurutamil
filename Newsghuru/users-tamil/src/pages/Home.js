@@ -1420,8 +1420,6 @@ const Home = () => {
     const list = (sponsoredNews || []).filter(a => a.placement === "homepage_sponsored");
     if (!list || list.length === 0) return null;
 
-    const isTamil = true;
-
     return (
       <div style={{
         marginBottom: "40px",
