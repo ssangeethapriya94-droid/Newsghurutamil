@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../config/api";
 import "../styles/EditorReviewNews.css"; // Reuse modal styling
@@ -15,18 +15,10 @@ function AdminReviewNews() {
   const [rejectReason, setRejectReason] = useState("");
   
   const [showVerifyModal, setShowVerifyModal] = useState(false);
-  const [checklist, setChecklist] = useState({
-    headline: false,
-    content: false,
-    images: false,
-    grammar: false,
-    factCheck: false,
-    seo: false
-  });
   const [publishComment, setPublishComment] = useState("");
   const [sendNotification, setSendNotification] = useState(false);
 
-  const fetchArticleDetails = async () => {
+  const fetchArticleDetails = useCallback(async () => {
     try {
       setLoading(true);
       const res = await API.get(`/api/news/${id}`);
@@ -65,11 +57,11 @@ function AdminReviewNews() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchArticleDetails();
-  }, [id]);
+  }, [fetchArticleDetails]);
 
   const handleReject = async () => {
     if (!rejectReason.trim()) {

@@ -29,6 +29,7 @@ function EditorArticlesList({ defaultFilter = "pending" }) {
 
   useEffect(() => {
     fetchArticles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   const getStatusClass = (status) => {

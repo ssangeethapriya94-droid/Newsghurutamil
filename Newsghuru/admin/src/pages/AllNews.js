@@ -17,6 +17,7 @@ function AllNews() {
   // FETCH NEWS
   useEffect(() => {
     fetchNews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languageFilter]);
 
   const fetchNews = async () => {

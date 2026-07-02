@@ -33,6 +33,7 @@ function AnmigamRasiPalanList() {
 
   useEffect(() => {
     fetchRecords();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languageFilter, periodFilter, statusFilter]);
 
   const handleDelete = async (id) => {

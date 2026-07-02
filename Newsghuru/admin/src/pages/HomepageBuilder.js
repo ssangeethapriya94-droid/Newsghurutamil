@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import API from "../config/api";
 import "../styles/ReporterMyArticles.css";
@@ -77,6 +78,7 @@ function HomepageBuilder() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languageBuilder]);
 
   const handleSave = async () => {
@@ -390,7 +392,7 @@ function HomepageBuilder() {
                 style={{ width: "100%", padding: "10px 14px", borderRadius: "6px", border: "1px solid var(--border-color)", marginBottom: "15px", boxSizing: "border-box" }}
               />
               <div style={{ maxHeight: "180px", overflowY: "auto", border: "1px solid var(--border-color)", borderRadius: "6px", padding: "10px" }}>
-                {newsList.filter(n => n.title.toLowerCase().includes(editorSearch.toLowerCase())).map(n => (
+                {filteredEditorNews.map(n => (
                   <label key={n._id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "6px 0", cursor: "pointer", fontSize: "14px" }}>
                     <input
                       type="checkbox"

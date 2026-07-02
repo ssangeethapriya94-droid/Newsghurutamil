@@ -31,6 +31,7 @@ function AnmigamTempleBlogsList() {
 
   useEffect(() => {
     fetchBlogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languageFilter, statusFilter]);
 
   const handleDelete = async (id) => {

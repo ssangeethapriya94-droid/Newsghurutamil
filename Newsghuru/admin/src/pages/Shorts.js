@@ -129,6 +129,7 @@ function Shorts() {
 
   useEffect(() => {
     fetchShorts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languageFilter]);
 
   useEffect(() => {

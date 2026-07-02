@@ -6,7 +6,7 @@ import {
 import { 
   FiFileText, FiClock, FiCheckCircle, FiXCircle, 
   FiUsers, FiZap, FiPlusSquare, FiEye, FiMoreVertical, 
-  FiArrowRight, FiList, FiSliders, FiTv, FiHeart, FiActivity,
+  FiArrowRight, FiList, FiSliders, FiTv, FiHeart,
   FiCamera
 } from "react-icons/fi";
 import "../styles/AdminDashboard.css";

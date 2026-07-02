@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../config/api";
-import { FiPlus, FiTrash2, FiEdit2, FiCheck, FiX, FiAward } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiEdit2, FiX, FiAward } from "react-icons/fi";
 import "../styles/ReporterMyArticles.css"; // Reuse general styles
 
 function SubscriptionPlans() {

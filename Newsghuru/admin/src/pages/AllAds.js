@@ -57,6 +57,7 @@ function AllAds() {
 
   useEffect(() => {
     fetchAds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languageFilter]);
 
   const handleToggleActive = async (id, title, currentState) => {

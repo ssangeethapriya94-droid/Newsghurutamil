@@ -29,6 +29,7 @@ function Categories() {
 
   useEffect(() => {
     fetchCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languageFilter]);
 
   const handleCreate = async (e) => {

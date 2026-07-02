@@ -108,6 +108,7 @@ function AnmigamRasiPalanCreate() {
     } else {
       setDayName("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language, date, periodType]);
 
   // Load entry if editing
